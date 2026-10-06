@@ -1,0 +1,7 @@
+anthropic>=0.40.0
+PyYAML>=6.0
+requests>=2.31
+numpy>=1.26
+opencv-python-headless>=4.9
+Pillow>=10.1
+edge-tts>=6.1.12

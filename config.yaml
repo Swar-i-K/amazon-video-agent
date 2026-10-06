@@ -1,0 +1,71 @@
+# ---------------------------------------------------------------
+# Amazon Ad Agent - settings.  Edit freely; nothing here is secret.
+# ---------------------------------------------------------------
+video:
+  width: 1920
+  height: 1080
+  fps: 30
+  crf: 18            # lower = better quality, bigger file (17-20 is good)
+  preset: medium     # slower = smaller file. medium is fine.
+  shot_seconds: 5.0  # average length of one shot
+  crossfade: 0.35
+  accent_color: [255, 176, 0]   # callout accent bar (R,G,B)
+  fonts:             # first one that exists is used
+    - /usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf
+    - /usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf
+    - C:/Windows/Fonts/arialbd.ttf
+
+length:              # hard limits requested: 5-9 minutes
+  min_minutes: 5.0
+  max_minutes: 9.0
+  target_minutes: 7.0
+  wpm: 155           # narration speed used for the pre-voice estimate
+  lead_in: 0.8       # seconds of picture before the voice starts
+  tail: 4.0          # seconds of end card after the voice ends
+
+llm:
+  model: claude-sonnet-5-5       # script writing + fact check
+  vision_model: claude-sonnet-5-5  # describes your images/clips, flags faces
+
+voice:
+  default: eleven_female
+  # Switch voice with --voice KEY (or the dropdown in the GitHub workflow).
+  options:
+    eleven_female:   {provider: elevenlabs, voice_id: EXAVITQu4vr4xnSDxMaL, label: "ElevenLabs - Sarah (F)"}
+    eleven_female_2: {provider: elevenlabs, voice_id: FGY2WhTYpPnrIDTdsKH5, label: "ElevenLabs - Laura (F)"}
+    eleven_male:     {provider: elevenlabs, voice_id: nPczCjzI2devNBz1zQrb, label: "ElevenLabs - Brian (M)"}
+    eleven_male_2:   {provider: elevenlabs, voice_id: CwhRBWXzGAHq8TQ4Fs17, label: "ElevenLabs - Roger (M)"}
+    edge_female:     {provider: edge, voice: en-US-AvaMultilingualNeural,    label: "Edge neural - Ava (F)"}
+    edge_female_2:   {provider: edge, voice: en-US-EmmaMultilingualNeural,   label: "Edge neural - Emma (F)"}
+    edge_male:       {provider: edge, voice: en-US-AndrewMultilingualNeural, label: "Edge neural - Andrew (M)"}
+    edge_male_2:     {provider: edge, voice: en-US-BrianMultilingualNeural,  label: "Edge neural - Brian (M)"}
+    openai_female:   {provider: openai, voice: nova,  label: "OpenAI - Nova (F)"}
+    openai_male:     {provider: openai, voice: onyx,  label: "OpenAI - Onyx (M)"}
+  elevenlabs:
+    model_id: eleven_multilingual_v2   # best quality, 1 credit/char.  eleven_flash_v2_5 = 0.5 credit/char, less natural
+    credits_per_char: 1.0              # set 0.5 if you switch to a flash/turbo model
+    stability: 0.45                    # lower = more expressive
+    similarity_boost: 0.80
+    style: 0.20
+  openai:
+    model: gpt-4o-mini-tts
+    instructions: "Warm, relaxed, conversational. Natural pacing with small pauses. Sound like a person talking to a friend, not reading an ad."
+  pause_sentence: 0.40   # seconds of silence after each narration line
+  pause_section: 0.75    # extra pause when the section changes
+
+disclosure:
+  spoken:
+    - "Quick note before we get into it: the link below is an affiliate link, and as an Amazon Associate I earn from qualifying purchases."
+    - "Before we start, I should say this video has an affiliate link, and as an Amazon Associate I earn from qualifying purchases."
+    - "One thing up front: I use affiliate links, and as an Amazon Associate I earn from qualifying purchases."
+  on_screen: "As an Amazon Associate I earn from qualifying purchases."
+  tag: "Contains affiliate links"
+  ai_voice_note: "Narration in this video is AI-generated."
+  outro:
+    - "If you want to look at it yourself, the link is in the description. Thanks for watching."
+    - "That's the rundown. The link is in the description if you want a closer look. Thanks for watching."
+    - "You'll find the link in the description if it sounds like a fit. Thanks for watching."
+
+safety:
+  max_videos_per_day: 3        # anti mass-production brake (override with --force)
+  max_similarity: 0.22         # 4-gram overlap with your earlier scripts; above this the script is regenerated
