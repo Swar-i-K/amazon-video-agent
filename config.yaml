@@ -24,8 +24,8 @@ length:              # hard limits requested: 5-9 minutes
   tail: 4.0          # seconds of end card after the voice ends
 
 llm:
-  model: llama-3.3-70b-versatile                          # script writing + fact check
-  vision_model: meta-llama/llama-4-scout-17b-16e-instruct # describes your images/clips
+  model: openai/gpt-oss-120b
+  vision_model: qwen/qwen3.6-27b # describes your images/clips
 voice:
   default: eleven_female
   # Switch voice with --voice KEY (or the dropdown in the GitHub workflow).
