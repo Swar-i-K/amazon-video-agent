@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import base64
 import os
+import re
 import time
 
 import cv2
@@ -31,7 +32,7 @@ def ask(model: str, system: str, user: str, images: list[np.ndarray] | None = No
     client = _client()
 
     if images:
-        content: list[dict] | str = [{"type": "text", "text": user}]
+        content = [{"type": "text", "text": user}]
         for im in images:
             content.append({
                 "type": "image_url",
@@ -45,7 +46,7 @@ def ask(model: str, system: str, user: str, images: list[np.ndarray] | None = No
 
     last = None
     for attempt in range(4):
-                try:
+        try:
             resp = client.chat.completions.create(
                 model=model, max_tokens=max_tokens, temperature=temperature,
                 messages=messages,
@@ -53,10 +54,14 @@ def ask(model: str, system: str, user: str, images: list[np.ndarray] | None = No
             choice = resp.choices[0]
             text = choice.message.content or ""
             # drop any <think>...</think> reasoning that leaks into the reply
-            import re
             text = re.sub(r"<think>.*?</think>", "", text, flags=re.S).strip()
             if choice.finish_reason == "length":
                 print(f"[llm] WARNING: {model} hit max_tokens={max_tokens}; reply was cut off. "
                       f"Raw start: {text[:300]!r}", flush=True)
             return text
-    raise RuntimeError(f"Anthropic API failed: {last}")
+        except groq.AuthenticationError as e:  # bad key: retrying will not help
+            raise SystemExit(f"Groq rejected GROQ_API_KEY: {e}")
+        except Exception as e:  # network / rate limit / transient
+            last = e
+            time.sleep(2 + attempt * 8)
+    raise RuntimeError(f"Groq API failed: {last}")
