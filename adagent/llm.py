@@ -8,6 +8,19 @@ import time
 import cv2
 import numpy as np
 
+import os
+from groq import Groq
+
+def ask(model, system, user, max_tokens=4000, temperature=0.7):
+    key = os.environ.get("GROQ_API_KEY")
+    if not key:
+        raise SystemExit("GROQ_API_KEY is not set (add it as a GitHub secret).")
+    resp = Groq(api_key=key).chat.completions.create(
+        model=model, max_tokens=max_tokens, temperature=temperature,
+        messages=[{"role": "system", "content": system},
+                  {"role": "user", "content": user}],
+    )
+    return resp.choices[0].message.content
 
 def _client():
     if not os.environ.get("ANTHROPIC_API_KEY"):
