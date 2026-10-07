@@ -45,16 +45,18 @@ def ask(model: str, system: str, user: str, images: list[np.ndarray] | None = No
 
     last = None
     for attempt in range(4):
-        try:
+                try:
             resp = client.chat.completions.create(
                 model=model, max_tokens=max_tokens, temperature=temperature,
                 messages=messages,
             )
-            return resp.choices[0].message.content or ""
-        except groq.AuthenticationError as e:  # bad key: retrying won't help
-            raise SystemExit(f"Groq rejected GROQ_API_KEY: {e}")
-        except Exception as e:  # network / rate limit / transient
-            last = e
-            time.sleep(2 + attempt * 8)  # longer backoff: Groq free tier has per-minute caps
-    raise RuntimeError(f"Groq API failed: {last}")
+            choice = resp.choices[0]
+            text = choice.message.content or ""
+            # drop any <think>...</think> reasoning that leaks into the reply
+            import re
+            text = re.sub(r"<think>.*?</think>", "", text, flags=re.S).strip()
+            if choice.finish_reason == "length":
+                print(f"[llm] WARNING: {model} hit max_tokens={max_tokens}; reply was cut off. "
+                      f"Raw start: {text[:300]!r}", flush=True)
+            return text
     raise RuntimeError(f"Anthropic API failed: {last}")
