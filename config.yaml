@@ -24,9 +24,8 @@ length:              # hard limits requested: 5-9 minutes
   tail: 4.0          # seconds of end card after the voice ends
 
 llm:
-  model: claude-sonnet-5-5       # script writing + fact check
-  vision_model: claude-sonnet-5-5  # describes your images/clips, flags faces
-
+  model: llama-3.3-70b-versatile                          # script writing + fact check
+  vision_model: meta-llama/llama-4-scout-17b-16e-instruct # describes your images/clips
 voice:
   default: eleven_female
   # Switch voice with --voice KEY (or the dropdown in the GitHub workflow).
