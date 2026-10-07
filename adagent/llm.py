@@ -65,6 +65,20 @@ def _model_missing(status: int, text: str) -> bool:
 
 
 # ------------------------------- Groq ---------------------------------------
+_REASON_KEYS = ("reasoning_effort", "reasoning_format", "include_reasoning")
+
+
+def _apply_reasoning(body: dict) -> None:
+    """Reasoning models spend the token budget 'thinking' and can cut the JSON off. Keep the thinking short/hidden."""
+    for k in _REASON_KEYS:
+        body.pop(k, None)
+    m = body["model"].lower()
+    if "gpt-oss" in m:
+        body.update(reasoning_effort="low", include_reasoning=False)
+    elif any(t in m for t in ("qwen3", "qwq", "deepseek-r1")):
+        body.update(reasoning_format="hidden")
+
+
 def _ask_groq(model, system, user, images, max_tokens, temperature) -> str:
     key = os.environ.get("GROQ_API_KEY")
     if not key:
@@ -81,6 +95,7 @@ def _ask_groq(model, system, user, images, max_tokens, temperature) -> str:
     requested = model
     body = {"model": _substitutes.get((requested, vision), requested), "messages": messages,
             "max_tokens": max_tokens, "temperature": temperature, "response_format": {"type": "json_object"}}
+    _apply_reasoning(body)
     headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
     last, swapped = "", False
     for attempt in range(8):
@@ -91,7 +106,10 @@ def _ask_groq(model, system, user, images, max_tokens, temperature) -> str:
             time.sleep(3 + attempt * 4)
             continue
         if r.status_code == 200:
-            return r.json()["choices"][0]["message"]["content"] or ""
+            choice = r.json()["choices"][0]
+            if choice.get("finish_reason") == "length":
+                log("  WARNING: the model hit its token limit and the reply was cut off.")
+            return choice["message"].get("content") or ""
         last = f"{r.status_code}: {r.text[:300]}"
         if _model_missing(r.status_code, r.text) and not swapped:
             swapped = True
@@ -104,6 +122,11 @@ def _ask_groq(model, system, user, images, max_tokens, temperature) -> str:
             log(f"  Using '{sub}' instead (set it in config.yaml to make this permanent).")
             _substitutes[(requested, vision)] = sub
             body["model"] = sub
+            _apply_reasoning(body)
+            continue
+        if r.status_code == 400 and any(k in body for k in _REASON_KEYS) and "reason" in r.text.lower():
+            for k in _REASON_KEYS:  # this model does not accept the reasoning options
+                body.pop(k, None)
             continue
         if r.status_code == 400 and "response_format" in body and "json" in r.text.lower():
             body.pop("response_format")  # model without JSON mode: our parser copes with plain text

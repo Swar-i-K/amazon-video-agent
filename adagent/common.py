@@ -133,9 +133,15 @@ def _loads_lenient(txt: str):
     return ast.literal_eval(fixed)                                 # single quotes, True/False
 
 
+def _is_container(x) -> bool:
+    return isinstance(x, (dict, list))
+
+
 def extract_json(text: str):
-    """Pull the first JSON object/array out of an LLM reply (tolerates code fences, <think> blocks, sloppy JSON)."""
-    text = re.sub(r"<think>.*?</think>", "", text, flags=re.S | re.I).strip()
+    """Pull the first JSON object/array out of an LLM reply (tolerates code fences, <think> blocks, sloppy JSON).
+
+    Always returns a dict or list; raises ValueError otherwise (so callers can retry instead of crashing later)."""
+    text = re.sub(r"<think>.*?</think>", "", text or "", flags=re.S | re.I).strip()
     text = re.sub(r"^```(?:json)?\s*", "", text)
     text = re.sub(r"\s*```$", "", text)
     starts = [i for i in (text.find("{"), text.find("[")) if i >= 0]
@@ -144,11 +150,18 @@ def extract_json(text: str):
     body = text[min(starts):]
     try:
         obj, _ = json.JSONDecoder().raw_decode(body)
-        return obj
+        if _is_container(obj):
+            return obj
     except Exception:
         pass
     end = max(body.rfind("}"), body.rfind("]"))
-    return _loads_lenient(body[: end + 1])
+    try:
+        obj = _loads_lenient(body[: end + 1])
+    except Exception as e:
+        raise ValueError(f"Model reply was not valid JSON ({type(e).__name__})") from e
+    if not _is_container(obj):
+        raise ValueError("Model reply was not a JSON object")
+    return obj
 
 
 def word_count(text: str) -> int:

@@ -166,14 +166,62 @@ def _clean_segments(raw: list[dict]) -> list[dict]:
     return segs
 
 
+def salvage_segments(text: str) -> list[dict]:
+    """Recover every COMPLETE segment object from a reply that was cut off or is otherwise malformed."""
+    i = text.find('"segments"')
+    i = text.find("[", i if i >= 0 else 0)
+    if i < 0:
+        return []
+    dec, out, pos = json.JSONDecoder(), [], i + 1
+    while True:
+        j = text.find("{", pos)
+        if j < 0:
+            break
+        try:
+            obj, end = dec.raw_decode(text[j:])
+        except Exception:
+            break  # the last object was cut off; keep what we have
+        if isinstance(obj, dict) and obj.get("text"):
+            out.append(obj)
+        pos = j + end
+    return out
+
+
+def parse_script_reply(txt: str) -> dict | None:
+    try:
+        data = extract_json(txt)
+    except Exception:
+        data = None
+    if isinstance(data, dict) and isinstance(data.get("segments"), list) and data["segments"]:
+        return data
+    if isinstance(data, list) and data and isinstance(data[0], dict) and "text" in data[0]:
+        return {"segments": data}
+    segs = salvage_segments(txt or "")
+    return {"segments": segs, "salvaged": True} if len(segs) >= 8 else None
+
+
 def generate(project: Project, cfg: dict, entries: list[dict], angle: str, target_words: int) -> dict:
-    user = (f"ANGLE: {angle}: {ANGLES[angle]}\n\n{SECTION_GUIDE}\n\n"
-            f"LENGTH: about {target_words} words of narration in total across all segments (plus or minus 8%).\n\n"
+    base = (f"ANGLE: {angle}: {ANGLES[angle]}\n\n{SECTION_GUIDE}\n\n"
+            "LENGTH: about {words} words of narration in total across all segments (plus or minus 8%).\n\n"
             f"FACTS:\n{facts_yaml(project)}\n\nAVAILABLE FOOTAGE:\n{assets_block(entries)}\n\n"
             f"Return JSON in this shape:\n{SCHEMA}")
-    data = extract_json(ask(cfg["llm"]["model"], SYSTEM, user, max_tokens=12000, temperature=0.85))
+    words, note, data = target_words, "", None
+    for attempt in range(3):
+        txt = ask(cfg["llm"]["model"], SYSTEM, base.replace("{words}", str(words)) + note, max_tokens=12000, temperature=0.85)
+        data = parse_script_reply(txt)
+        if data:
+            if data.get("salvaged"):
+                log(f"  (reply was cut off; recovered {len(data['segments'])} complete lines)")
+            break
+        log(f"  script reply was not valid JSON (attempt {attempt + 1}); retrying with a shorter request")
+        words = int(words * 0.8)
+        note = ("\n\nIMPORTANT: your previous reply was cut off or was not valid JSON. Reply with ONLY one compact JSON object "
+                "in the shape above. No commentary, no markdown, keep each narration line under 30 words.")
+    if not data:
+        raise RuntimeError("The model did not return a usable script after 3 tries. Try again, or choose another model in "
+                           "config.yaml (llm.model). Reasoning models can run out of tokens; llama/maverick-style models are steadier.")
     segs = _clean_segments(data["segments"])
-    return {"title": data.get("title", project.facts["product_name"]),
+    return {"title": data.get("title") or project.facts["product_name"],
             "description_intro": data.get("description_intro", ""), "tags": data.get("tags", []),
             "angle": angle, "segments": segs}
 
@@ -191,8 +239,14 @@ def factcheck(project: Project, cfg: dict, script: dict) -> list[dict]:
             "(d) makes a claim about durability, safety, performance or results that FACTS do not support; "
             "(e) puts unsupported text in onscreen. Do NOT flag generic category advice, transitions or opinions framed as 'if you...'.\n"
             'Return {"issues": [{"id": "<segment id>", "problem": "<short>", "fix": "<how to fix>"}]} - empty list if clean.')
-    data = extract_json(ask(cfg["llm"]["model"], FACTCHECK_SYSTEM, user, max_tokens=3000, temperature=0.0))
-    return list(data.get("issues", []))
+    try:
+        data = extract_json(ask(cfg["llm"]["model"], FACTCHECK_SYSTEM, user, max_tokens=3000, temperature=0.0))
+        issues = data.get("issues", []) if isinstance(data, dict) else data
+        return [i for i in issues if isinstance(i, dict)]
+    except Exception as e:
+        log(f"  fact-check reply unreadable ({e}); flagging for manual check")
+        return [{"id": "*", "problem": "the automatic fact-check could not run (model reply unreadable)",
+                 "fix": "check every line against your facts by hand"}]
 
 
 def revise(project: Project, cfg: dict, script: dict, issues: list[dict]) -> dict:
@@ -204,8 +258,12 @@ def revise(project: Project, cfg: dict, script: dict, issues: list[dict]) -> dic
     user = (f"FACTS:\n{facts_yaml(project)}\n\nRewrite ONLY these segments so they are fully supported by FACTS "
             f"(same voice, similar length). If a segment cannot be saved, return an empty text to delete it.\n{lines}\n\n"
             'Return {"segments": [{"id": "...", "text": "...", "onscreen": ""}]}')
-    data = extract_json(ask(cfg["llm"]["model"], SYSTEM, user, max_tokens=4000, temperature=0.5))
-    fixed = {str(s["id"]): s for s in data.get("segments", [])}
+    try:
+        data = extract_json(ask(cfg["llm"]["model"], SYSTEM, user, max_tokens=4000, temperature=0.5))
+        fixed = {str(s["id"]): s for s in (data.get("segments", []) if isinstance(data, dict) else []) if isinstance(s, dict)}
+    except Exception as e:
+        log(f"  revision reply unreadable ({e}); leaving those lines for you to fix")
+        return script
     out = []
     for s in script["segments"]:
         f = fixed.get(s["id"])
@@ -262,7 +320,7 @@ def make_script(project: Project, cfg: dict, entries: list[dict], angle: str | N
         issues = factcheck(project, cfg, script)
         log(f"  fact-check round {rnd + 1}: {len(issues)} issue(s)")
         review["fact_issues"] = issues
-        if not issues:
+        if not issues or all(i.get("id") == "*" for i in issues):
             break
         script = revise(project, cfg, script, issues)
     if review["fact_issues"]:
