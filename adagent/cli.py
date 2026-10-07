@@ -54,6 +54,8 @@ def cmd_script(args):
     rv = script["review"]
     log(f"\nScript written to projects/{project.asin}/script.md  (~{rv['estimated_minutes']} min)")
     log(f"  open fact-check issues: {len(rv['fact_issues'])}, policy flags: {len(rv['policy'])}, style flags: {len(rv['style'])}")
+    if rv.get("length_warning"):
+        log("\n  !! " + rv["length_warning"])
     log("  Review/edit the file, then run the render step.")
 
 
@@ -102,7 +104,12 @@ def run_render(args, cfg, project, entries, warns, script):
     lo, hi = cfg["length"]["min_minutes"], cfg["length"]["max_minutes"]
     log(f"Estimated length {est:.1f} min (allowed {lo}-{hi}).")
     if not args.no_length_check and not (lo + 0.1 <= est <= hi - 0.1):
-        raise SystemExit("Script length is outside the allowed window. Add or cut lines in script.md.")
+        if est < lo:
+            more = int((lo + 0.2 - est) * 60 * cfg["length"]["wpm"] / 60)
+            raise SystemExit(f"Script is only ~{est:.1f} min (minimum {lo:.0f}). Add about {more} more words "
+                             f"(~{more // 22} lines) to projects/{project.asin}/script.md, or add facts to facts.yaml "
+                             "and re-run the script step with 'force' ticked.")
+        raise SystemExit(f"Script is ~{est:.1f} min (maximum {hi:.0f}). Delete some lines from script.md.")
 
     voice_key, _ = V.resolve_voice(cfg, args.voice)
     log(f"Voice: {voice_key}")

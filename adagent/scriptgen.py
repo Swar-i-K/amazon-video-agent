@@ -151,10 +151,17 @@ def videos_today(exclude_asin: str) -> int:
 
 
 # ----------------------------- LLM steps -----------------------------------
+def _norm(t: str) -> str:
+    """Replace look-alike hyphens/spaces that confuse fonts and voices."""
+    for bad in ("\u2010", "\u2011", "\u2012", "\u2043"):
+        t = t.replace(bad, "-")
+    return t.replace("\u00a0", " ").replace("\u202f", " ")
+
+
 def _clean_segments(raw: list[dict]) -> list[dict]:
     segs = []
     for i, s in enumerate(raw, 1):
-        text = re.sub(r"\s+", " ", str(s.get("text", ""))).strip()
+        text = _norm(re.sub(r"\s+", " ", str(s.get("text", "")))).strip()
         if not text:
             continue
         segs.append({
@@ -276,6 +283,47 @@ def revise(project: Project, cfg: dict, script: dict, issues: list[dict]) -> dic
     return script
 
 
+def expand(project: Project, cfg: dict, entries: list[dict], script: dict, need_words: int) -> dict:
+    """Add NEW lines to a script that is too short, without rewriting what is already there."""
+    current = "\n".join(f"[{s['id']}] ({s['section']}) {s['text']}" for s in script["segments"])
+    user = (f"FACTS:\n{facts_yaml(project)}\n\nAVAILABLE FOOTAGE:\n{assets_block(entries)}\n\nCURRENT SCRIPT:\n{current}\n\n"
+            f"The script is too short for a 5 to 9 minute video. Write about {need_words} words of NEW segments to insert. "
+            "Rules: never repeat anything already said. Add depth ONLY by (1) using facts from FACTS that are not used yet, "
+            "(2) clearly hypothetical 'if you...' situations that claim nothing about this product beyond FACTS, "
+            "(3) general advice about choosing or caring for this KIND of product (source = general; no claims about this specific product), "
+            "(4) honest limits and who it does or does not suit. Do not invent specs, results or experiences. "
+            'Return {"segments": [{"after_id": "<id of the existing segment this follows>", "section": "...", "text": "...", '
+            '"onscreen": "", "asset_ids": [], "source": "product|handson|general", "priority": 2}]}')
+    txt = ask(cfg["llm"]["model"], SYSTEM, user, max_tokens=6500, temperature=0.8)
+    data = parse_script_reply(txt)
+    if not data:
+        log("  expansion reply unreadable; keeping the script as it is")
+        return script
+    new = [dict(n, id="") for n in data["segments"] if isinstance(n, dict) and str(n.get("text", "")).strip()]
+    segs = list(script["segments"])
+    used = {s["id"] for s in segs}
+    n_added = 0
+    for n in new:
+        after = str(n.get("after_id", ""))
+        idx = next((i for i, s in enumerate(segs) if s["id"] == after), None)
+        if idx is None:  # unknown anchor: put it at the end of the section it names, else before the last section
+            sec = str(n.get("section", "")).lower()
+            same = [i for i, s in enumerate(segs) if s["section"] == sec]
+            idx = same[-1] if same else max(0, len(segs) - 2)
+        seg = _clean_segments([n])[0]
+        seg["section"] = segs[idx]["section"]       # keep each section in one block
+        k = 1
+        while f"x{k}" in used:
+            k += 1
+        seg["id"] = f"x{k}"
+        used.add(seg["id"])
+        segs.insert(idx + 1, seg)
+        n_added += 1
+    log(f"  expansion added {n_added} line(s)")
+    script["segments"] = segs
+    return script
+
+
 def trim_to_length(segments: list[dict], cfg: dict, max_minutes: float) -> list[dict]:
     segs = list(segments)
     for prio in (3, 2):
@@ -300,22 +348,33 @@ def make_script(project: Project, cfg: dict, entries: list[dict], angle: str | N
     target_words = int((target_min * 60 - ln["lead_in"] - ln["tail"]) * ln["wpm"] / 60 * 0.9) - fixed_words
     log(f"Angle: {angle}; target ~{target_words} words")
 
-    script = None
-    for attempt in range(3):
-        script = generate(project, cfg, entries, angle, target_words)
-        est = estimate_minutes(assemble(script, project, cfg), cfg)
-        log(f"  draft {attempt + 1}: ~{est:.1f} min")
-        if est > hi:
-            overhead = est - estimate_minutes(script["segments"], cfg)  # disclosure + sign-off are added later
-            script["segments"] = trim_to_length(script["segments"], cfg, hi - overhead)
-            est = estimate_minutes(assemble(script, project, cfg), cfg)
-        if lo <= est <= hi:
-            break
-        if est < lo:
-            target_words = int(target_words * (target_min / max(est, 1.0)) * 1.05)
+    script = generate(project, cfg, entries, angle, target_words)
     est = estimate_minutes(assemble(script, project, cfg), cfg)
+    log(f"  first draft: ~{est:.1f} min")
+    if est > hi:
+        overhead = est - estimate_minutes(script["segments"], cfg)  # disclosure + sign-off are added later
+        script["segments"] = trim_to_length(script["segments"], cfg, hi - overhead)
+        est = estimate_minutes(assemble(script, project, cfg), cfg)
+    for rnd in range(4):
+        if est >= lo:
+            break
+        need = int((target_min - est) * 60 * ln["wpm"] / 60 * 0.85)
+        need = max(120, min(need, 650))
+        log(f"  too short ({est:.1f} min); expanding by about {need} words (round {rnd + 1})")
+        script = expand(project, cfg, entries, script, need)
+        est = estimate_minutes(assemble(script, project, cfg), cfg)
+    if est > hi:
+        overhead = est - estimate_minutes(script["segments"], cfg)
+        script["segments"] = trim_to_length(script["segments"], cfg, hi - overhead)
+        est = estimate_minutes(assemble(script, project, cfg), cfg)
+    log(f"  final length ~{est:.1f} min")
 
     review: dict = {"estimated_minutes": round(est, 1), "fact_issues": [], "policy": [], "style": []}
+    if est < ln["min_minutes"]:
+        words_needed = int((ln["min_minutes"] + 0.2 - est) * 60 * ln["wpm"] / 60)
+        review["length_warning"] = (f"Script is only ~{est:.1f} min; the video must be at least {ln['min_minutes']:.0f}. "
+                                    f"Add about {words_needed} more words (roughly {words_needed // 22} lines), "
+                                    "ideally by adding real facts and hands_on_notes to facts.yaml and re-running the script step with force.")
     for rnd in range(2):
         issues = factcheck(project, cfg, script)
         log(f"  fact-check round {rnd + 1}: {len(issues)} issue(s)")
@@ -367,7 +426,7 @@ def script_to_md(script: dict, project: Project) -> str:
          "#", "# HOW TO EDIT: change any wording, delete a line to cut it, add a line with a new id (e.g. [n1]).",
          "# Format:  [id] narration | callout: up to 4 words | assets: A01,A02 | p: 1-3",
          "# The affiliate disclosure and the sign-off are added automatically. Do not add prices, ratings or review quotes.",
-         "# Save as  projects/%s/script_approved.md  and run the render step." % project.asin, ""]
+         "# Edit this file in place (projects/%s/script.md), commit, then run the render step." % project.asin, ""]
     cur = None
     for s in script["segments"]:
         if s["section"] != cur:
@@ -385,6 +444,8 @@ def script_to_md(script: dict, project: Project) -> str:
     if rv:
         L += ["", "<!-- REVIEW NOTES (ignored when rendering)"]
         L.append(f"estimated length: {rv.get('estimated_minutes')} min; similarity to earlier scripts: {rv.get('similarity')}")
+        if rv.get("length_warning"):
+            L.append("LENGTH: " + rv["length_warning"])
         for i in rv.get("fact_issues", []):
             L.append(f"FACT CHECK [{i.get('id')}]: {i.get('problem')} -> {i.get('fix')}")
         for i in rv.get("policy", []):
@@ -418,7 +479,7 @@ def md_to_script(md: str) -> dict:
             if not m:
                 continue
             parts = [p.strip() for p in m.group(2).split(" | ")]
-            seg = {"id": m.group(1), "section": section, "text": parts[0], "onscreen": "", "asset_ids": [],
+            seg = {"id": m.group(1), "section": section, "text": _norm(parts[0]), "onscreen": "", "asset_ids": [],
                    "source": "product", "priority": 2}
             for p in parts[1:]:
                 if p.lower().startswith("callout:"):
