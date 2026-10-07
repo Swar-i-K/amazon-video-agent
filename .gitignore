@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+projects/*/out/
+projects/*/.cache/
+.env
+*.log
