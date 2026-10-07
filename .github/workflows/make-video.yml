@@ -57,7 +57,7 @@ jobs:
       ANGLE: ${{ inputs.angle }}
       PREVIEW: ${{ inputs.preview_seconds }}
       FORCE: ${{ inputs.force }}
-      GROG_API_KEY: ${{ secrets.GROG_API_KEY }}
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
       ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
     steps:
