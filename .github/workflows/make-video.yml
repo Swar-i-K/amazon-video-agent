@@ -111,10 +111,25 @@ jobs:
           retention-days: 14
           if-no-files-found: ignore
 
-      - name: Save script + anti-duplication history
+           - name: Save script + anti-duplication history
         if: success()
+        continue-on-error: true
         run: |
+          mkdir -p /tmp/keep/scripts_archive
+          rm -f /tmp/keep/script.md
+          if [ "$MODE" != "render" ] && [ -f "projects/$ASIN/script.md" ]; then cp "projects/$ASIN/script.md" /tmp/keep/script.md; fi
+          cp -r scripts_archive/. /tmp/keep/scripts_archive/ 2>/dev/null || true
           git config user.name "adagent"
           git config user.email "adagent@users.noreply.github.com"
-          git add "projects/$ASIN/script.md" scripts_archive || true
-          git diff --cached --quiet || { git commit -m "script/history for $ASIN"; git pull --rebase -q; git push; }
+          for i in 1 2 3; do
+            git fetch -q origin main
+            git reset -q --hard origin/main
+            if [ -f /tmp/keep/script.md ]; then cp /tmp/keep/script.md "projects/$ASIN/script.md"; fi
+            mkdir -p scripts_archive && cp -r /tmp/keep/scripts_archive/. scripts_archive/ 2>/dev/null || true
+            git add "projects/$ASIN/script.md" scripts_archive 2>/dev/null || true
+            if git diff --cached --quiet; then echo "nothing to save"; exit 0; fi
+            git commit -qm "script/history for $ASIN"
+            if git push -q origin HEAD:main; then echo "saved"; exit 0; fi
+            sleep 5
+          done
+          exit 1
