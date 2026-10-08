@@ -24,8 +24,13 @@ length:              # hard limits requested: 5-9 minutes
   tail: 4.0          # seconds of end card after the voice ends
 
 llm:
-  model: openai/gpt-oss-120b
-  vision_model: qwen/qwen3.6-27b # describes your images/clips
+  provider: groq                                   # groq (free tier available) or anthropic (paid)
+  model: openai/gpt-oss-120b                       # script writing + fact check
+  vision_model: qwen/qwen3.8-27b                   # looks at your photos/clips (Qwen 3.8 is multimodal)
+  groq_max_tokens: 6500                            # keeps requests inside free-tier per-minute limits
+  # For Anthropic instead: provider: anthropic, model: claude-sonnet-5-5, vision_model: claude-sonnet-5-5
+  # Check current Groq model names at console.groq.com/docs/models
+
 voice:
   default: eleven_female
   # Switch voice with --voice KEY (or the dropdown in the GitHub workflow).
