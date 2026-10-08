@@ -128,7 +128,7 @@ def describe(cfg: dict, frames: list[np.ndarray], kind: str) -> dict:
     for _ in range(2):
         try:
             txt = ask(cfg["llm"]["vision_model"], VISION_SYSTEM, VISION_PROMPT.format(what=what),
-                      images=[img], max_tokens=500, temperature=0.0)
+                      images=[img], max_tokens=1500, temperature=0.0)
             return extract_json(txt)
         except Exception as e:
             last = e

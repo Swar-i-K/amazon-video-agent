@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import base64
 import os
+import re
 import time
 from functools import lru_cache
 
@@ -20,8 +21,9 @@ GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 GROQ_MODELS_URL = "https://api.groq.com/openai/v1/models"
 
 PREF_TEXT = ["llama-3.3-70b-versatile", "openai/gpt-oss-120b", "openai/gpt-oss-20b", "qwen/qwen3-32b", "llama-3.1-8b-instant"]
-PREF_VISION = ["meta-llama/llama-4-scout-17b-16e-instruct", "meta-llama/llama-4-maverick-17b-128e-instruct"]
-_NOT_TEXT = ("whisper", "tts", "guard", "orpheus", "playai", "embed", "safeguard", "vision", "scout", "maverick", "-vl", "compound")
+PREF_VISION = ["qwen/qwen3.8-27b", "qwen/qwen3.6-27b", "meta-llama/llama-4-scout-17b-16e-instruct",
+               "meta-llama/llama-4-maverick-17b-128e-instruct"]
+_NOT_TEXT = ("whisper", "tts", "guard", "orpheus", "playai", "embed", "safeguard", "vision", "scout", "maverick", "-vl", "compound", "allam")
 _substitutes: dict = {}   # (requested model, is_vision) -> model that actually works on this account
 
 
@@ -53,7 +55,11 @@ def _pick_substitute(model: str, vision: bool, ids: list[str]) -> str | None:
         if m in ids:
             return m
     if vision:
-        cands = [i for i in ids if any(t in i.lower() for t in ("scout", "maverick", "vision", "-vl"))]
+        def is_vision(i: str) -> bool:
+            low = i.lower()
+            m = re.search(r"qwen3\.(\d+)", low)       # Qwen 3.5 and later are natively multimodal
+            return any(t in low for t in ("scout", "maverick", "vision", "-vl")) or bool(m and int(m.group(1)) >= 5)
+        cands = [i for i in ids if is_vision(i)]
     else:
         cands = [i for i in ids if not any(t in i.lower() for t in _NOT_TEXT)]
     return cands[0] if cands else None
@@ -68,15 +74,22 @@ def _model_missing(status: int, text: str) -> bool:
 _REASON_KEYS = ("reasoning_effort", "reasoning_format", "include_reasoning")
 
 
-def _apply_reasoning(body: dict) -> None:
-    """Reasoning models spend the token budget 'thinking' and can cut the JSON off. Keep the thinking short/hidden."""
+def _reasoning_variants(model: str) -> list[dict]:
+    """Options that keep a reasoning model's thinking short/hidden, most specific first, ending with 'none'."""
+    m = model.lower()
+    if "gpt-oss" in m:
+        return [{"reasoning_effort": "low", "include_reasoning": False}, {"reasoning_effort": "low"}, {}]
+    if any(t in m for t in ("qwen3", "qwq", "deepseek-r1")):
+        return [{"reasoning_effort": "none", "reasoning_format": "hidden"}, {"reasoning_format": "hidden"},
+                {"reasoning_effort": "none"}, {}]
+    return [{}]
+
+
+def _apply_reasoning(body: dict, level: int = 0) -> None:
     for k in _REASON_KEYS:
         body.pop(k, None)
-    m = body["model"].lower()
-    if "gpt-oss" in m:
-        body.update(reasoning_effort="low", include_reasoning=False)
-    elif any(t in m for t in ("qwen3", "qwq", "deepseek-r1")):
-        body.update(reasoning_format="hidden")
+    variants = _reasoning_variants(body["model"])
+    body.update(variants[min(level, len(variants) - 1)])
 
 
 def _ask_groq(model, system, user, images, max_tokens, temperature) -> str:
@@ -95,7 +108,8 @@ def _ask_groq(model, system, user, images, max_tokens, temperature) -> str:
     requested = model
     body = {"model": _substitutes.get((requested, vision), requested), "messages": messages,
             "max_tokens": max_tokens, "temperature": temperature, "response_format": {"type": "json_object"}}
-    _apply_reasoning(body)
+    level = 0
+    _apply_reasoning(body, level)
     headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
     last, swapped = "", False
     for attempt in range(8):
@@ -122,11 +136,12 @@ def _ask_groq(model, system, user, images, max_tokens, temperature) -> str:
             log(f"  Using '{sub}' instead (set it in config.yaml to make this permanent).")
             _substitutes[(requested, vision)] = sub
             body["model"] = sub
-            _apply_reasoning(body)
+            level = 0
+            _apply_reasoning(body, level)
             continue
         if r.status_code == 400 and any(k in body for k in _REASON_KEYS) and "reason" in r.text.lower():
-            for k in _REASON_KEYS:  # this model does not accept the reasoning options
-                body.pop(k, None)
+            level += 1  # this model rejected those reasoning options: try the next, simpler set
+            _apply_reasoning(body, level)
             continue
         if r.status_code == 400 and "response_format" in body and "json" in r.text.lower():
             body.pop("response_format")  # model without JSON mode: our parser copes with plain text
