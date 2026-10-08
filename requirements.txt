@@ -1,8 +1,7 @@
-groq>=0.11.0
+anthropic>=0.40.0
 PyYAML>=6.0
 requests>=2.31
 numpy>=1.26
-opencv-python-headless>=4.9
+opencv-python-headless>=4.9,<5
 Pillow>=10.1
 edge-tts>=6.1.12
-json-repair>=0.30.0
