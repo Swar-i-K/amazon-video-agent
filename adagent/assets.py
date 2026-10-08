@@ -64,13 +64,39 @@ def contact_sheet(frames: list[np.ndarray], tile_w: int = 640) -> np.ndarray:
     return np.vstack(rows)
 
 
+def as_bool(v, default: bool = False) -> bool:
+    """Models sometimes answer "false"/"no" as text; bool("false") would wrongly be True."""
+    if isinstance(v, bool):
+        return v
+    if v is None:
+        return default
+    if isinstance(v, (int, float)):
+        return v != 0
+    t = str(v).strip().lower()
+    if t in ("true", "yes", "y", "1"):
+        return True
+    if t in ("false", "no", "n", "0", "none", "null", ""):
+        return False
+    return default
+
+
 _FACE = None
 
 
 def haar_has_face(frames: list[np.ndarray]) -> bool:
+    """OpenCV's classic face detector, used as a backup to the vision model. If this OpenCV build lacks it, skip quietly."""
     global _FACE
     if _FACE is None:
-        _FACE = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
+        try:
+            det = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
+            _FACE = det if not det.empty() else False
+        except Exception:
+            _FACE = False
+        if _FACE is False:
+            log("  (OpenCV face-detector backup is not available in this build; relying on the AI image check only. "
+                "Look through your footage yourself for faces.)")
+    if _FACE is False:
+        return False
     for f in frames:
         g = cv2.cvtColor(f, cv2.COLOR_BGR2GRAY)
         s = 800 / max(g.shape)
@@ -147,10 +173,10 @@ def build_index(project: Project, cfg: dict, vision: bool = True) -> list[dict]:
                 log(f"  describing {p.name} ...")
                 v = describe(cfg, frames, kind)
                 e["description"] = str(v.get("description", p.stem))
-                e["shows_product"] = bool(v.get("shows_product", True))
-                e["llm_face"] = bool(v.get("has_human_face", False))
-                e["price_ui"] = bool(v.get("has_price_or_rating_ui", False))
-                e["logo_watermark"] = bool(v.get("has_third_party_logo_or_watermark", False))
+                e["shows_product"] = as_bool(v.get("shows_product"), True)
+                e["llm_face"] = as_bool(v.get("has_human_face"), False)
+                e["price_ui"] = as_bool(v.get("has_price_or_rating_ui"), False)
+                e["logo_watermark"] = as_bool(v.get("has_third_party_logo_or_watermark"), False)
             else:
                 e.update(description=p.stem.replace("_", " ").replace("-", " "), shows_product=True,
                          llm_face=False, price_ui=False, logo_watermark=False)
