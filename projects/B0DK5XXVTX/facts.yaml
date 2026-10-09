@@ -1,1 +1,161 @@
+```yaml
+# ------------------------------------------------------------------
+# Product Fact Sheet — Summer Section
+# Product: Duck Brand MAX Strength Window Insulation Kit
+# Use: Source of truth for the future YouTube voice-over script
+# Important: Use only the facts and claims recorded below.
+# ------------------------------------------------------------------
 
+asin: "B0DK5XXVTX"
+
+product_name: "Duck Brand MAX Strength Window Insulation Kit, 84 in x 120 in, 2 Pack, Clear"
+
+brand: "Duck Brand"
+
+category: "Home Improvement - Window Insulation Film"
+
+audience: "US homeowners, renters, and DIY enthusiasts who want to reduce cold drafts around large windows and patio doors, improve indoor comfort during winter, and find a practical temporary window-insulation solution"
+
+affiliate_url: "https://www.amazon.com/Duck-Strength-Insulation-Insulator-Included/dp/B0DK5XXVTX/"
+
+# IMPORTANT:
+# Replace affiliate_url with your Amazon Associates-tagged link before publishing.
+# The URL above is the product URL, not a verified tagged affiliate link.
+
+manufacturer_claims:
+  - "Duck Brand says the MAX Strength window insulation film is puncture-resistant."
+  - "The manufacturer states that the MAX Strength film is two times thicker than standard window insulation kits."
+  - "The film creates an additional barrier between outdoor air and the inside of the home."
+  - "The product is designed to help block drafts and air leaks around windows and reduce heat loss during cold weather."
+  - "The manufacturer advertises potential home energy cost savings of up to 10% when window insulation is part of a properly sealed and insulated home. Actual savings vary by home, climate, installation, and other factors."
+  - "The film is crystal clear and designed to maintain visibility through the window."
+  - "The roll format allows users to cut the film to the required size after application, without pre-measuring the film."
+  - "The kit is designed for indoor installation on clean, dry surfaces, including painted or finished wood, aluminum, and vinyl."
+  - "The manufacturer describes installation and seasonal removal as easy."
+  - "The product is designed for large windows and patio doors."
+  - "Installation requires scissors and a hair dryer."
+  - "The manufacturer recommends applying window kit tape around the window, attaching the film, and using a hair dryer to shrink the film and smooth out wrinkles."
+  - "The manufacturer advises using the kit on suitable surfaces and checking surface compatibility before installation."
+
+specs:
+  - "Product type: Shrink-film window insulation kit"
+  - "Brand: Duck Brand"
+  - "Product line: MAX Strength"
+  - "Pack size: 2 kits"
+  - "Film dimensions per kit: 84 inches x 120 inches"
+  - "Film color: Clear"
+  - "Material: Plastic shrink film"
+  - "Included components: 2 rolls of shrink film and 2 rolls of window kit tape"
+  - "Tape quantity: Two 54-foot rolls, approximately 0.5 inch wide each"
+  - "Intended applications: Extra-large windows and patio doors"
+  - "Manufacturer-stated coverage: Up to 2 extra-large or patio windows/doors, or 4 large 4 ft x 6 ft windows, depending on fit and installation"
+  - "Installation method: Indoor application with adhesive window kit tape and heat shrinking"
+  - "Tools required: Scissors and a hair dryer"
+  - "Recommended surfaces: Clean, dry, painted or finished wood, aluminum, and vinyl"
+  - "Manufacturer: Duck Brand / Shurtape Technologies"
+  - "ASIN: B0DK5XXVTX"
+
+# Do not invent personal experience.
+# These notes are NOT hands-on testing results.
+# Replace or supplement them after physically testing the product.
+
+hands_on_notes:
+  - "Hands-on testing has not been provided."
+  - "The 84 x 120 inch film format is intended for extra-large windows and patio doors."
+  - "The two-pack provides two separate rolls of window insulation film."
+  - "The clear film is designed to preserve visibility through the covered window."
+  - "The installation process requires applying tape, securing the film, trimming excess material, and using a hair dryer to shrink the film."
+  - "The window area must be clean and dry before installation."
+  - "The film is intended to be installed indoors."
+  - "Actual fit, appearance, ease of installation, draft reduction, and removal performance must be confirmed through hands-on testing before making personal-experience claims."
+
+pros:
+  - "Two kits included in one package."
+  - "Large 84 x 120 inch film size suited to extra-large windows and patio doors."
+  - "MAX Strength film is advertised as two times thicker than standard window kits."
+  - "Puncture-resistant film is designed for added durability."
+  - "Clear film maintains visibility through the window."
+  - "Designed to help reduce cold drafts and air leaks around windows."
+  - "Can be cut to fit the required window dimensions."
+  - "Uses included window kit tape."
+  - "Installation requires common tools: scissors and a hair dryer."
+  - "Designed for seasonal use and removal."
+  - "May contribute to improved home energy efficiency when used as part of a broader home-sealing strategy."
+
+cons:
+  - "Installation requires preparation, tape application, trimming, and heat shrinking."
+  - "A hair dryer and scissors are required but are not listed as included components."
+  - "The film must be installed indoors on a suitable, clean, dry surface."
+  - "The film covers the window frame area and may not be suitable for people who need unrestricted access to open the covered window during installation."
+  - "The film is a temporary insulation barrier, not a replacement for repairing damaged window frames, failed seals, or structural air leaks."
+  - "The manufacturer's advertised energy savings are not guaranteed; actual savings depend on the home and installation conditions."
+  - "Incorrect installation may result in wrinkles, poor adhesion, or an unsatisfactory finish."
+  - "The manufacturer's surface guidance should be checked before installation; do not assume it is safe for every wall or frame material."
+  - "No hands-on testing has been provided, so independent performance conclusions cannot be made."
+
+not_for:
+  - "People looking for a permanent window replacement or permanent structural repair."
+  - "People who need to open and use the covered window normally without removing the film."
+  - "People whose window frames or installation surfaces are incompatible with the included tape."
+  - "People unwilling to spend time preparing, applying, trimming, and heat-shrinking the film."
+  - "People expecting guaranteed energy-bill savings or a guaranteed indoor temperature increase."
+  - "People seeking a solution that repairs broken window seals or damaged frames."
+
+use_cases:
+  - "Reducing cold drafts around large windows"
+  - "Winter window insulation"
+  - "Insulating patio doors"
+  - "Insulating extra-large windows"
+  - "Temporary seasonal home weatherization"
+  - "DIY home improvement"
+  - "Improving comfort in rooms with drafty windows"
+  - "Helping reduce heat loss around windows"
+  - "Preparing a home for cold weather"
+  - "Adding a temporary barrier to suitable window frames"
+
+youtube_seo:
+  primary_keyword: "how to stop cold air coming through windows"
+
+  secondary_keywords:
+    - "best way to insulate windows for winter"
+    - "how to seal drafty windows"
+    - "plastic window insulation kit for winter"
+    - "how to keep a room warm with drafty windows"
+    - "best window insulation film for cold weather"
+
+  search_intent:
+    - "Problem-solving"
+    - "DIY home improvement"
+    - "Winter preparation"
+    - "Product research and comparison"
+    - "Purchase consideration"
+
+  content_angle: "Demonstrate how a heavy-duty clear window insulation film kit may help address winter drafts around large windows and patio doors, explain the basic installation process, and present the product's key benefits and limitations."
+
+notes: |
+  Target market: United States.
+  Channel: Summer Section.
+  Video format: Faceless product-footage video with voice-over narration.
+
+  Use a problem-solution-benefit structure:
+  1. Hook: Cold air coming through windows during winter.
+  2. Problem: Drafty windows can make a room feel uncomfortable.
+  3. Solution: Introduce the Duck Brand MAX Strength window insulation kit.
+  4. Features: Two kits, large clear shrink film, puncture-resistant construction,
+     included tape, and heat-shrink installation.
+  5. Practical benefits: Additional barrier against drafts and air leaks while
+     maintaining visibility through the window.
+  6. Honest limitations: Installation takes preparation, requires a hair dryer
+     and scissors, and energy savings are not guaranteed.
+  7. Call to action: Invite viewers to check the product details and current
+     availability through the link in the description.
+
+  Affiliate compliance:
+  - Use an Amazon Associates-tagged URL before publication.
+  - Include the required Amazon affiliate disclosure in the description.
+  - Do not claim personal use, testing, or results without actual experience.
+  - Do not promise a specific temperature increase or guaranteed savings.
+  - Do not present the product as a guaranteed fix for every drafty window.
+
+# angle: honest_pros_cons
+```
