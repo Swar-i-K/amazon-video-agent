@@ -1,1 +1,169 @@
+# ------------------------------------------------------------------
+# Product Fact Sheet — Summer Section
+# Product: Duck Brand MAX Strength Window Insulation Kit
+# ASIN: B0DK5XXVTX
+# The script writer may ONLY use what is written here.
+# ------------------------------------------------------------------
 
+asin: "B0DK5XXVTX"
+
+product_name: "Duck Brand Window Insulation Kit"
+
+brand: "Duck Brand"
+
+category: "Home Improvement - Window Insulation"
+
+audience: "US homeowners, renters, and DIY enthusiasts looking for a temporary way to reduce cold drafts around windows, improve winter comfort, and prepare their homes for colder weather without immediately replacing their windows"
+
+# Amazon Associates affiliate link supplied by the user.
+affiliate_url: "https://amzn.to/3TR6E0n"
+
+# Standard Amazon product page for reference.
+product_url: "https://www.amazon.com/Duck-Strength-Insulation-Insulator-Included/dp/B0DK5XXVTX"
+
+# What the brand/listing says.
+# Attribute manufacturer claims appropriately in the voice-over.
+manufacturer_claims:
+  - "Duck Brand describes the MAX Strength film as two times thicker than standard window insulation film."
+  - "The film is designed to be puncture-resistant for added durability."
+  - "The clear shrink film is designed to help reduce drafts and air leaks around suitable windows and patio doors."
+  - "The film creates an additional barrier over the window area to help reduce heat loss during cold weather."
+  - "The clear material is designed to maintain visibility through the covered window."
+  - "The roll format allows users to cut the film to fit the required window dimensions."
+  - "The kit is designed for indoor installation using the included window kit tape."
+  - "Installation involves applying tape, attaching the film, trimming excess material, and using a hair dryer to shrink the film and smooth wrinkles."
+  - "The manufacturer recommends applying the kit to suitable clean, dry surfaces, including compatible painted or finished wood, aluminum, and vinyl."
+  - "The product is intended for seasonal window insulation and temporary use."
+  - "The manufacturer advertises potential home energy savings of up to 10% in the context of properly sealed and insulated homes. This is not a guaranteed saving from this product alone."
+  - "The kit is intended for extra-large windows and patio doors."
+
+# Hard specifications.
+# Verify package contents against the current product listing before publication.
+specs:
+  - "Product type: Window insulation shrink-film kit"
+  - "Brand: Duck Brand"
+  - "Product line: MAX Strength"
+  - "Pack size: 2 kits"
+  - "Film dimensions: 84 inches x 120 inches per kit"
+  - "Film color: Clear"
+  - "Material: Plastic shrink film"
+  - "Included components: Window insulation film and window kit tape"
+  - "Installation location: Indoors"
+  - "Installation tools required: Scissors and a hair dryer"
+  - "Intended applications: Extra-large windows and patio doors"
+  - "Installation method: Adhesive tape application followed by heat shrinking"
+  - "Surface preparation: Clean and dry the application area"
+  - "Manufacturer: Duck Brand / Shurtape Technologies"
+  - "ASIN: B0DK5XXVTX"
+  - "Amazon Associates link: https://amzn.to/3TR6E0n"
+
+# Practical product analysis.
+# These notes combine product features, manufacturer claims, and likely
+# use-case implications. They are NOT claims of personal hands-on testing.
+hands_on_notes:
+  - "The 84 x 120 inch film format is designed for larger window areas and patio doors, making the dimensions an important consideration before buying."
+  - "The two-kit package gives buyers material for more than one suitable window, although actual coverage depends on each window's dimensions."
+  - "The MAX Strength label is supported by the manufacturer's claim that the film is twice as thick as standard window insulation film."
+  - "The clear film is intended to add a seasonal barrier without completely obstructing the view through the window."
+  - "The included tape provides the adhesive material needed for installation, but users still need scissors and a hair dryer."
+  - "Installation requires several steps: surface preparation, tape application, film positioning, trimming, and heat shrinking."
+  - "The film may be useful when cold drafts around a suitable window make a room uncomfortable during winter."
+  - "The product is a temporary insulation measure rather than a permanent repair for damaged frames or failed window seals."
+  - "The quality of the final appearance depends on careful positioning, trimming, and shrinking of the film."
+  - "Surface compatibility should be checked before application because adhesive tape may not be suitable for every finish."
+  - "The film may complement broader home weatherization efforts, but actual energy savings depend on the home's construction, climate, existing insulation, and installation quality."
+  - "No personal product testing has been reported, so claims about actual draft reduction, durability, installation ease, or heating-bill savings must not be presented as firsthand results."
+
+pros:
+  - "Two kits included in the package."
+  - "Large 84 x 120 inch film format intended for extra-large windows and patio doors."
+  - "Manufacturer states the film is twice as thick as standard window insulation film."
+  - "Puncture-resistant construction is advertised by the manufacturer."
+  - "Clear film helps preserve visibility through the window."
+  - "Designed to help reduce cold drafts and air leakage around suitable window areas."
+  - "Film can be trimmed to fit the window area."
+  - "Window kit tape is included."
+  - "DIY installation using common tools."
+  - "Suitable for seasonal winter weatherization when installed according to instructions."
+  - "May complement other efforts to improve home energy efficiency."
+
+cons:
+  - "Installation takes preparation and several steps."
+  - "Scissors and a hair dryer are required and should not be assumed to be included."
+  - "Requires a suitable indoor application surface."
+  - "Incorrect installation can cause wrinkles, poor adhesion, or an untidy finish."
+  - "The film is a temporary barrier, not a repair for broken window seals or damaged frames."
+  - "The covered window area may be less convenient to access or open while the film remains installed."
+  - "Actual insulation performance and energy savings are not guaranteed."
+  - "Adhesive compatibility and removal should be considered before installation."
+  - "No independent hands-on testing results have been provided."
+
+not_for:
+  - "People looking for permanent window replacement or structural window repairs."
+  - "People who need unrestricted access to open the covered window while the film is installed."
+  - "People with window-frame materials or finishes that are incompatible with the adhesive tape."
+  - "People unwilling to spend time preparing and installing the film."
+  - "People expecting guaranteed reductions in heating bills or a specific increase in room temperature."
+  - "People expecting the kit to repair damaged frames, failed seals, or major structural air leaks."
+
+# Optional extras.
+use_cases:
+  - "Reducing cold drafts around suitable windows"
+  - "Winter window insulation"
+  - "Insulating extra-large windows"
+  - "Temporary patio door insulation"
+  - "Seasonal home weatherization"
+  - "DIY winter home improvement"
+  - "Improving comfort in rooms with drafty windows"
+  - "Adding a temporary barrier to help reduce heat loss"
+  - "Preparing a home for colder weather"
+  - "Budget-conscious alternatives to immediate window replacement"
+
+notes: |
+  Channel: Summer Section
+  Target market: United States
+  Video format: Faceless YouTube product video with voice-over and product footage.
+  Primary angle: Problem -> practical solution -> features -> installation
+  -> benefits -> limitations -> call to action.
+
+  SCRIPT REQUIREMENTS:
+  - Write in natural American English.
+  - Explain the problem of cold air coming through windows.
+  - Introduce the Duck Brand MAX Strength Window Insulation Kit naturally.
+  - Explain its large film dimensions, clear finish, MAX Strength positioning,
+    included tape, and heat-shrink installation process.
+  - Translate product features into practical benefits rather than repeating
+    specifications mechanically.
+  - Explain the installation process accurately.
+  - Acknowledge preparation requirements and the temporary nature of the kit.
+  - Do not promise a particular temperature increase or guaranteed energy savings.
+  - Do not claim personal use, testing, or measured results.
+  - Use a natural CTA directing viewers to the product link in the description.
+
+  YOUTUBE SEO:
+
+  primary_keyword: "how to stop cold air coming through windows"
+
+  secondary_keywords:
+    - "best way to insulate windows for winter"
+    - "how to seal drafty windows"
+    - "plastic window insulation kit for winter"
+    - "how to keep a room warm with drafty windows"
+    - "best window insulation film for cold weather"
+
+  Keyword integration:
+  - Use the primary keyword naturally in the opening narration.
+  - Incorporate secondary keywords only where they fit the subject.
+  - Avoid unnatural repetition or keyword stuffing.
+  - Keep the title relevant to the actual product and video content.
+
+  AFFILIATE COMPLIANCE:
+  - Use the supplied Amazon Associates affiliate link.
+  - Include an appropriate affiliate disclosure in the video description.
+  - Do not fabricate product tests, personal experience, customer testimonials,
+    independent reviews, or measured energy savings.
+  - Attribute manufacturer-specific performance claims to the manufacturer.
+  - Verify product specifications and package contents against the current
+    listing before publication.
+
+# angle: problem_solution
