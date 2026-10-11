@@ -3,48 +3,43 @@
 # The script writer may ONLY use what is written here. Anything you
 # leave out will simply not be said. More real facts = better video.
 # ------------------------------------------------------------------
-asin: B082HNFVVZ                 # must match the folder name
-product_name: "YQXCC 4 Pack Cooling Towels"
-brand: "YQXCC"
-category: "cooling towels"        # plain words: what kind of product is it?
-audience: "people who exercise or work in the heat and want something cool around the neck"
+asin: B0XXXXXXXX                 # must match the folder name
+product_name: "Brand Model Name 20 oz Insulated Bottle"
+brand: "Brand"
+category: "insulated water bottle"        # plain words: what kind of product is it?
+audience: "people who carry a drink to work or the gym"
 
 # Your Amazon affiliate link (SiteStripe short link amzn.to/xxxx, or an amazon.* link with your tag=).
 # Third-party link shorteners / cloakers are not allowed in Associates.
-affiliate_url: https://amzn.to/4i7AhUA
+affiliate_url: "https://amzn.to/XXXXXXX"
 
 # What the brand/listing SAYS (the video will attribute these: "the brand says ...").
 # Type them yourself in your own words. Do not paste customer reviews, prices or star ratings.
 manufacturer_claims:
-  - "Described as soft, breathable microfiber"
-  - "Marketed as instant cooling neck wraps"
-  - "Listed as suitable for yoga"
-  - "Marketed for use on the neck and face"
+  - "Double-wall vacuum insulation"
+  - "Lid is leak resistant"
 
 # Hard specs you can verify on the product / box / brand site.
 specs:
-  - "Pack size: 4 towels"
-  - "Listed size: 47 x 12 inches"
-  - "Material listed as microfiber"
+  - "Capacity: 20 ounces"
+  - "Weight: 14 ounces empty"
+  - "Fits most standard cup holders"
 
 # YOUR OWN observations from actually handling the product. This is what makes the video
 # yours (and keeps it clear of YouTube's 'inauthentic content' rules). Aim for 6+ lines.
-# WRITE THESE YOURSELF from actually using the towels (aim for 6 or more).
-# Only add things that are true. Examples of what to look at, delete the "#" when you write real ones:
-#  - "How cold it felt after wetting it, and how long it stayed cool"
-#  - "How you activate it: wet it, wring it out, snap it, etc."
-#  - "How the fabric feels on skin"
-#  - "Whether 47 inches is long enough to wrap around your neck"
-#  - "How it handled being washed, and how fast it dried"
-#  - "How the 4 pack split up: what you'd use each one for"
 hands_on_notes:
+  - "The lid needs a firm quarter turn to seal; easy with one hand once you know it"
+  - "Powder coat feels grippy but shows fingerprints"
 
 pros:
+  - "Fits my car cup holder"
 cons:
+  - "No carry handle"
 not_for:
+  - "Anyone who wants a straw lid"
 
 # Optional extras
-use_cases: ["commuting", "gym", "workout"]
+use_cases: ["commuting", "gym bag", "desk"]
 notes: ""
 # angle: honest_pros_cons        # force a specific video angle (otherwise rotates automatically)
 # assets_allow: [03_closeup.jpg] # files the face/price checker flagged wrongly
