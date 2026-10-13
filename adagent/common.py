@@ -114,23 +114,21 @@ def _clean_json(s: str) -> str:
 
 
 def _loads_lenient(txt: str):
-    """json.loads that tolerates trailing commas, comments and single-quoted pseudo-JSON."""
-    try:
-        return json.loads(txt)
-    except Exception:
-        pass
-    fixed = _clean_json(txt)                                       # comments + trailing commas (string-aware)
-    try:
-        return json.loads(fixed)
-    except Exception:
-        pass
+    """json.loads that tolerates comments, trailing commas, raw line breaks inside strings, curly quotes and single-quoted pseudo-JSON."""
+    straight = txt.replace("\u201c", '"').replace("\u201d", '"')
+    variants = [txt, _clean_json(txt), straight, _clean_json(straight)]
+    for v in variants:
+        try:
+            return json.loads(v, strict=False)
+        except Exception:
+            pass
     try:  # optional helper, used only if installed
         import json_repair
         return json_repair.loads(txt)
     except Exception:
         pass
     import ast
-    return ast.literal_eval(fixed)                                 # single quotes, True/False
+    return ast.literal_eval(variants[1])                           # single quotes, True/False
 
 
 def _is_container(x) -> bool:
@@ -149,7 +147,7 @@ def extract_json(text: str):
         raise ValueError("No JSON found in model reply")
     body = text[min(starts):]
     try:
-        obj, _ = json.JSONDecoder().raw_decode(body)
+        obj, _ = json.JSONDecoder(strict=False).raw_decode(body)
         if _is_container(obj):
             return obj
     except Exception:
