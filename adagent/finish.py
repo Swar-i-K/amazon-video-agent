@@ -35,14 +35,22 @@ def mux(video: Path, voice_wav: Path, out: Path, total: float, music: Path | Non
 
 def write_description(project: Project, cfg: dict, script: dict, tl: Timeline, voice_info: dict, path: Path) -> None:
     f, d = project.facts, cfg["disclosure"]
-    L = [script.get("title") or f["product_name"], "", script.get("description_intro", ""), "",
-         f"Product on Amazon: {f['affiliate_url']}", "",
-         d["on_screen"] + " This description and video contain affiliate links.", ""]
+    if project.compare:
+        L = [script.get("title") or f["product_name"], "", script.get("description_intro", ""), "", "Products compared on Amazon:"]
+        for i, (sub, lab) in enumerate(zip(project.compare["products"], project.compare["labels"])):
+            L.append(f"{'ABC'[i]}. {lab} ({sub.facts['product_name']}): {sub.facts['affiliate_url']}")
+        L += ["", d["on_screen"] + " This description and video contain affiliate links.", ""]
+    else:
+        L = [script.get("title") or f["product_name"], "", script.get("description_intro", ""), "",
+             f"Product on Amazon: {f['affiliate_url']}", "",
+             d["on_screen"] + " This description and video contain affiliate links.", ""]
     note = [d["ai_voice_note"]]
+    if voice_info.get("ai_scenes"):
+        note.append(d.get("ai_scenes_note", "Some scenes in this video are AI-generated."))
     if voice_info.get("attribution"):
         note.append(voice_info["attribution"] + ".")
     L += [" ".join(note), ""]
-    ch = chapters(tl)
+    ch = chapters(tl, project.compare["labels"] if project.compare else None)
     if ch:
         L += ["Chapters"] + [f"{fmt_ts(t)} {name}" for t, name in ch] + [""]
     if script.get("tags"):
@@ -57,6 +65,11 @@ def write_review(project: Project, script: dict, entries: list[dict], cov_notes:
          f"Video: {final_path.name}  |  length {fmt_ts(tl.total)}  |  voice: {voice_key}", ""]
     if warnings:
         L += ["## Warnings"] + [f"- {w}" for w in warnings] + [""]
+    if project.compare:
+        L += ["## Products compared"]
+        for i, (sub, lab) in enumerate(zip(project.compare["products"], project.compare["labels"])):
+            L.append(f"- {'ABC'[i]}: {lab} ({sub.asin}), {len(sub.facts.get('hands_on_notes') or [])} hands-on notes")
+        L += [f"- Winner/preference allowed: {'yes (every product has 3+ hands-on notes)' if project.compare['pick_ok'] else 'NO: the script stays neutral'}", ""]
     L += ["## Footage", *[f"- {n}" for n in cov_notes]]
     for e in entries:
         if not e["usable"]:
@@ -74,6 +87,8 @@ def write_review(project: Project, script: dict, entries: list[dict], cov_notes:
     L += ["## Before you post",
           "- [ ] Watch the whole video with sound. Does every product claim match the listing / your own experience?",
           "- [ ] Nothing on screen shows a face, a price, a star rating or Amazon page UI.",
+          *(["- [ ] Every claim is attributed to the RIGHT product, and every comparison point is true for BOTH products.",
+             "- [ ] Each product's own link is in the description, next to its name."] if project.compare else []),
           "- [ ] The spoken disclosure and on-screen disclosure are present; paste description.txt as the description.",
           "- [ ] Your affiliate link is an Amazon link (amzn.to / amazon.* with your tag), and this channel is listed in your Associates account.",
           "- [ ] YouTube's upload form asks about altered/synthetic content. Answer honestly for your AI voice.",
