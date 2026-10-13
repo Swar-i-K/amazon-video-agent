@@ -185,7 +185,7 @@ def build_index(project: Project, cfg: dict, vision: bool = True) -> list[dict]:
             reasons.append("shows a human face")
         if e.get("price_ui") and p.name.lower() not in allow:
             reasons.append("shows price/rating/Amazon UI")
-        if not e.get("shows_product", True) and p.name.lower() not in allow:
+        if not e.get("shows_product", True) and p.name.lower() not in allow and not p.name.lower().startswith("ai_"):
             reasons.append("does not show the product")
         e["usable"] = not reasons
         e["reason"] = "; ".join(reasons)
@@ -208,3 +208,27 @@ def coverage_report(entries: list[dict], target_seconds: float) -> tuple[float, 
         notes.append("Coverage is low: shots will repeat noticeably. Add more of your own clips "
                      "(aim for 90s+ of footage and 8+ photos) or shorten the video.")
     return cov, notes
+
+
+def build_compare_index(project: Project, cfg: dict, vision: bool = True) -> list[dict]:
+    """Footage for a comparison: every product's own assets (ids P1-A01, P2-A01 ...) plus optional shared footage (X-A01)."""
+    entries: list[dict] = []
+    for i, (sub, label) in enumerate(zip(project.compare["products"], project.compare["labels"]), 1):
+        log(f"Product {i} ({label}, {sub.asin}):")
+        for e in build_index(sub, cfg, vision=vision):
+            e = dict(e)
+            e["id"], e["product"], e["label"] = f"P{i}-{e['id']}", str(i), label
+            e["path"] = str(sub.assets_dir / e["file"])
+            entries.append(e)
+    if project.assets_dir.exists() and any(project.assets_dir.glob("*")):
+        log("Shared footage (comparison folder):")
+        for e in build_index(project, cfg, vision=vision):
+            e = dict(e)
+            e["id"], e["product"], e["label"] = f"X-{e['id']}", "all", "shared"
+            e["path"] = str(project.assets_dir / e["file"])
+            entries.append(e)
+    return entries
+
+
+def build_index_for(project: Project, cfg: dict, vision: bool = True) -> list[dict]:
+    return build_compare_index(project, cfg, vision) if project.compare else build_index(project, cfg, vision)
