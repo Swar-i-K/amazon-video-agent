@@ -13,15 +13,24 @@ from adagent import scriptgen as S
 from adagent.common import load_config
 from adagent.project import check_text, load_project
 
-calls = {"gen": 0, "check": 0, "revise": 0}
+calls = {"gen": 0, "check": 0, "revise": 0, "expand": 0}
+EXPAND_OK = [True]
 
 
 def fake_ask(model, system, user, images=None, max_tokens=0, temperature=0):
+    if system == S.SYSTEM and "CURRENT SCRIPT" in user:
+        calls["expand"] += 1
+        if not EXPAND_OK[0]:
+            return "I could not do that."
+        words = int(re.search(r"about (\d+) words of NEW", user).group(1))
+        n = max(4, words // 24)
+        new = [{"after_id": "5", "section": "features", "text": f"Extra detail number {calls['expand']}-{i} written in plain, spoken words for the viewer to enjoy.",
+                "onscreen": "", "asset_ids": [], "source": "general", "priority": 3} for i in range(n)]
+        return json.dumps({"segments": new})
     if system == S.SYSTEM and "Return JSON in this shape" in user:
         calls["gen"] += 1
         words = int(re.search(r"about (\d+) words", user).group(1))
-        if calls["gen"] == 1:
-            words = int(words * 0.45)          # first draft far too short -> must trigger a retry
+        words = int(words * 0.30)              # draft far too short -> must trigger expansion
         n = max(6, words // 22)
         secs = ["hook", "hook"] + ["context"] * 3 + ["features"] * (n - 9) + ["limits"] * 2 + ["verdict"] * 2
         segs = []
@@ -52,9 +61,12 @@ rv = sc["review"]
 segs = S.assemble(sc, p, cfg)
 est = S.estimate_minutes(segs, cfg)
 print("generations:", calls, "| estimated minutes:", round(est, 2), "| segments:", len(segs))
-assert calls["gen"] >= 2, "short first draft should have forced a regeneration"
+assert calls["gen"] == 1 and calls["expand"] >= 1, "short draft must be EXPANDED, not regenerated"
+assert any(x["id"].startswith("x") for x in sc["segments"]) and "length_warning" not in rv
 assert calls["revise"] == 1 and any(s["text"].startswith("Rewritten") for s in sc["segments"])
 assert 5.3 <= est <= 8.6, est
+ids = [x["id"] for x in sc["segments"]]
+assert len(ids) == len(set(ids)), "segment ids must stay unique"
 assert any(i["id"] == "7" for i in rv["policy"]), "price line must be flagged"
 assert segs[0]["section"] == "hook" and any(s["section"] == "disclosure" for s in segs) and segs[-1]["section"] == "outro"
 
@@ -66,4 +78,11 @@ pol, _ = check_text("It is only $19.99 today")
 assert pol
 trimmed = S.trim_to_length(sc["segments"] * 2, cfg, 7.0)
 assert S.estimate_minutes(trimmed, cfg) <= 7.0 or len(trimmed) < len(sc["segments"] * 2)
-print("OK - script pipeline logic works (policy flag, fact-check/revise, length retry, md round-trip)")
+# model cannot add enough -> script still returned, but with a clear length warning
+calls.update(gen=0, check=0, revise=0, expand=0)
+EXPAND_OK[0] = False
+sc2 = S.make_script(p, cfg, entries, angle="honest_pros_cons", force=True)
+assert calls["expand"] >= 1 and "length_warning" in sc2["review"], sc2["review"]
+assert "words" in sc2["review"]["length_warning"] and "LENGTH:" in S.script_to_md(sc2, p)
+assert "script.md" in S.script_to_md(sc2, p) and "script_approved" not in S.script_to_md(sc2, p)
+print("OK - script pipeline logic works (policy flag, fact-check/revise, EXPAND short drafts, length warning, md round-trip)")
