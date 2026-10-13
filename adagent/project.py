@@ -15,6 +15,18 @@ AMAZON_LINK_RE = re.compile(
 )
 
 
+def normalize_keys(d: dict) -> dict:
+    """Accept 'Product Name:' / 'PRODUCT_NAME:' for product_name, and unwrap one wrapper heading such as 'facts:' or 'product:'."""
+    def norm(k):
+        return re.sub(r"[\s-]+", "_", str(k).strip().lower())
+    out = {norm(k): v for k, v in d.items()}
+    if len(out) == 1:
+        (only,) = out.values()
+        if isinstance(only, dict) and any(k in {norm(x) for x in only} for k in ("product_name", "affiliate_url", "asin")):
+            out = {norm(k): v for k, v in only.items()}
+    return out
+
+
 FENCE_RE = re.compile(r"^\s*```[A-Za-z0-9_-]*\s*$")
 
 
@@ -79,7 +91,7 @@ def _label(sub: "Project") -> str:
 
 
 def _load_compare(asin: str, pdir: Path, cfile: Path) -> "Project":
-    conf = read_yaml(cfile)
+    conf = normalize_keys(read_yaml(cfile))
     ids = [str(x).strip().upper() for x in (conf.get("products") or [])]
     if not 2 <= len(ids) <= 3:
         raise SystemExit(f"projects/{asin}/compare.yaml: 'products' must list 2 or 3 product folders (found {len(ids)}).")
@@ -127,7 +139,7 @@ def load_project(asin: str, require_facts: bool = True) -> Project:
     facts = {}
     fpath = pdir / "facts.yaml"
     if fpath.exists():
-        facts = read_yaml(fpath)
+        facts = normalize_keys(read_yaml(fpath))
     elif require_facts:
         raise SystemExit(f"projects/{asin}/facts.yaml is missing.")
     return Project(asin=asin, dir=pdir, facts=facts)
@@ -146,9 +158,14 @@ def validate_facts(project: Project) -> tuple[list[str], list[str]]:
         return _validate_compare(project)
     f = project.facts
     errors, warnings = [], []
-    for key in ("product_name", "category", "audience", "affiliate_url"):
-        if not f.get(key):
-            errors.append(f"facts.yaml: '{key}' is required.")
+    missing = [k for k in ("product_name", "category", "audience", "affiliate_url") if not f.get(k)]
+    for key in missing:
+        errors.append(f"facts.yaml: '{key}' is required.")
+    if len(missing) >= 3:
+        found = ", ".join(sorted(map(str, f))) or "(nothing)"
+        errors.append(f"The lines I found at the top of projects/{project.asin}/facts.yaml are: {found}. "
+                      "Each required line must start at the very left edge, like  product_name: \"...\"  (no spaces before it, "
+                      "no # at the start). Copy projects/_template/facts.yaml and fill it in.")
     if str(f.get("asin", "")).upper() != project.asin:
         errors.append(f"facts.yaml: asin must equal the folder name ({project.asin}).")
     url = str(f.get("affiliate_url", ""))
