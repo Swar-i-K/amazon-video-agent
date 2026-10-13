@@ -1,3 +1,35 @@
+product:
+  name: "Frost King V83/3 Heavy Duty Shrink Window Kit"
+  brand: "Frost King"
+  model: "V83/3"
+  asin: "B00G7009LM"
+  category: "Home Improvement"
+  subcategory: "Window Insulation Kits"
+  amazon_url: "https://www.amazon.com/dp/B00G7009LM?th=1"
+  affiliate_url: null
+  target_market: "United States"
+
+product_specs:
+  product_type: "Indoor shrink-film window insulation kit"
+  pack_count: 3
+  sheets_included: 3
+  sheet_dimensions: "42 x 62 inches each"
+  film_thickness: "1.5 mil"
+  film_color: "Clear"
+  intended_window_size: "Standard-size windows; confirm measurements before purchase"
+  film_material: "Plastic shrink film"
+  installation_method:
+    - "Apply the included double-sided tape to a clean, dry window frame"
+    - "Attach the film and trim excess material"
+    - "Use a handheld hair dryer to shrink the film taut"
+  included_accessories:
+    - "Window film sheets"
+    - "Extra-wide double-sided mounting tape"
+  additional_tools_needed:
+    - "Scissors or utility knife"
+    - "Handheld hair dryer"
+    - "Cleaning cloth and suitable surface cleaner"
+  intended_use: "Indoor seasonal draft reduction and window insulation"
 
 key_features:
   - feature: "Heavy-duty, puncture-resistant film"
@@ -111,4 +143,3 @@ sources:
 research_notes:
   verification_status: "Core specifications cross-checked against the manufacturer's heavy-duty indoor shrink window kit page. Amazon-specific price, ratings, review count, availability, and current listing wording were not verified."
   editorial_rule: "Use manufacturer specifications as product claims, label practical interpretations as analysis, and never imply firsthand testing without actual testing."
-
