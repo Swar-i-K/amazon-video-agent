@@ -10,6 +10,8 @@ video:
   shot_seconds: 5.0  # average length of one shot
   crossfade: 0.35
   accent_color: [255, 176, 0]   # callout accent bar (R,G,B)
+  cinematic: true         # TV-commercial style product shots from clean studio photos (free, no AI model)
+  cinematic_share: 0.6    # share of eligible photo shots that use it (the rest use normal pan/zoom)
   fonts:             # first one that exists is used
     - /usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf
     - /usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf
@@ -22,6 +24,10 @@ length:              # hard limits requested: 5-9 minutes
   wpm: 155           # narration speed used for the pre-voice estimate
   lead_in: 0.8       # seconds of picture before the voice starts
   tail: 4.0          # seconds of end card after the voice ends
+
+length_presets:      # choose with --length  (or the 'length' dropdown in the workflow)
+  standard: {min_minutes: 5.0, max_minutes: 9.0, target_minutes: 7.0}
+  short:    {min_minutes: 1.5, max_minutes: 4.8, target_minutes: 3.0}
 
 llm:
   provider: groq                                   # groq (free tier available) or anthropic (paid)
@@ -64,7 +70,13 @@ disclosure:
     - "One thing up front: I use affiliate links, and as an Amazon Associate I earn from qualifying purchases."
   on_screen: "As an Amazon Associate I earn from qualifying purchases."
   tag: "Contains affiliate links"
+  outro_compare:
+    - "If you want to look at either one yourself, the links are in the description, each next to its name. Thanks for watching."
+    - "That's the comparison. You'll find a link for each product in the description. Thanks for watching."
+    - "Links to both are in the description if you want a closer look. Thanks for watching."
   ai_voice_note: "Narration in this video is AI-generated."
+  ai_tag: "AI-generated scene"
+  ai_scenes_note: "Some scenes in this video are AI-generated."
   outro:
     - "If you want to look at it yourself, the link is in the description. Thanks for watching."
     - "That's the rundown. The link is in the description if you want a closer look. Thanks for watching."

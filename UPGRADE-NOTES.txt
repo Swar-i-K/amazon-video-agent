@@ -1,0 +1,16 @@
+COMPLETE PROJECT: single videos + cinematic product shots + short ads + AI clip scenes + 2-3 product comparisons
+
+HOW TO UPDATE YOUR REPO (keep your own work!)
+- Do NOT delete or overwrite your own product folders under projects/ (for example projects/B0DN5N1FL5/).
+- Replace/add everything else from this zip: adagent/, notebooks/, tests/, config.yaml, requirements.txt, README.md, and
+  projects/_template/ + projects/_template_compare/.
+- config.yaml replaces yours: if you changed anything in it (models, voices), re-apply it.
+- .github/workflows/make-video.yml: open it on GitHub (pencil icon), select all, paste the separate make-video.yml. It must be the
+  ONLY file in .github/workflows/.
+- Your secrets (GROQ_API_KEY, ELEVENLABS_API_KEY) stay as they are.
+- The notebook (notebooks/make_ai_clips.ipynb) is only needed for AI clips; upload it straight into Kaggle or Colab.
+
+WHAT IS NEW IN THE WORKFLOW
+- mode: script | render | all | scenes        (scenes = plan AI clip scenes for one product)
+- length: standard (5-9 min) | short (1.5-4.8 min)
+- project name can be a product ASIN or a comparison folder name

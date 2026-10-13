@@ -23,6 +23,41 @@ uploads anything**, and you review and post the video yourself.
 Length is enforced: the script is sized to 5-9 min before any voice is paid for, and the final file is rejected if it falls outside.
 A daily cap (default 3 videos) is a brake against mass-producing.
 
+## New: comparison videos (2 or 3 products)
+
+Make one video that compares your own products side by side. Each product keeps its own `facts.yaml`, footage and affiliate link.
+1. Make sure every product is already a normal project folder (`projects/<ASIN>/` with `facts.yaml` and `assets/`).
+   Optional: add `short_name: YESLIFE` to each `facts.yaml` for tidy on-screen labels.
+2. Copy `projects/_template_compare/` to `projects/<NAME>/` (any 3-40 letters/digits/-/_, for example `COMPARE-TOWELS`),
+   and fill in `compare.yaml` (title, the 2-3 product folders, category, audience).
+3. Run **Make video** with that **NAME** as the project, mode **script**; read/edit `projects/<NAME>/script.md`; then mode **render**.
+
+What it does: an intro, a section per product, a head-to-head on points that **every** product has facts for, who each one suits, and a verdict.
+Every line is tagged to a product (`| product: 1`), shows that product's own footage, and gets an "A | name" chip on screen.
+The description lists each product's own link; chapters carry the product names.
+Rules: facts are never moved between products; a point is compared only if every product has a fact for it; no price/rating/review
+comparisons; "better/best/winner" or a personal pick only when **every** product has 3+ `hands_on_notes` (otherwise the verdict names who each suits).
+The fact-check also flags claims attributed to the wrong product. AI scenes are made per product (`scenes` mode on each product);
+`ai_*` clips in a product's `assets/` are used automatically.
+
+## New: cinematic shots, short ads, AI clips
+
+**Cinematic product shots (free, automatic).** Photos with a clean plain backdrop are cut out and shown on a styled studio backdrop with a soft
+shadow, floor reflection, a light sweep and slow camera moves, like a TV product ad. About 60% of eligible photo shots use it
+(`video.cinematic_share` in `config.yaml`). If a cut-out edge looks rough, list the photo under `assets_no_cutout:` in `facts.yaml`,
+or set `cinematic: false` there to turn it off for the product.
+
+**Short ads.** The workflow has a **length** dropdown: `standard` (5-9 min) or `short` (1.5-4.8 min). Same as `--length short`.
+
+**AI-generated clips (free GPU, optional).**
+1. Run **Make video** with **mode: scenes**. It writes `projects/<ASIN>/scenes.md`: faceless mood scenes plus at most 2 gentle product-photo scenes.
+   Unsafe prompts (faces, frost/steam/instant effects, brand names, prices) are dropped automatically. Edit the file if you like.
+2. Open `notebooks/make_ai_clips.ipynb` in Kaggle or Colab (free GPU), follow the instructions at its top, and run it. It makes
+   `ai_s01.mp4`, `ai_s02.mp4` ... and saves them into `projects/<ASIN>/assets/`. **This notebook is untested on a real GPU.**
+3. Run **render** as usual. Clips named `ai_*` get an on-screen "AI-generated scene" tag, an AI note in `description.txt`, and a
+   reminder to answer YES to YouTube's altered/synthetic content question. AI clips are still screened for faces and prices.
+Check every AI clip yourself: AI video can distort hands and objects, and a clip must never imply a product effect you cannot support.
+
 ## Setup (10 minutes)
 
 1. Create a **private** GitHub repo and upload this folder. (Private matters: your footage lives in it.)
