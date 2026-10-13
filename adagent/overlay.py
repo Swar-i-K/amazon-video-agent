@@ -110,7 +110,8 @@ def split_caption(text: str, max_words: int = 9) -> list[str]:
     return chunks
 
 
-def build_overlays(rows, tl_total, cfg, W, H, product_title, extra_lines):
+def build_overlays(rows, tl_total, cfg, W, H, product_title, extra_lines, ai_spans=None, product_labels=None,
+                   endcard_line="Link in the description"):
     acc = tuple(cfg["video"]["accent_color"])
     cap_font = load_font(cfg, int(H * 0.048))
     call_font = load_font(cfg, int(H * 0.058))
@@ -139,8 +140,34 @@ def build_overlays(rows, tl_total, cfg, W, H, product_title, extra_lines):
             ovs.append(_to_overlay(img, (W - img.width) // 2, int(H * 0.05), t0 - 0.1, t1 + 0.4, fade=0.3))
         if s.get("endcard"):
             ovs.append(_endcard(s_start=t0 + 0.3, end=tl_total, W=W, H=H, title=product_title,
-                                lines=["Link in the description", d["on_screen"]] + extra_lines,
+                                lines=[endcard_line, d["on_screen"]] + extra_lines,
                                 big=big, mid=mid, small=small))
+    if product_labels:  # comparison videos: a small "A | name" chip while a line is about one product
+        spans: list[list] = []
+        for r in rows:
+            pr = str(r.seg.get("product", "all"))
+            if pr in ("1", "2", "3") and int(pr) <= len(product_labels):
+                a, b = r.start, r.start + r.dur + r.pad * 0.6
+                if spans and spans[-1][2] == pr and a - spans[-1][1] < 1.2:
+                    spans[-1][1] = b
+                else:
+                    spans.append([a, b, pr])
+        chip_font = load_font(cfg, int(H * 0.036))
+        for a, b, pr in spans:
+            i = int(pr)
+            chip = text_patch(f"{'ABC'[i - 1]}  |  {product_labels[i - 1]}", chip_font, int(W * 0.5), box=(10, 10, 10, 200),
+                              accent=acc, align="left", pad=(22, 12), radius=18)
+            ovs.append(_to_overlay(chip, int(W * 0.02), int(H * 0.03), a, b, fade=0.3))
+    if ai_spans:  # merge touching spans so the tag does not flicker between neighbouring AI shots
+        merged: list[list[float]] = []
+        for a, b in sorted(ai_spans):
+            if merged and a <= merged[-1][1] + 0.5:
+                merged[-1][1] = max(merged[-1][1], b)
+            else:
+                merged.append([a, b])
+        ai_tag = text_patch(d.get("ai_tag", "AI-generated scene"), small, int(W * 0.3), box=(0, 0, 0, 150), pad=(18, 8), radius=14)
+        for a, b in merged:
+            ovs.append(_to_overlay(ai_tag, int(W * 0.02), int(H * 0.925) - ai_tag.height // 2, a + 0.2, b, fade=0.3))
     tag = text_patch(d["tag"], small, int(W * 0.3), box=(0, 0, 0, 140), pad=(18, 8), radius=14)
     ovs.append(_to_overlay(tag, W - tag.width - int(W * 0.02), int(H * 0.025), 0.6, 22.0, fade=0.5))
     return ovs
