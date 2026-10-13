@@ -4,13 +4,18 @@ on:
   workflow_dispatch:
     inputs:
       asin:
-        description: "ASIN (the folder name under projects/)"
+        description: "Project folder name under projects/ (a product ASIN, or a comparison folder)"
         required: true
       mode:
-        description: "script = write script.md for you to review | render = build the mp4 from script.md | all = both"
+        description: "script = write script.md | render = build the mp4 from script.md | all = both | scenes = plan AI clip scenes"
         type: choice
         default: script
-        options: [script, render, all]
+        options: [script, render, all, scenes]
+      length:
+        description: "Video length: standard = 5-9 min, short = 1.5-4.8 min"
+        type: choice
+        default: standard
+        options: [standard, short]
       voice:
         description: "Narration voice"
         type: choice
@@ -53,6 +58,7 @@ jobs:
     env:
       ASIN: ${{ inputs.asin }}
       MODE: ${{ inputs.mode }}
+      LENGTH: ${{ inputs.length }}
       VOICE: ${{ inputs.voice }}
       ANGLE: ${{ inputs.angle }}
       PREVIEW: ${{ inputs.preview_seconds }}
@@ -68,7 +74,7 @@ jobs:
 
       - name: Validate ASIN
         run: |
-          [[ "$ASIN" =~ ^[A-Za-z0-9]{10}$ ]] || { echo "ASIN must be 10 letters/digits"; exit 1; }
+          [[ "$ASIN" =~ ^[A-Za-z0-9][A-Za-z0-9_-]{2,39}$ ]] || { echo "Project name must be 3-40 letters, digits, - or _"; exit 1; }
           ASIN=$(echo "$ASIN" | tr a-z A-Z)
           echo "ASIN=$ASIN" >> "$GITHUB_ENV"
           [ -d "projects/$ASIN" ] || { echo "Folder projects/$ASIN not found"; exit 1; }
@@ -94,10 +100,15 @@ jobs:
       - name: Run
         run: |
           args=("$MODE" "$ASIN")
-          if [ "$MODE" != "script" ]; then args+=(--voice "$VOICE"); fi
-          if [ "$MODE" != "render" ] && [ -n "$ANGLE" ]; then args+=(--angle "$ANGLE"); fi
+          if [ "$MODE" = "render" ] || [ "$MODE" = "all" ]; then args+=(--voice "$VOICE"); fi
+          if [ "$MODE" != "scenes" ] && [ -n "$LENGTH" ]; then args+=(--length "$LENGTH"); fi
+          if [ "$MODE" = "script" ] || [ "$MODE" = "all" ]; then
+            if [ -n "$ANGLE" ]; then args+=(--angle "$ANGLE"); fi
+          fi
           if [ "$MODE" != "render" ] && [ "$FORCE" = "true" ]; then args+=(--force); fi
-          if [ "$MODE" != "script" ] && [ "$PREVIEW" != "0" ] && [ -n "$PREVIEW" ]; then args+=(--max-seconds "$PREVIEW"); fi
+          if [ "$MODE" = "render" ] || [ "$MODE" = "all" ]; then
+            if [ "$PREVIEW" != "0" ] && [ -n "$PREVIEW" ]; then args+=(--max-seconds "$PREVIEW"); fi
+          fi
           python -m adagent "${args[@]}"
 
       - name: Upload results
@@ -118,7 +129,9 @@ jobs:
         run: |
           mkdir -p /tmp/keep/scripts_archive
           rm -f /tmp/keep/script.md
-          if [ "$MODE" != "render" ] && [ -f "projects/$ASIN/script.md" ]; then cp "projects/$ASIN/script.md" /tmp/keep/script.md; fi
+          rm -f /tmp/keep/scenes.md
+          if [ "$MODE" != "render" ] && [ "$MODE" != "scenes" ] && [ -f "projects/$ASIN/script.md" ]; then cp "projects/$ASIN/script.md" /tmp/keep/script.md; fi
+          if [ "$MODE" = "scenes" ] && [ -f "projects/$ASIN/scenes.md" ]; then cp "projects/$ASIN/scenes.md" /tmp/keep/scenes.md; fi
           cp -r scripts_archive/. /tmp/keep/scripts_archive/ 2>/dev/null || true
           git config user.name "adagent"
           git config user.email "adagent@users.noreply.github.com"
@@ -126,8 +139,9 @@ jobs:
             git fetch -q origin main
             git reset -q --hard origin/main
             if [ -f /tmp/keep/script.md ]; then cp /tmp/keep/script.md "projects/$ASIN/script.md"; fi
+            if [ -f /tmp/keep/scenes.md ]; then cp /tmp/keep/scenes.md "projects/$ASIN/scenes.md"; fi
             mkdir -p scripts_archive && cp -r /tmp/keep/scripts_archive/. scripts_archive/ 2>/dev/null || true
-            git add "projects/$ASIN/script.md" scripts_archive 2>/dev/null || true
+            git add "projects/$ASIN/script.md" "projects/$ASIN/scenes.md" scripts_archive 2>/dev/null || true
             if git diff --cached --quiet; then echo "nothing to save"; exit 0; fi
             git commit -qm "script/history for $ASIN"
             if git push -q origin HEAD:main; then echo "saved"; exit 0; fi
