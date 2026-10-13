@@ -44,7 +44,8 @@ def jpeg_b64(img_bgr: np.ndarray, max_side: int = 1280) -> str:
 # ------------------------------- Groq model discovery -----------------------
 def groq_models(key: str) -> list[str]:
     r = requests.get(GROQ_MODELS_URL, headers={"Authorization": f"Bearer {key}"}, timeout=30)
-    r.raise_for_status()
+    if r.status_code != 200:
+        raise RuntimeError(f"Could not list your Groq models (HTTP {r.status_code}). Check GROQ_API_KEY.")
     return sorted(m["id"] for m in r.json().get("data", []))
 
 
