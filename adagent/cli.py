@@ -9,6 +9,7 @@ import sys
 from . import assets as A
 from . import finish as F
 from . import render as R
+from . import scenes as SC
 from . import scriptgen as S
 from . import timeline as T
 from . import tts as V
@@ -26,6 +27,12 @@ def _prep(args, need_vision=True):
     for k in ("width", "height", "fps", "crf"):
         if getattr(args, k, None):
             cfg["video"][k] = getattr(args, k)
+    if getattr(args, "length", None):
+        preset = cfg.get("length_presets", {}).get(args.length)
+        if not preset:
+            raise SystemExit(f"Unknown length '{args.length}'. Options: {', '.join(cfg.get('length_presets', {}))}")
+        cfg["length"].update(preset)
+        log(f"Length mode: {args.length} ({preset['min_minutes']}-{preset['max_minutes']} min)")
     project = load_project(args.asin)
     errors, warns = validate_facts(project)
     for w in warns:
@@ -33,10 +40,10 @@ def _prep(args, need_vision=True):
     if errors:
         raise SystemExit("\n".join(["Fix these in facts.yaml first:"] + [f"  - {e}" for e in errors]))
     log("Checking assets ...")
-    entries = A.build_index(project, cfg, vision=not getattr(args, "no_vision", False))
+    entries = A.build_index_for(project, cfg, vision=not getattr(args, "no_vision", False))
     for e in entries:
         if not e["usable"]:
-            log(f"  EXCLUDED {e['file']}: {e['reason']}")
+            log(f"  EXCLUDED {e.get('label', '')} {e['file']}: {e['reason']}".replace("  EXCLUDED  ", "  EXCLUDED "))
     log(f"  {sum(e['usable'] for e in entries)} of {len(entries)} files usable")
     return cfg, project, entries, warns
 
@@ -57,6 +64,26 @@ def cmd_script(args):
     if rv.get("length_warning"):
         log("\n  !! " + rv["length_warning"])
     log("  Review/edit the file, then run the render step.")
+
+
+def cmd_scenes(args):
+    cfg, project, entries, _ = _prep(args)
+    if project.compare:
+        raise SystemExit("AI scenes are made per product. Run 'scenes' on each product folder; the AI clips (ai_*.mp4) in a product's "
+                         "assets/ are used automatically by comparison videos that include that product.")
+    target = project.dir / "scenes.md"
+    if target.exists() and not args.force:
+        raise SystemExit(f"{target} already exists (it may contain your edits). Use --force to overwrite.")
+    scenes = SC.generate_scenes(project, cfg, entries, n=args.count)
+    if len(scenes) < 3:
+        raise SystemExit("Fewer than 3 safe scenes survived the checks. Run it again, or add more detail to facts.yaml (use_cases).")
+    md = SC.scenes_to_md(scenes, project)
+    target.write_text(md, encoding="utf-8")
+    (project.out_dir / "scenes.md").write_text(md, encoding="utf-8")
+    n_prod = sum(1 for s in scenes if s["type"] == "product")
+    log(f"\n{len(scenes)} scene(s) written to projects/{project.asin}/scenes.md ({n_prod} product, {len(scenes) - n_prod} mood).")
+    log("  Review/edit it, then run notebooks/make_ai_clips.ipynb on a free GPU (Kaggle or Colab).")
+    log("  The clips arrive in assets/ as ai_s01.mp4 ... and are used automatically on the next render.")
 
 
 def cmd_render(args):
@@ -100,6 +127,16 @@ def run_render(args, cfg, project, entries, warns, script):
                 break
         segs, args.no_length_check = keep, True
         log(f"PREVIEW: first {args.max_seconds:.0f}s only ({len(segs)} lines voiced).")
+    usable = [e for e in entries if e["usable"]]
+    if not usable:  # stop BEFORE any voice credits are spent
+        why = [f"  - {e['file']}: {e['reason']}" for e in entries if not e["usable"]]
+        found = len(entries)
+        raise SystemExit(
+            f"No usable footage in projects/{project.asin}/assets/ ({found} file(s) found).\n"
+            + ("\n".join(["These were excluded:"] + why) + "\n" if why else
+               "The folder has no photos or clips. Photos must be .jpg .jpeg .png .webp and clips .mp4 .mov .webm, "
+               "placed directly in that folder (not in a sub-folder), and the folder name must match the ASIN exactly.\n")
+            + "Nothing was spent on voice. Fix the footage and run render again.")
     est = S.estimate_minutes(segs, cfg)
     lo, hi = cfg["length"]["min_minutes"], cfg["length"]["max_minutes"]
     log(f"Estimated length {est:.1f} min (allowed {lo}-{hi}).")
@@ -130,9 +167,24 @@ def run_render(args, cfg, project, entries, warns, script):
     T.write_voice(tl, voice_wav)
 
     W, H = cfg["video"]["width"], cfg["video"]["height"]
-    shots = R.plan_shots(tl.rows, tl.total, entries, project.assets_dir, cfg, seed=project.asin)
+    shots = R.plan_shots(tl.rows, tl.total, entries, project.assets_dir, cfg, seed=project.asin, facts=project.facts)
+    cine_files = sorted({s.asset["file"] for s in shots if getattr(s, "cine", None) is not None})
+    if cine_files:
+        n_c = sum(1 for s in shots if s.cine is not None)
+        cov_notes.append(f"Cinematic product shots: {n_c} shot(s) from {', '.join(cine_files)}. Check the cut-out edges "
+                         "in the video; if one looks rough, add its file name to assets_no_cutout: in facts.yaml.")
+        log(f"  cinematic shots: {n_c} (from {len(cine_files)} photo(s))")
     extra = [vinfo["attribution"]] if vinfo.get("attribution") else []
-    ovs = build_overlays(tl.rows, tl.total, cfg, W, H, project.facts["product_name"], extra)
+    ai_spans = [(s.start, s.start + s.dur) for s in shots if s.asset["file"].lower().startswith("ai_")]
+    if ai_spans:
+        vinfo["ai_scenes"] = True
+        warns.append("This video contains AI-generated footage. In YouTube's upload form, answer YES to the altered/synthetic "
+                     "content question (realistic AI scenes must be labelled). Review each AI clip for odd hands, distorted objects "
+                     "or anything that looks like a product claim.")
+        log(f"  AI-generated clips in {len(ai_spans)} shot(s); on-screen tag and description note added")
+    ovs = build_overlays(tl.rows, tl.total, cfg, W, H, project.facts["product_name"], extra, ai_spans=ai_spans,
+                         product_labels=project.compare["labels"] if project.compare else None,
+                         endcard_line="Links to each product in the description" if project.compare else "Link in the description")
     silent = out / "_video_only.mp4"
     log(f"Rendering {len(shots)} shots at {W}x{H} ...")
     R.render_video(shots, ovs, tl.total, cfg, silent, out / "ffmpeg.log", max_seconds=args.max_seconds)
@@ -173,6 +225,8 @@ def main(argv=None):
     def common(sp, voice=False, script=False, render=False):
         sp.add_argument("asin")
         sp.add_argument("--no-vision", action="store_true", help="skip AI image checks (tests only)")
+        if script or render:
+            sp.add_argument("--length", choices=["standard", "short"], help="standard 5-9 min (default) or short 1.5-4.8 min")
         if script:
             sp.add_argument("--angle", choices=list(S.ANGLES), help="video angle (default: rotates automatically)")
             sp.add_argument("--force", action="store_true", help="overwrite script.md / ignore daily limit")
@@ -184,6 +238,10 @@ def main(argv=None):
             for k in ("width", "height", "fps", "crf"):
                 sp.add_argument(f"--{k}", type=int)
 
+    sp = sub.add_parser("scenes", help="plan AI b-roll scenes (scenes.md) for the free-GPU notebook")
+    common(sp, script=False)
+    sp.add_argument("--force", action="store_true", help="overwrite scenes.md")
+    sp.add_argument("--count", type=int, default=10, help="how many scenes to plan (default 10)")
     common(sub.add_parser("index", help="check and describe your assets"))
     common(sub.add_parser("script", help="write script.md for review"), script=True)
     common(sub.add_parser("render", help="voice + render from script.md"), voice=True, render=True)
@@ -192,7 +250,7 @@ def main(argv=None):
     sub.add_parser("eleven-voices", help="list voices available to your ElevenLabs key")
 
     args = p.parse_args(argv)
-    {"index": cmd_index, "script": cmd_script, "render": cmd_render, "all": cmd_all,
+    {"index": cmd_index, "script": cmd_script, "render": cmd_render, "all": cmd_all, "scenes": cmd_scenes,
      "voices": cmd_voices, "eleven-voices": cmd_eleven_voices}[args.cmd](args)
 
 
