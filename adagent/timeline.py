@@ -73,10 +73,13 @@ def write_voice(tl: Timeline, path) -> None:
     _write_wav(Path(path), tl.voice)
 
 
-def chapters(tl: Timeline) -> list[tuple[float, str]]:
+def chapters(tl: Timeline, labels: list[str] | None = None) -> list[tuple[float, str]]:
     out: list[tuple[float, str]] = []
     for r in tl.rows:
-        label = SECTION_LABELS.get(r.seg["section"], r.seg["section"].replace("_", " ").title())
+        sec = r.seg["section"]
+        label = SECTION_LABELS.get(sec, sec.replace("_", " ").title())
+        if labels and sec.startswith("product_") and sec[8:].isdigit() and 1 <= int(sec[8:]) <= len(labels):
+            label = labels[int(sec[8:]) - 1]
         if not out:
             out.append((0.0, label))
         elif label != out[-1][1] and r.start - out[-1][0] >= 20:
