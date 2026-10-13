@@ -6,7 +6,7 @@ product:
   category: "Home Improvement"
   subcategory: "Window Insulation Kits"
   amazon_url: "https://www.amazon.com/dp/B00G7009LM?th=1"
-  affiliate_url: null
+  affiliate_url: https://amzn.to/4hRkNCJ
   target_market: "United States"
 
 product_specs:
