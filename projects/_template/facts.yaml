@@ -6,6 +6,7 @@
 asin: B0XXXXXXXX                 # must match the folder name
 product_name: "Brand Model Name 20 oz Insulated Bottle"
 brand: "Brand"
+short_name: "Brand"            # short label used in comparison videos (optional)
 category: "insulated water bottle"        # plain words: what kind of product is it?
 audience: "people who carry a drink to work or the gym"
 
