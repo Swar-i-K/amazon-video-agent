@@ -16,7 +16,18 @@ from pathlib import Path
 import cv2
 import numpy as np
 
+try:
+    cv2.utils.logging.setLogLevel(cv2.utils.logging.LOG_LEVEL_SILENT)
+except Exception:  # older/newer builds without this helper
+    pass
+
+try:
+    cv2.utils.logging.setLogLevel(cv2.utils.logging.LOG_LEVEL_SILENT)
+except Exception:
+    pass
+
 from .assets import load_image_bgr
+from .cinematic import CinematicProduct, can_cutout
 from .common import log, video_info
 from .overlay import Overlay
 
@@ -112,6 +123,9 @@ def limit_move(move: dict, w_src: int, W: int, contained: bool) -> dict:
 
 # ----------------------------- shots ---------------------------------------
 class ClipReader:
+    """Reads frames from a clip by time. Phone clips often over-report their frame count; when we hit the real end
+    we learn the true length, so the picture keeps moving (loops) instead of freezing."""
+
     def __init__(self, path):
         self.cap = cv2.VideoCapture(str(path))
         self.n = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT) or 0)
@@ -120,19 +134,20 @@ class ClipReader:
 
     def frame_at(self, sec: float):
         idx = int(sec * self.fps)
-        if self.n > 0:
+        if self.n > 1:
             idx %= self.n
         if idx == self.pos and self.last is not None:
             return self.last
         if idx < self.pos or idx - self.pos > 20:
             self.cap.set(cv2.CAP_PROP_POS_FRAMES, idx)
             self.pos = idx - 1
-        ok = True
         while self.pos < idx:
             ok = self.cap.grab()
             self.pos += 1
-            if not ok:
-                break
+            if not ok:  # real end of file reached earlier than the metadata claimed
+                self.n = max(2, self.pos)
+                self.pos = 10 ** 9           # force a re-seek on the next call
+                return self.last
         ok, fr = self.cap.retrieve()
         if ok:
             self.last = fr
@@ -156,6 +171,8 @@ class Shot:
     _stage: np.ndarray | None = None
     _reader: ClipReader | None = None
     _studio: bool | None = None
+    cine: dict | None = None
+    _cp: object | None = None
 
     def render(self, t: float) -> np.ndarray:
         W, H = self.W, self.H
@@ -164,6 +181,10 @@ class Shot:
         z0, z1 = self.move["z"]
         (ax, ay), (bx, by) = self.move["c"]
         z, fx, fy = z0 + (z1 - z0) * e, ax + (bx - ax) * e, ay + (by - ay) * e
+        if self.cine is not None:
+            if self._cp is None:
+                self._cp = CinematicProduct(load_image_bgr(self.path), W, H, variant=self.cine["variant"], seed=self.cine["seed"])
+            return self._cp.render(t, self.dur)
         if self.asset["kind"] == "image":
             if self._stage is None:
                 self._stage = compose(load_image_bgr(self.path), int(W * STAGE), int(H * STAGE))
@@ -181,12 +202,14 @@ class Shot:
 
     def release(self):
         self._stage = None
+        self._cp = None
         if self._reader:
             self._reader.close()
             self._reader = None
 
 
-def plan_shots(rows, total: float, entries: list[dict], project_assets: Path, cfg: dict, seed: str) -> list[Shot]:
+def plan_shots(rows, total: float, entries: list[dict], project_assets: Path, cfg: dict, seed: str,
+               facts: dict | None = None) -> list[Shot]:
     v = cfg["video"]
     W, H = v["width"], v["height"]
     rng = random.Random(seed)
@@ -196,6 +219,25 @@ def plan_shots(rows, total: float, entries: list[dict], project_assets: Path, cf
     by_id = {e["id"]: e for e in usable}
     usage, view_count, cursor = Counter(), Counter(), Counter()
     first_move: dict = {}
+    facts = facts or {}
+    cine_on = bool(v.get("cinematic", True)) and facts.get("cinematic", True) is not False
+    share = float(v.get("cinematic_share", 0.6))
+    no_cut = {str(x).lower() for x in (facts.get("assets_no_cutout") or [])}
+    cine_count: Counter = Counter()
+    _cine_ok: dict = {}
+
+    def asset_path(e) -> Path:
+        return Path(e["path"]) if e.get("path") else project_assets / e["file"]
+
+    def cine_eligible(e) -> bool:
+        if not cine_on or e["kind"] != "image" or e["file"].lower() in no_cut:
+            return False
+        if e["id"] not in _cine_ok:
+            try:
+                _cine_ok[e["id"]] = can_cutout(load_image_bgr(asset_path(e)))
+            except Exception:
+                _cine_ok[e["id"]] = False
+        return _cine_ok[e["id"]]
     recent: deque = deque(maxlen=3)
     last_kind = None
     shots: list[Shot] = []
@@ -214,11 +256,14 @@ def plan_shots(rows, total: float, entries: list[dict], project_assets: Path, cf
         txt = tokens(r.seg["text"])
         for k in range(n):
             want_ids = {w["id"] for w in want}
+            seg_product = str(r.seg.get("product", "all"))
 
             def score(e):
                 sc = 0.0
                 if e["id"] in want_ids:
                     sc += 1.6
+                if seg_product in ("1", "2", "3") and e.get("product") in ("1", "2", "3"):
+                    sc += 2.5 if e["product"] == seg_product else -4.0
                 sc += 0.25 * len(txt & tokens(e["description"])) / 3
                 sc -= 0.45 * usage[e["id"]] / max(1, len(usable) ** 0.5)
                 if e["id"] in recent:
@@ -228,9 +273,15 @@ def plan_shots(rows, total: float, entries: list[dict], project_assets: Path, cf
                 return sc + rng.random() * 0.05
 
             e = max(usable, key=score)
-            path = project_assets / e["file"]
+            path = asset_path(e)
             shot = Shot(start=bounds[i] + k * per, dur=per, asset=e, path=path, W=W, H=H)
-            if e["kind"] == "image":
+            if e["kind"] == "image" and cine_eligible(e) and rng.random() < share:
+                shot.cine = {"variant": cine_count[e["id"]] + (rng.randrange(4) if e["id"] not in first_move else first_move[e["id"]] % 4),
+                             "seed": rng.randrange(1000)}
+                first_move.setdefault(e["id"], rng.randrange(len(MOVES)))
+                cine_count[e["id"]] += 1
+                shot.move = dict(z=(1.0, 1.0), c=((.5, .5), (.5, .5)))
+            elif e["kind"] == "image":
                 if e["id"] not in first_move:
                     first_move[e["id"]] = rng.randrange(len(MOVES))
                 mv = MOVES[(first_move[e["id"]] + 3 * view_count[e["id"]]) % len(MOVES)]  # 3 is coprime with 8: every reuse differs
