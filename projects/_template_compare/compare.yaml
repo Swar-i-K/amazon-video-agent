@@ -11,6 +11,7 @@ title: "YESLIFE vs YQXCC cooling towels compared"     # optional; becomes the vi
 products: [B0DN5N1FL5, B082HNFVVZ]                      # 2 or 3 existing product folders
 category: "cooling towels"
 audience: "people who exercise or work in the heat"
+keywords: [cooling towel comparison, best cooling towel]    # optional; the first one goes into the title
 compare_points: ["pack size", "towel size", "how it felt in use"]   # optional hints; only points with facts for EVERY product are used
 notes: ""
 # Tip: give each product's facts.yaml a short label so the on-screen chips read well:
