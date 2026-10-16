@@ -1,0 +1,25 @@
+# ------------------------------------------------------------------
+# TOP-N LIST VIDEO (3 to 9 products), e.g. "Top 5 cooling towels for hot weather"
+# 1. Copy this folder to projects/<NAME>/   (NAME = any 3-40 letters/digits/-/_, e.g. TOP5-TOWELS)
+# 2. Keep ONLY this file in that folder (plus the script.md the agent writes, and optional shared footage in assets/).
+# 3. Every product listed must already be a normal product folder (projects/<ASIN>/) with its own facts.yaml,
+#    assets/ and affiliate link. Aim for 3+ hands_on_notes per product, so each entry rests on your own experience.
+# 4. Run Make video with  mode: script  and this folder name, edit script.md, then  mode: render.
+# The ranking is YOUR decision. The video presents it as "my pick", never as a test result or a sales ranking.
+# ------------------------------------------------------------------
+title: "Top 5 cooling towels for hot weather"
+keywords:                      # phrases viewers search for (5-15 is plenty; the first one goes into the title)
+  - cooling towel
+  - best cooling towels
+  - cooling towel for gym
+products:                      # YOUR ranking: #1 is the first line
+  - id: B0DN5N1FL5
+    label: "Best all-round"            # optional, your own words for this pick (no price words)
+    best_for: "hot gym sessions"       # optional: who it suits
+  - id: B082HNFVVZ
+    best_for: "long outdoor days"
+  - B0XXXXXXX3                         # a plain product folder name also works
+order: countdown               # countdown = show #N first and #1 last (usual)  |  ascending = #1 first
+criteria: "I ranked these by how comfortable they were to use on a hot day and how easy they were to keep wet, based on my own notes."
+category: "cooling towels"
+audience: "people who exercise or work in the heat"
