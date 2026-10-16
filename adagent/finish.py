@@ -34,16 +34,25 @@ def mux(video: Path, voice_wav: Path, out: Path, total: float, music: Path | Non
 
 
 def write_description(project: Project, cfg: dict, script: dict, tl: Timeline, voice_info: dict, path: Path) -> None:
+    """Writes title.txt, description.txt (disclosure on the first line) and pinned_comment.txt next to `path`."""
     f, d = project.facts, cfg["disclosure"]
-    if project.compare:
-        L = [script.get("title") or f["product_name"], "", script.get("description_intro", ""), "", "Products compared on Amazon:"]
+    title = script.get("title") or f["product_name"]
+    disc = d["on_screen"] + " This description and video contain affiliate links."
+    L = [disc, "", script.get("description_intro", ""), ""]
+    if project.compare and project.compare["kind"] == "list":
+        L.append("Every product in this list on Amazon:")
+        for i, (sub, lab) in enumerate(zip(project.compare["products"], project.compare["labels"]), 1):
+            L.append(f"#{i} {lab} ({sub.facts['product_name']}): {sub.facts['affiliate_url']}")
+        links_line = "Links to every product are in the description."
+    elif project.compare:
+        L.append("Products compared on Amazon:")
         for i, (sub, lab) in enumerate(zip(project.compare["products"], project.compare["labels"])):
             L.append(f"{'ABC'[i]}. {lab} ({sub.facts['product_name']}): {sub.facts['affiliate_url']}")
-        L += ["", d["on_screen"] + " This description and video contain affiliate links.", ""]
+        links_line = "Links to each product are in the description."
     else:
-        L = [script.get("title") or f["product_name"], "", script.get("description_intro", ""), "",
-             f"Product on Amazon: {f['affiliate_url']}", "",
-             d["on_screen"] + " This description and video contain affiliate links.", ""]
+        L.append(f"Product on Amazon: {f['affiliate_url']}")
+        links_line = "The product link is in the description."
+    L.append("")
     note = [d["ai_voice_note"]]
     if voice_info.get("ai_scenes"):
         note.append(d.get("ai_scenes_note", "Some scenes in this video are AI-generated."))
@@ -56,16 +65,24 @@ def write_description(project: Project, cfg: dict, script: dict, tl: Timeline, v
     if script.get("tags"):
         L += ["Tags: " + ", ".join(script["tags"])]
     path.write_text("\n".join(L) + "\n", encoding="utf-8")
+    (path.parent / "title.txt").write_text(title + "\n", encoding="utf-8")
+    (path.parent / "pinned_comment.txt").write_text(f"{d['on_screen']} {links_line}\n", encoding="utf-8")
 
 
 def write_review(project: Project, script: dict, entries: list[dict], cov_notes: list[str], warnings: list[str],
-                 tl: Timeline, final_path: Path, voice_key: str, path: Path) -> None:
+                 tl: Timeline, final_path: Path, voice_key: str, path: Path, disclosure_mode: str = "full") -> None:
     rv = script.get("review") or {}
     L = [f"# Review checklist - {project.asin}", "",
          f"Video: {final_path.name}  |  length {fmt_ts(tl.total)}  |  voice: {voice_key}", ""]
     if warnings:
         L += ["## Warnings"] + [f"- {w}" for w in warnings] + [""]
-    if project.compare:
+    if project.compare and project.compare["kind"] == "list":
+        L += ["## Products ranked (your order)"]
+        for i, (sub, lab) in enumerate(zip(project.compare["products"], project.compare["labels"]), 1):
+            note = project.compare["rank_labels"][i - 1] or project.compare["best_for"][i - 1]
+            L.append(f"- #{i}: {lab} ({sub.asin}), {len(sub.facts.get('hands_on_notes') or [])} hands-on notes" + (f", \"{note}\"" if note else ""))
+        L += ["- The ranking is presented as YOUR pick. Confirm it matches your real opinion and your own notes.", ""]
+    elif project.compare:
         L += ["## Products compared"]
         for i, (sub, lab) in enumerate(zip(project.compare["products"], project.compare["labels"])):
             L.append(f"- {'ABC'[i]}: {lab} ({sub.asin}), {len(sub.facts.get('hands_on_notes') or [])} hands-on notes")
@@ -87,9 +104,12 @@ def write_review(project: Project, script: dict, entries: list[dict], cov_notes:
     L += ["## Before you post",
           "- [ ] Watch the whole video with sound. Does every product claim match the listing / your own experience?",
           "- [ ] Nothing on screen shows a face, a price, a star rating or Amazon page UI.",
-          *(["- [ ] Every claim is attributed to the RIGHT product, and every comparison point is true for BOTH products.",
+          *(["- [ ] Every claim is attributed to the RIGHT product" + (", and every ranking reason matches your own notes and criteria." if project.compare["kind"] == "list" else ", and every comparison point is true for ALL the products."),
              "- [ ] Each product's own link is in the description, next to its name."] if project.compare else []),
-          "- [ ] The spoken disclosure and on-screen disclosure are present; paste description.txt as the description.",
+          *{"full": ["- [ ] The spoken and on-screen disclosure are in the video; paste description.txt (its first line is the disclosure) and title.txt."],
+            "on_screen": ["- [ ] The disclosure appears as text on screen near the start (no voice-over line). Paste description.txt and title.txt; post pinned_comment.txt as a pinned comment."],
+            "description_only": ["- [ ] Disclosure mode is description_only: nothing is said or shown inside the video. Paste description.txt (disclosure on its FIRST line) and title.txt, then post pinned_comment.txt as the first pinned comment.",
+                                 "- [ ] Reminder: the FTC says a disclosure inside the video is clearer than one in the description box. If you ever want text on screen without a voice line, set disclosure: mode: on_screen in config.yaml."]}.get(disclosure_mode, []),
           "- [ ] Your affiliate link is an Amazon link (amzn.to / amazon.* with your tag), and this channel is listed in your Associates account.",
           "- [ ] YouTube's upload form asks about altered/synthetic content. Answer honestly for your AI voice.",
           "- [ ] This video differs meaningfully from your other uploads (different angle, your own footage/observations).",

@@ -4,10 +4,12 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
+import cv2
 import numpy as np
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 from .common import log
+from .templates import tpl_of
 
 
 def load_font(cfg: dict, size: int):
@@ -58,7 +60,7 @@ def _wrap(draw, text, font, max_w):
 
 
 def text_patch(text, font, max_w, fg=(255, 255, 255), box=(0, 0, 0, 165), pad=(30, 18), radius=24,
-               accent=None, align="center", line_gap=8):
+               accent=None, align="center", line_gap=8, stroke=(1, (0, 0, 0, 200))):
     """Return RGBA PIL image containing wrapped text on a rounded box."""
     tmp = ImageDraw.Draw(Image.new("RGBA", (10, 10)))
     lines = _wrap(tmp, text, font, max_w - 2 * pad[0])
@@ -77,7 +79,7 @@ def text_patch(text, font, max_w, fg=(255, 255, 255), box=(0, 0, 0, 165), pad=(3
     for l in lines:
         lw = d.textlength(l, font=font)
         x = x0 + ((tw - lw) / 2 if align == "center" else 0)
-        d.text((x, y), l, font=font, fill=fg + (255,), stroke_width=1, stroke_fill=(0, 0, 0, 200))
+        d.text((x, y), l, font=font, fill=fg + (255,), stroke_width=stroke[0], stroke_fill=stroke[1])
         y += lh + line_gap
     return img
 
@@ -110,16 +112,134 @@ def split_caption(text: str, max_words: int = 9) -> list[str]:
     return chunks
 
 
+# ----------------------------- template styling -----------------------------
+class GlassOverlay:
+    """A frosted-glass panel: blurs whatever is behind it, then adds a light tint and a thin border."""
+
+    def __init__(self, start, end, x, y, w, h, radius=22, fade=0.25, blur=9.0):
+        self.start, self.end, self.fade, self.blur = start, end, fade, blur
+        self.x, self.y, self.w, self.h = x, y, w, h
+        m = Image.new("L", (w, h), 0)
+        ImageDraw.Draw(m).rounded_rectangle([0, 0, w - 1, h - 1], radius=radius, fill=255)
+        self.mask = (np.asarray(m, np.float32) / 255.0)[..., None]
+        ring = Image.new("L", (w, h), 0)
+        ImageDraw.Draw(ring).rounded_rectangle([0, 0, w - 1, h - 1], radius=radius, outline=255, width=2)
+        self.ring = (np.asarray(ring, np.float32) / 255.0)[..., None]
+
+    def apply(self, frame: np.ndarray, t: float) -> None:
+        if not (self.start <= t <= self.end):
+            return
+        m = max(0.0, min(1.0, (t - self.start) / self.fade, (self.end - t) / self.fade))
+        reg = frame[self.y:self.y + self.h, self.x:self.x + self.w]
+        if reg.shape[0] != self.h or reg.shape[1] != self.w:
+            return
+        blurred = cv2.GaussianBlur(reg, (0, 0), self.blur).astype(np.float32)
+        panel = blurred * 0.60 + 255.0 * 0.12
+        a = self.mask * m
+        out = reg.astype(np.float32) * (1 - a) + panel * a
+        out = out + self.ring * m * 70.0
+        reg[:] = np.clip(out, 0, 255).astype(np.uint8)
+
+
+def _lum(rgb) -> float:
+    return 0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2]
+
+
+def ink_for(rgb) -> tuple:
+    return (20, 20, 24) if _lum(rgb) > 150 else (255, 255, 255)
+
+
+def panel_look(tpl: dict) -> dict:
+    """Box/ink used for chips, callouts and banners so they match the template (light templates get light panels)."""
+    if tpl["caption"]["style"] == "light":
+        return {"box": (255, 255, 255, 236), "fg": (24, 26, 31), "stroke": (0, (0, 0, 0, 0))}
+    return {"box": (10, 10, 12, 205), "fg": (255, 255, 255), "stroke": (1, (0, 0, 0, 200))}
+
+
+def caption_overlays(chunk, font, W, H, tpl, t0, t1) -> list:
+    style, acc = tpl["caption"]["style"], tpl["accent"]
+    max_w = int(W * 0.78)
+    y_base = int(H * (0.885 if style == "outline" else 0.86))
+    span_end, fade = t1, 0.08
+    if style == "glass":
+        txt = text_patch(chunk, font, max_w, box=(0, 0, 0, 0), stroke=(1, (0, 0, 0, 120)), pad=(32, 18))
+        x, y = (W - txt.width) // 2, y_base - txt.height
+        return [GlassOverlay(t0, span_end, x, y, txt.width, txt.height, radius=24, fade=fade),
+                _to_overlay(txt, x, y, t0, span_end, fade=fade)]
+    if style == "light":
+        img = text_patch(chunk, font, max_w, fg=(24, 26, 31), box=(255, 255, 255, 230), radius=16, stroke=(0, (0, 0, 0, 0)))
+    elif style == "solid":
+        img = text_patch(chunk, font, max_w, fg=ink_for(acc), box=acc + (240,), radius=12, stroke=(0, (0, 0, 0, 0)))
+    elif style == "outline":
+        img = text_patch(chunk, font, max_w, box=(0, 0, 0, 0), pad=(14, 8), stroke=(max(2, int(font.size * 0.07)), (0, 0, 0, 235)))
+    else:  # pill
+        img = text_patch(chunk, font, max_w, box=(0, 0, 0, 150))
+    return [_to_overlay(img, (W - img.width) // 2, y_base - img.height, t0, span_end, fade=fade)]
+
+
+def badge_overlays(num_text, sub, tpl, W, H, t0, t1, fonts) -> list:
+    """The big '#3' rank reveal at the start of each item in a list video."""
+    big, small = fonts
+    acc, style = tpl["accent"], tpl["badge"]
+    tmp = ImageDraw.Draw(Image.new("RGBA", (10, 10)))
+    sub_lines = _wrap(tmp, sub, small, int(W * 0.30)) if sub else []
+    nw = int(tmp.textlength(num_text, font=big))
+    asc, desc = big.getmetrics()
+    sl = small.getmetrics()
+    sub_h = (sl[0] + sl[1] + 6) * len(sub_lines)
+    pad = 28
+    w = max(nw, max((int(tmp.textlength(l, font=small)) for l in sub_lines), default=0)) + 2 * pad
+    h = asc + desc + sub_h + 2 * pad - (10 if sub_lines else 0)
+    x, y = int(W * 0.05), int(H * 0.30)
+    img = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    num_col, sub_col = (255, 255, 255), (235, 235, 235)
+    glass = False
+    if style == "solid":
+        d.rounded_rectangle([0, 0, w - 1, h - 1], radius=26, fill=acc + (242,))
+        num_col = sub_col = ink_for(acc)
+    elif style == "outline":
+        d.rounded_rectangle([0, 0, w - 1, h - 1], radius=26, fill=(255, 255, 255, 238), outline=acc + (255,), width=6)
+        num_col, sub_col = acc, (30, 32, 38)
+    elif style == "glow":
+        glow = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+        ImageDraw.Draw(glow).text(((w - nw) // 2, pad - 6), num_text, font=big, fill=acc + (255,))
+        glow = glow.filter(ImageFilter.GaussianBlur(14))
+        d.rounded_rectangle([0, 0, w - 1, h - 1], radius=26, fill=(8, 9, 12, 220), outline=acc + (255,), width=3)
+        img = Image.alpha_composite(img, glow)
+        d = ImageDraw.Draw(img)
+        num_col = acc
+    else:  # glass
+        glass = True
+    d.text(((w - nw) // 2, pad - 6), num_text, font=big, fill=num_col + (255,), stroke_width=2 if glass else 0,
+           stroke_fill=(0, 0, 0, 120))
+    yy = pad - 6 + asc + desc
+    for l in sub_lines:
+        d.text(((w - d.textlength(l, font=small)) / 2, yy), l, font=small, fill=sub_col + (255,),
+               stroke_width=1 if glass else 0, stroke_fill=(0, 0, 0, 120))
+        yy += sl[0] + sl[1] + 6
+    out = []
+    if glass:
+        out.append(GlassOverlay(t0, t1, x, y, w, h, radius=26, fade=0.4))
+    out.append(_to_overlay(img, x, y, t0, t1, fade=0.4))
+    return out
+
+
+# ----------------------------- the overlay set ------------------------------
 def build_overlays(rows, tl_total, cfg, W, H, product_title, extra_lines, ai_spans=None, product_labels=None,
-                   endcard_line="Link in the description"):
-    acc = tuple(cfg["video"]["accent_color"])
-    cap_font = load_font(cfg, int(H * 0.048))
+                   endcard_line="Link in the description", kind=None, rank_notes=None):
+    """kind: None (single product), 'compare' or 'list'. rank_notes: per-product subtitle for the list rank badge."""
+    tpl = tpl_of(cfg)
+    acc = tpl["accent"]
+    look = panel_look(tpl)
+    cap_font = load_font(cfg, int(H * (0.052 if tpl["caption"]["style"] == "solid" else 0.048)))
     call_font = load_font(cfg, int(H * 0.058))
     small = load_font(cfg, int(H * 0.030))
     big = load_font(cfg, int(H * 0.070))
     mid = load_font(cfg, int(H * 0.040))
     d = cfg["disclosure"]
-    ovs: list[Overlay] = []
+    mode = d.get("mode", "full")
+    ovs: list = []
     for r in rows:
         s = r.seg
         t0, t1 = r.start, r.start + r.dur
@@ -129,35 +249,41 @@ def build_overlays(rows, tl_total, cfg, W, H, product_title, extra_lines, ai_spa
             t = t0
             for c in chunks:
                 span = r.dur * len(c) / tot
-                img = text_patch(c, cap_font, int(W * 0.78), box=(0, 0, 0, 150))
-                ovs.append(_to_overlay(img, (W - img.width) // 2, int(H * 0.86) - img.height, t, t + span + 0.02, fade=0.08))
+                ovs += caption_overlays(c, cap_font, W, H, tpl, t, t + span + 0.02)
                 t += span
         if s.get("onscreen"):
-            img = text_patch(s["onscreen"], call_font, int(W * 0.5), box=(10, 10, 10, 190), accent=acc, align="left")
+            img = text_patch(s["onscreen"], call_font, int(W * 0.5), fg=look["fg"], box=look["box"], accent=acc, align="left",
+                             stroke=look["stroke"])
             ovs.append(_to_overlay(img, int(W * 0.05), int(H * 0.14), t0 + 0.4, min(t1, t0 + 4.8), fade=0.3))
         if s.get("banner"):
-            img = text_patch(d["on_screen"], mid, int(W * 0.82), box=(20, 20, 20, 215), accent=acc, align="left")
+            img = text_patch(d["on_screen"], mid, int(W * 0.82), fg=look["fg"], box=look["box"], accent=acc, align="left",
+                             stroke=look["stroke"])
             ovs.append(_to_overlay(img, (W - img.width) // 2, int(H * 0.05), t0 - 0.1, t1 + 0.4, fade=0.3))
         if s.get("endcard"):
             ovs.append(_endcard(s_start=t0 + 0.3, end=tl_total, W=W, H=H, title=product_title,
-                                lines=[endcard_line, d["on_screen"]] + extra_lines,
-                                big=big, mid=mid, small=small))
-    if product_labels:  # comparison videos: a small "A | name" chip while a line is about one product
+                                lines=[endcard_line] + ([d["on_screen"]] if mode != "description_only" else []) + extra_lines,
+                                big=big, mid=mid, small=small, tpl=tpl))
+    if product_labels:  # comparison / list videos: a chip while a line is about one product
         spans: list[list] = []
         for r in rows:
             pr = str(r.seg.get("product", "all"))
-            if pr in ("1", "2", "3") and int(pr) <= len(product_labels):
+            if pr.isdigit() and 1 <= int(pr) <= len(product_labels):
                 a, b = r.start, r.start + r.dur + r.pad * 0.6
                 if spans and spans[-1][2] == pr and a - spans[-1][1] < 1.2:
                     spans[-1][1] = b
                 else:
                     spans.append([a, b, pr])
         chip_font = load_font(cfg, int(H * 0.036))
+        badge_fonts = (load_font(cfg, int(H * 0.17)), load_font(cfg, int(H * 0.034)))
         for a, b, pr in spans:
             i = int(pr)
-            chip = text_patch(f"{'ABC'[i - 1]}  |  {product_labels[i - 1]}", chip_font, int(W * 0.5), box=(10, 10, 10, 200),
-                              accent=acc, align="left", pad=(22, 12), radius=18)
+            tag = f"#{i}" if kind == "list" else "ABC"[i - 1]
+            chip = text_patch(f"{tag}  |  {product_labels[i - 1]}", chip_font, int(W * 0.5), fg=look["fg"], box=look["box"],
+                              accent=acc, align="left", pad=(22, 12), radius=18, stroke=look["stroke"])
             ovs.append(_to_overlay(chip, int(W * 0.02), int(H * 0.03), a, b, fade=0.3))
+            if kind == "list":      # big rank reveal for the first few seconds of each item
+                sub = (rank_notes[i - 1] if rank_notes and rank_notes[i - 1] else product_labels[i - 1])
+                ovs += badge_overlays(f"#{i}", sub, tpl, W, H, a + 0.15, min(b, a + 3.4), badge_fonts)
     if ai_spans:  # merge touching spans so the tag does not flicker between neighbouring AI shots
         merged: list[list[float]] = []
         for a, b in sorted(ai_spans):
@@ -165,24 +291,34 @@ def build_overlays(rows, tl_total, cfg, W, H, product_title, extra_lines, ai_spa
                 merged[-1][1] = max(merged[-1][1], b)
             else:
                 merged.append([a, b])
-        ai_tag = text_patch(d.get("ai_tag", "AI-generated scene"), small, int(W * 0.3), box=(0, 0, 0, 150), pad=(18, 8), radius=14)
+        ai_tag = text_patch(d.get("ai_tag", "AI-generated scene"), small, int(W * 0.3), fg=look["fg"], box=look["box"],
+                            pad=(18, 8), radius=14, stroke=look["stroke"])
         for a, b in merged:
             ovs.append(_to_overlay(ai_tag, int(W * 0.02), int(H * 0.925) - ai_tag.height // 2, a + 0.2, b, fade=0.3))
-    tag = text_patch(d["tag"], small, int(W * 0.3), box=(0, 0, 0, 140), pad=(18, 8), radius=14)
-    ovs.append(_to_overlay(tag, W - tag.width - int(W * 0.02), int(H * 0.025), 0.6, 22.0, fade=0.5))
+    if mode == "on_screen":   # silent text near the start (no voice-over line)
+        img = text_patch(d["on_screen"], mid, int(W * 0.82), fg=look["fg"], box=look["box"], accent=acc, align="left",
+                         stroke=look["stroke"])
+        ovs.append(_to_overlay(img, (W - img.width) // 2, int(H * 0.05), 1.0, min(7.5, tl_total - 1), fade=0.3))
+    if mode in ("full", "on_screen"):
+        tag = text_patch(d["tag"], small, int(W * 0.3), fg=look["fg"], box=look["box"], pad=(18, 8), radius=14, stroke=look["stroke"])
+        ovs.append(_to_overlay(tag, W - tag.width - int(W * 0.02), int(H * 0.025), 0.6, 22.0, fade=0.5))
     return ovs
 
 
-def _endcard(s_start, end, W, H, title, lines, big, mid, small):
-    img = Image.new("RGBA", (W, H), (8, 8, 10, 175))
+def _endcard(s_start, end, W, H, title, lines, big, mid, small, tpl=None):
+    bg = tuple((tpl or {}).get("endcard", {}).get("bg", (8, 8, 10, 175)))
+    ink = tuple((tpl or {}).get("endcard", {}).get("text", (255, 255, 255)))
+    acc = (tpl or {}).get("accent", (255, 214, 120))
+    first = acc if _lum(bg[:3]) < 150 else tuple(int(c * 0.8) for c in acc)
+    img = Image.new("RGBA", (W, H), bg)
     d = ImageDraw.Draw(img)
     y = int(H * 0.28)
     for l in _wrap(d, title, big, int(W * 0.8))[:2]:
-        d.text(((W - d.textlength(l, font=big)) / 2, y), l, font=big, fill=(255, 255, 255, 255))
+        d.text(((W - d.textlength(l, font=big)) / 2, y), l, font=big, fill=ink + (255,))
         y += int(H * 0.09)
     y += int(H * 0.04)
     for i, l in enumerate(lines):
         f = mid if i == 0 else small
-        d.text(((W - d.textlength(l, font=f)) / 2, y), l, font=f, fill=(255, 214, 120, 255) if i == 0 else (235, 235, 235, 255))
+        d.text(((W - d.textlength(l, font=f)) / 2, y), l, font=f, fill=(first if i == 0 else ink) + (255,))
         y += int(H * (0.065 if i == 0 else 0.045))
     return _to_overlay(img, 0, 0, s_start, end + 1, fade=0.7)

@@ -90,40 +90,77 @@ def _label(sub: "Project") -> str:
     return str(f.get("short_name") or f.get("brand") or " ".join(str(f.get("product_name", sub.asin)).split()[:2])).strip()
 
 
+def _keywords(v) -> list[str]:
+    """Accepts a list or a comma-separated string; strips, de-duplicates, keeps order."""
+    if not v:
+        return []
+    items = re.split(r"[,\n]", v) if isinstance(v, str) else list(v)
+    out, seen = [], set()
+    for k in items:
+        k = str(k).strip()
+        if k and k.lower() not in seen:
+            seen.add(k.lower())
+            out.append(k)
+    return out
+
+
+LIMITS = {"compare": (2, 3), "list": (3, 9)}
+
+
 def _load_compare(asin: str, pdir: Path, cfile: Path) -> "Project":
+    kind = "list" if cfile.name == "list.yaml" else "compare"
+    other = pdir / ("compare.yaml" if kind == "list" else "list.yaml")
+    if other.exists():
+        raise SystemExit(f"projects/{asin} has both compare.yaml and list.yaml. Keep only one.")
     conf = normalize_keys(read_yaml(cfile))
-    ids = [str(x).strip().upper() for x in (conf.get("products") or [])]
-    if not 2 <= len(ids) <= 3:
-        raise SystemExit(f"projects/{asin}/compare.yaml: 'products' must list 2 or 3 product folders (found {len(ids)}).")
-    if len(set(ids)) != len(ids):
-        raise SystemExit(f"projects/{asin}/compare.yaml: the same product is listed twice.")
+    raw = conf.get("products") or []
+    entries = []
+    for item in raw:
+        if isinstance(item, dict):
+            entries.append({"id": str(item.get("id") or item.get("asin") or "").strip().upper(),
+                            "label": str(item.get("label") or "").strip(), "best_for": str(item.get("best_for") or "").strip()})
+        else:
+            entries.append({"id": str(item).strip().upper(), "label": "", "best_for": ""})
+    ids = [e["id"] for e in entries]
+    lo, hi = LIMITS[kind]
+    if not lo <= len(ids) <= hi:
+        raise SystemExit(f"projects/{asin}/{cfile.name}: 'products' must list {lo} to {hi} product folders (found {len(ids)}).")
+    if len(set(ids)) != len(ids) or "" in ids:
+        raise SystemExit(f"projects/{asin}/{cfile.name}: a product is listed twice or is empty.")
     subs = []
     for i in ids:
         if i == asin:
-            raise SystemExit("compare.yaml cannot list its own folder.")
+            raise SystemExit(f"{cfile.name} cannot list its own folder.")
         sub = load_project(i)
         if sub.compare:
-            raise SystemExit(f"{i} is itself a comparison project; list ordinary product folders.")
+            raise SystemExit(f"{i} is itself a comparison/list project; list ordinary product folders.")
         subs.append(sub)
     labels = [_label(x) for x in subs]
     if len(set(l.lower() for l in labels)) != len(labels):
         raise SystemExit("Two products have the same short label. Give each facts.yaml a different short_name: (e.g. short_name: YESLIFE).")
     no_cut = sorted({str(a) for x in subs for a in (x.facts.get("assets_no_cutout") or [])})
+    order = str(conf.get("order", "countdown")).strip().lower()
+    if order not in ("countdown", "ascending"):
+        raise SystemExit(f"projects/{asin}/{cfile.name}: order must be 'countdown' (N first, #1 last) or 'ascending'.")
+    kw = _keywords(conf.get("keywords")) or _keywords([k for x in subs for k in _keywords(x.facts.get("keywords"))])[:12]
     facts = {
         "asin": asin,
-        "product_name": conf.get("title") or " vs ".join(labels),
+        "product_name": conf.get("title") or (" vs ".join(labels) if kind == "compare" else f"Top {len(subs)} {subs[0].facts.get('category', '')}".strip()),
         "category": conf.get("category") or subs[0].facts.get("category", ""),
         "audience": conf.get("audience") or subs[0].facts.get("audience", ""),
         "affiliate_url": subs[0].facts.get("affiliate_url", ""),
         "compare_points": conf.get("compare_points") or [],
         "notes": conf.get("notes", ""),
-        "angle": "comparison",
+        "keywords": kw,
+        "angle": kind,
         "assets_no_cutout": no_cut,
         "cinematic": not any(x.facts.get("cinematic", True) is False for x in subs),
     }
     pick_ok = all(len(x.facts.get("hands_on_notes") or []) >= 3 for x in subs)
-    return Project(asin=asin, dir=pdir, facts=facts,
-                   compare={"products": subs, "labels": labels, "config": conf, "pick_ok": pick_ok})
+    return Project(asin=asin, dir=pdir, facts=facts, compare={
+        "kind": kind, "products": subs, "labels": labels, "config": conf, "pick_ok": pick_ok,
+        "ranks": list(range(1, len(subs) + 1)), "rank_labels": [e["label"] for e in entries],
+        "best_for": [e["best_for"] for e in entries], "order": order, "criteria": str(conf.get("criteria", "") or "").strip()})
 
 
 def load_project(asin: str, require_facts: bool = True) -> Project:
@@ -133,13 +170,15 @@ def load_project(asin: str, require_facts: bool = True) -> Project:
     pdir = ROOT / "projects" / asin
     if not pdir.exists():
         raise SystemExit(f"Folder projects/{asin}/ not found. Copy projects/_template/ to projects/{asin}/ first.")
-    cfile = pdir / "compare.yaml"
-    if cfile.exists():
-        return _load_compare(asin, pdir, cfile)
+    for name in ("compare.yaml", "list.yaml"):
+        cfile = pdir / name
+        if cfile.exists():
+            return _load_compare(asin, pdir, cfile)
     facts = {}
     fpath = pdir / "facts.yaml"
     if fpath.exists():
         facts = normalize_keys(read_yaml(fpath))
+        facts["keywords"] = _keywords(facts.get("keywords"))
     elif require_facts:
         raise SystemExit(f"projects/{asin}/facts.yaml is missing.")
     return Project(asin=asin, dir=pdir, facts=facts)
@@ -179,9 +218,11 @@ def validate_facts(project: Project) -> tuple[list[str], list[str]]:
     n = fact_count(f)
     if n < 8:
         warnings.append(
-            f"Only {n} facts supplied. A 5-9 minute script needs roughly 12+ real facts; "
+            f"Only {n} facts supplied. A full script needs roughly 12+ real facts; "
             "with fewer, the writer has to lean on generic filler. Add specs, brand claims and your own hands-on notes."
         )
+    if len(f.get("keywords") or []) > 30:
+        warnings.append("More than 30 keywords: keep the best 10-15, long lists read as keyword stuffing.")
     if not f.get("hands_on_notes"):
         warnings.append(
             "No hands_on_notes. Without your own observations the video is a listing read-aloud, "
@@ -192,23 +233,32 @@ def validate_facts(project: Project) -> tuple[list[str], list[str]]:
 
 def _validate_compare(project: Project) -> tuple[list[str], list[str]]:
     errors, warnings = [], []
-    subs = project.compare["products"]
+    c = project.compare
+    subs = c["products"]
     for sub in subs:
         e, w = validate_facts(sub)
         errors += [f"[{sub.asin}] {x}" for x in e]
         warnings += [f"[{sub.asin}] {x}" for x in w]
         n = len(sub.facts.get("hands_on_notes") or [])
         if 0 < n < 3:
-            warnings.append(f"[{sub.asin}] only {n} hands_on_notes: the comparison will stay neutral and will not pick a winner.")
+            warnings.append(f"[{sub.asin}] only {n} hands_on_notes: " + (
+                "its list entry will rest on facts only, not on your own tests." if c["kind"] == "list"
+                else "the comparison will stay neutral and will not pick a winner."))
         if not any(p.suffix.lower() in (".jpg", ".jpeg", ".png", ".webp", ".mp4", ".mov", ".webm") for p in sub.assets_dir.glob("*")):
             errors.append(f"[{sub.asin}] has no photos/clips in its assets/ folder.")
     urls = [str(x.facts.get("affiliate_url", "")).strip() for x in subs]
     if len(set(urls)) != len(urls):
         errors.append("Two products share the same affiliate_url. Each product needs its own link.")
-    if not project.compare["pick_ok"]:
+    if c["kind"] == "compare" and not c["pick_ok"]:
         warnings.append("Not every product has 3+ hands_on_notes, so the verdict will say who each product suits instead of naming a winner.")
+    if c["kind"] == "list":
+        if not c["criteria"]:
+            warnings.append("list.yaml has no 'criteria:' (how you chose and ranked these). Add 1-2 honest sentences; without them the script can only say it is your order.")
+        warnings.append("The ranking order is YOUR decision: put your best pick first in 'products:'. The script will present it as your pick, never as a test result.")
     if not project.facts.get("category"):
-        errors.append("compare.yaml: add 'category:' (what kind of product these are).")
+        errors.append(f"{'list' if c['kind'] == 'list' else 'compare'}.yaml: add 'category:' (what kind of product these are).")
+    if len(project.facts.get("keywords") or []) > 30:
+        warnings.append("More than 30 keywords: keep the best 10-15, long lists read as keyword stuffing.")
     return errors, warnings
 
 
@@ -226,6 +276,7 @@ POLICY_RULES = [
     (r"\b(cures?|heals?|clinically proven|medically proven|fda[- ]approved)\b", "makes a health claim"),
 ]
 STYLE_RULES = [
+    (r"\b(cheap|cheaper|cheapest|affordable|budget|pricey|expensive|bargain)\b", "price wording: prices change and are not allowed to be quoted, so avoid describing price level"),
     (r"\b(game[- ]changer|revolutionary|must[- ]have|life[- ]changing|miracle|guaranteed?)\b", "hype phrase"),
     (r"\bin today'?s video\b|\bsmash (that|the) like\b", "generic YouTube cliche"),
     (r"\bperfect for everyone\b|\bevery(one|body) needs\b", "overclaim"),

@@ -63,36 +63,56 @@ def cutout_mask(src: np.ndarray, max_side: int = 1400):
 
 
 # ----------------------------- backdrop ------------------------------------
-PALETTES = [  # (top, bottom) in BGR; light premium studio looks
-    ((246, 246, 244), (214, 218, 222)),   # neutral studio
-    ((232, 244, 252), (196, 214, 230)),   # warm cream
-    ((250, 242, 232), (226, 208, 192)),   # cool blue-grey
-    None,                                 # tinted from the product colour
-]
+# (top, bottom) in BGR for each look; None = tinted from the product's own colour
+PALETTE_SETS = {
+    "studio": [((246, 246, 244), (214, 218, 222)), ((232, 244, 252), (196, 214, 230)), ((250, 242, 232), (226, 208, 192)), None],
+    "light":  [((252, 252, 252), (234, 236, 240)), ((250, 250, 246), (230, 232, 234)), ((255, 252, 250), (238, 234, 230)), None],
+    "vivid":  [((255, 120, 60), (230, 60, 150)), ((98, 94, 255), (102, 153, 255)), ((167, 201, 0), (200, 120, 0)), None],
+    "dark":   [((30, 26, 22), (8, 8, 8)), ((40, 32, 24), (10, 8, 8)), ((26, 30, 40), (6, 8, 10)), None],
+    "pastel": [((255, 236, 222), (255, 214, 232)), ((235, 248, 232), (220, 232, 250)), ((250, 238, 255), (236, 222, 255)), None],
+}
+TINT_PARAMS = {"studio": ((0.18, 245), (0.30, 205)), "light": ((0.08, 252), (0.14, 236)), "vivid": ((0.65, 235), (0.85, 185)),
+               "dark": ((0.55, 46), (0.60, 14)), "pastel": ((0.22, 248), (0.32, 228))}
+GLOW = {"studio": 22, "light": 14, "vivid": 40, "dark": 70, "pastel": 18}
+FLOOR = {"studio": 0.07, "light": 0.04, "vivid": 0.10, "dark": 0.0, "pastel": 0.04}
+DARK_LOOKS = ("dark", "vivid")      # a white photo edge would show as a halo here, so the cut-out is tightened
 
 
-def make_backdrop(W: int, H: int, variant: int, product_bgr: np.ndarray, spot_xy, floor_y: int) -> np.ndarray:
-    pal = PALETTES[variant % len(PALETTES)]
+def _bokeh(bg: np.ndarray, variant: int, light: bool) -> np.ndarray:
+    H, W = bg.shape[:2]
+    rng = np.random.default_rng(100 + variant)
+    layer = np.zeros((H, W, 3), np.float32)
+    for _ in range(9):
+        c = (int(rng.integers(0, W)), int(rng.integers(0, int(H * 0.8))))
+        r = int(rng.integers(int(H * 0.04), int(H * 0.11)))
+        col = np.array([255, 255, 255], np.float32) * (0.9 if light else 0.55) * rng.uniform(0.5, 1.0)
+        cv2.circle(layer, c, r, tuple(float(x) for x in col), -1)
+    layer = cv2.GaussianBlur(layer, (0, 0), H * 0.012)
+    return np.clip(bg.astype(np.float32) + layer * (0.16 if light else 0.22), 0, 255).astype(np.uint8)
+
+
+def make_backdrop(W: int, H: int, variant: int, product_bgr: np.ndarray, spot_xy, floor_y: int, palette: str = "studio") -> np.ndarray:
+    palette = palette if palette in PALETTE_SETS else "studio"
+    pal = PALETTE_SETS[palette][variant % 4]
     if pal is None:
         c = product_bgr.astype(np.float32)
         hsv = cv2.cvtColor(np.uint8([[c]]), cv2.COLOR_BGR2HSV)[0, 0].astype(np.float32)
-        top = cv2.cvtColor(np.uint8([[[hsv[0], min(hsv[1], 255) * 0.18, 245]]]), cv2.COLOR_HSV2BGR)[0, 0]
-        bot = cv2.cvtColor(np.uint8([[[hsv[0], min(hsv[1], 255) * 0.30, 205]]]), cv2.COLOR_HSV2BGR)[0, 0]
+        (s_top, v_top), (s_bot, v_bot) = TINT_PARAMS[palette]
+        top = cv2.cvtColor(np.uint8([[[hsv[0], min(255, 255 * s_top), v_top]]]), cv2.COLOR_HSV2BGR)[0, 0]
+        bot = cv2.cvtColor(np.uint8([[[hsv[0], min(255, 255 * s_bot), v_bot]]]), cv2.COLOR_HSV2BGR)[0, 0]
         pal = (tuple(int(x) for x in top), tuple(int(x) for x in bot))
     top, bot = np.array(pal[0], np.float32), np.array(pal[1], np.float32)
     t = np.linspace(0, 1, H, dtype=np.float32)[:, None, None]
-    bg = top * (1 - t) + bot * t
-    bg = np.repeat(bg, W, axis=1)
-    # soft spotlight behind the product
+    bg = np.repeat(top * (1 - t) + bot * t, W, axis=1)
     y, x = np.ogrid[:H, :W]
     d = np.sqrt(((x - spot_xy[0]) / (W * 0.45)) ** 2 + ((y - spot_xy[1]) / (H * 0.55)) ** 2)
-    glow = np.clip(1 - d, 0, 1)[..., None] ** 2
-    bg = bg + glow * 22
-    # table/floor: slightly darker below the horizon with a soft transition
+    bg = bg + (np.clip(1 - d, 0, 1)[..., None] ** 2) * GLOW[palette]
     fl = np.clip((y - floor_y) / (H * 0.08), -1, 1)
-    floor = (0.5 + 0.5 * fl)[..., None]
-    bg = bg * (1 - 0.07 * floor)
-    return np.clip(bg, 0, 255).astype(np.uint8)
+    bg = bg * (1 - FLOOR[palette] * (0.5 + 0.5 * fl)[..., None])
+    bg = np.clip(bg, 0, 255).astype(np.uint8)
+    if palette in ("pastel", "dark"):
+        bg = _bokeh(bg, variant, light=(palette == "pastel"))
+    return bg
 
 
 # ----------------------------- the shot ------------------------------------
@@ -105,11 +125,15 @@ MOTIONS = [
 
 
 class CinematicProduct:
-    def __init__(self, src_bgr: np.ndarray, W: int, H: int, variant: int = 0, seed: int = 0):
+    def __init__(self, src_bgr: np.ndarray, W: int, H: int, variant: int = 0, seed: int = 0, palette: str = "studio"):
         res = cutout_mask(src_bgr)
         if res is None:
             raise ValueError("no clean cutout")
         img, mask = res
+        self.palette = palette if palette in PALETTE_SETS else "studio"
+        if self.palette in DARK_LOOKS:     # tighten the edge so the photo's white backdrop does not halo on a dark/vivid background
+            mask = cv2.GaussianBlur(cv2.erode((mask > 0.5).astype(np.uint8), cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3)),
+                                              iterations=2).astype(np.float32), (0, 0), 1.0)
         ys, xs = np.where(mask > 0.5)
         pad = 6
         y0, y1 = max(0, ys.min() - pad), min(img.shape[0], ys.max() + pad + 1)
@@ -129,7 +153,7 @@ class CinematicProduct:
         # sprite = product + faded reflection beneath (moves as one piece)
         refl_h = int(sh * 0.45)
         refl = cv2.flip(crop, 0)[:refl_h]
-        ra = cv2.flip(a, 0)[:refl_h] * np.linspace(0.30, 0.0, refl_h, dtype=np.float32)[:, None]
+        ra = cv2.flip(a, 0)[:refl_h] * np.linspace(0.42 if self.palette in DARK_LOOKS else 0.30, 0.0, refl_h, dtype=np.float32)[:, None]
         self.spr_h = sh + refl_h
         spr = np.zeros((self.spr_h, sw, 3), np.float32)
         spa = np.zeros((self.spr_h, sw), np.float32)
@@ -140,7 +164,7 @@ class CinematicProduct:
         # layout: product centred slightly above middle, base on the "table"
         self.cx, self.base_y = W // 2, int(H * 0.80)
         self.floor_y = self.base_y
-        bg = make_backdrop(int(W * 1.12), int(H * 1.12), variant, pc, (int(W * 1.12 * 0.5), int(H * 1.12 * 0.52)), int(self.floor_y * 1.12))
+        bg = make_backdrop(int(W * 1.12), int(H * 1.12), variant, pc, (int(W * 1.12 * 0.5), int(H * 1.12 * 0.52)), int(self.floor_y * 1.12), self.palette)
         self.bg = bg
         # contact shadow (precomputed, scales with product width)
         shw, shh = int(sw * 1.05), max(10, int(sw * 0.10))

@@ -15,7 +15,7 @@ from .llm import ask
 from .project import Project
 from .scriptgen import assets_block, facts_yaml
 
-MAX_PRODUCT_SCENES = 2
+DEFAULT_MAX_PRODUCT_SCENES = 6
 
 SCENE_SYSTEM = """You write shot descriptions for AI-generated b-roll in a faceless product video. A human reviews every scene, a video model renders each one as a 5-second clip, and the clips are cut together with real product photos.
 
@@ -25,7 +25,7 @@ HARD RULES
 3. No text, logos, brand names, packaging, prices, screens or labels in the shot.
 4. One simple action and one slow camera move per scene (push-in, drift, tilt, or a static frame with moving light).
 5. 35 to 60 words per prompt: subject, setting, light, camera, mood. Cinematic commercial look.
-6. type = "mood" for scenes without the product. type = "product" ONLY for at most 2 scenes that start from one of the AVAILABLE PHOTOS (gentle camera move and light only; the product must not change shape or do anything). For product scenes set ref to that photo's id (e.g. "A03"); for mood scenes ref is "none".
+6. type = "mood" for scenes without the product. type = "product" ONLY for scenes that start from one of the AVAILABLE PHOTOS, at most the number given in the request, each from a DIFFERENT photo. Product scenes must look like a polished TV commercial: slow orbit, dolly or push-in, a light sweep gliding across the product, rim light, shallow depth of field, soft floating dust or bokeh. The product must not change shape, colour, text or logo, and must not do anything (no pouring, opening, steam, frost or any effect). For product scenes set ref to that photo's id (e.g. "A03"); for mood scenes ref is "none".
 7. Scenes must match the product's real use (see FACTS) and must not imply features the FACTS do not state.
 Output ONLY JSON."""
 
@@ -50,8 +50,9 @@ def check_prompt(text: str) -> list[str]:
 
 def generate_scenes(project: Project, cfg: dict, entries: list[dict], n: int = 10) -> list[dict]:
     photos = [e for e in entries if e["usable"] and e["kind"] == "image"]
+    max_prod = int(cfg.get("scenes", {}).get("max_product_scenes", DEFAULT_MAX_PRODUCT_SCENES))
     user = (f"FACTS:\n{facts_yaml(project)}\n\nAVAILABLE PHOTOS:\n{assets_block(photos)}\n\n"
-            f"Write {n} scenes (at most {MAX_PRODUCT_SCENES} of type product). Return JSON in this shape:\n{SCHEMA}")
+            f"Write {n} scenes (at most {max_prod} of type product, each from a different photo). Return JSON in this shape:\n{SCHEMA}")
     data = None
     for attempt in range(3):
         try:
@@ -65,7 +66,7 @@ def generate_scenes(project: Project, cfg: dict, entries: list[dict], n: int = 1
     if not data:
         raise RuntimeError("The model did not return usable scenes after 3 tries. Try again or choose another model.")
     by_id = {e["id"]: e for e in photos}
-    scenes, n_prod = [], 0
+    scenes, n_prod, used_refs = [], 0, set()
     for i, s in enumerate(data["scenes"], 1):
         prompt = re.sub(r"\s+", " ", str(s.get("prompt", ""))).strip()
         if not prompt:
@@ -76,15 +77,18 @@ def generate_scenes(project: Project, cfg: dict, entries: list[dict], n: int = 1
             continue
         typ, ref = str(s.get("type", "mood")).lower(), str(s.get("ref", "none"))
         if typ == "product":
-            if ref not in by_id or n_prod >= MAX_PRODUCT_SCENES:
+            if ref not in by_id or n_prod >= max_prod or ref in used_refs:
                 typ, ref = "mood", "none"
-                log(f"  scene {i}: product scene converted to mood (bad reference or too many)")
+                log(f"  scene {i}: product scene converted to mood (bad or repeated photo, or too many)")
             else:
                 n_prod += 1
+                used_refs.add(ref)
         else:
             typ, ref = "mood", "none"
-        scenes.append({"id": f"s{len(scenes) + 1:02d}", "type": typ, "ref": by_id[ref]["file"] if typ == "product" else "none",
-                       "prompt": prompt})
+        scenes.append({"id": "", "type": typ, "ref": by_id[ref]["file"] if typ == "product" else "none", "prompt": prompt})
+    scenes.sort(key=lambda s: s["type"] != "product")      # polished product-ad clips first
+    for i, s in enumerate(scenes, 1):
+        s["id"] = f"s{i:02d}"
     return scenes
 
 

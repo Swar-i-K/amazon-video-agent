@@ -15,6 +15,7 @@ from . import timeline as T
 from . import tts as V
 from .common import load_config, log
 from .overlay import build_overlays
+from .templates import apply_template, tpl_of
 from .project import check_text, load_project, validate_facts
 
 
@@ -22,18 +23,31 @@ def _slug(s: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", s.lower()).strip("-")[:48] or "video"
 
 
+def choose_length(cfg: dict, project, choice) -> str:
+    """Length preset by video type (review / compare / list), or 'short' for any type. Every preset stays under 9 minutes."""
+    presets = cfg.get("length_presets", {})
+    if choice == "short":
+        key = "short"
+    else:
+        key = "list" if (project.compare and project.compare["kind"] == "list") else "compare" if project.compare else "review"
+    if choice not in (None, "auto", "standard", "short"):
+        raise SystemExit(f"Unknown length '{choice}'. Options: auto, short")
+    if presets.get(key):
+        cfg["length"].update(presets[key])
+    return key
+
+
 def _prep(args, need_vision=True):
     cfg = load_config()
     for k in ("width", "height", "fps", "crf"):
         if getattr(args, k, None):
             cfg["video"][k] = getattr(args, k)
-    if getattr(args, "length", None):
-        preset = cfg.get("length_presets", {}).get(args.length)
-        if not preset:
-            raise SystemExit(f"Unknown length '{args.length}'. Options: {', '.join(cfg.get('length_presets', {}))}")
-        cfg["length"].update(preset)
-        log(f"Length mode: {args.length} ({preset['min_minutes']}-{preset['max_minutes']} min)")
     project = load_project(args.asin)
+    key = choose_length(cfg, project, getattr(args, "length", None))
+    log(f"Length preset: {key} ({cfg['length']['min_minutes']}-{cfg['length']['max_minutes']} min, aim {cfg['length']['target_minutes']})")
+    tpl = apply_template(cfg, getattr(args, "template", None))
+    if getattr(args, "template", None) or args.__dict__.get("cmd") in ("render", "all", "preview"):
+        log(f"Template: {tpl['key']} ({tpl.get('label', '')})")
     errors, warns = validate_facts(project)
     for w in warns:
         log(f"  WARNING: {w}")
@@ -70,11 +84,11 @@ def cmd_scenes(args):
     cfg, project, entries, _ = _prep(args)
     if project.compare:
         raise SystemExit("AI scenes are made per product. Run 'scenes' on each product folder; the AI clips (ai_*.mp4) in a product's "
-                         "assets/ are used automatically by comparison videos that include that product.")
+                         "assets/ are used automatically by comparison and list videos that include that product.")
     target = project.dir / "scenes.md"
     if target.exists() and not args.force:
         raise SystemExit(f"{target} already exists (it may contain your edits). Use --force to overwrite.")
-    scenes = SC.generate_scenes(project, cfg, entries, n=args.count)
+    scenes = SC.generate_scenes(project, cfg, entries, n=args.count or int(cfg.get("scenes", {}).get("count", 10)))
     if len(scenes) < 3:
         raise SystemExit("Fewer than 3 safe scenes survived the checks. Run it again, or add more detail to facts.yaml (use_cases).")
     md = SC.scenes_to_md(scenes, project)
@@ -84,6 +98,15 @@ def cmd_scenes(args):
     log(f"\n{len(scenes)} scene(s) written to projects/{project.asin}/scenes.md ({n_prod} product, {len(scenes) - n_prod} mood).")
     log("  Review/edit it, then run notebooks/make_ai_clips.ipynb on a free GPU (Kaggle or Colab).")
     log("  The clips arrive in assets/ as ai_s01.mp4 ... and are used automatically on the next render.")
+
+
+def cmd_preview(args):
+    """One sample picture per template, so you can compare the looks before rendering a whole video."""
+    from .preview import render_template_preview
+    args.no_vision = True   # the preview only needs a photo; the face/price screening still runs on real renders
+    cfg, project, entries, _ = _prep(args)
+    out = render_template_preview(project, cfg, entries, only=getattr(args, "template", None))
+    log(f"\nTemplate preview saved: {out}")
 
 
 def cmd_render(args):
@@ -158,6 +181,10 @@ def run_render(args, cfg, project, entries, warns, script):
     tl = T.build_timeline(segs, arrays, cfg, enforce=not args.no_length_check)
     log(f"Timeline: {tl.total / 60:.2f} min")
 
+    if cfg["disclosure"].get("mode", "full") == "description_only":
+        warns.append("Disclosure mode is description_only: there is no disclosure inside the video. It is in description.txt (first line) and "
+                     "pinned_comment.txt. The FTC says disclosure inside the video is clearer; on_screen mode adds silent text on screen.")
+        log("  NOTE: disclosure mode = description_only (nothing in the video; use description.txt and pinned_comment.txt)")
     cov, cov_notes = A.coverage_report(entries, tl.total)
     for n in cov_notes:
         log(f"  {n}")
@@ -182,9 +209,12 @@ def run_render(args, cfg, project, entries, warns, script):
                      "content question (realistic AI scenes must be labelled). Review each AI clip for odd hands, distorted objects "
                      "or anything that looks like a product claim.")
         log(f"  AI-generated clips in {len(ai_spans)} shot(s); on-screen tag and description note added")
+    kind = project.compare["kind"] if project.compare else None
+    rank_notes = ([rl or bf for rl, bf in zip(project.compare["rank_labels"], project.compare["best_for"])] if kind == "list" else None)
     ovs = build_overlays(tl.rows, tl.total, cfg, W, H, project.facts["product_name"], extra, ai_spans=ai_spans,
-                         product_labels=project.compare["labels"] if project.compare else None,
-                         endcard_line="Links to each product in the description" if project.compare else "Link in the description")
+                         product_labels=project.compare["labels"] if project.compare else None, kind=kind, rank_notes=rank_notes,
+                         endcard_line={"list": "Links to every product in the description",
+                                       "compare": "Links to each product in the description"}.get(kind, "Link in the description"))
     silent = out / "_video_only.mp4"
     log(f"Rendering {len(shots)} shots at {W}x{H} ...")
     R.render_video(shots, ovs, tl.total, cfg, silent, out / "ffmpeg.log", max_seconds=args.max_seconds)
@@ -194,7 +224,8 @@ def run_render(args, cfg, project, entries, warns, script):
     F.mux(silent, voice_wav, final, args.max_seconds or tl.total, music)
     silent.unlink(missing_ok=True)
     F.write_description(project, cfg, script, tl, vinfo, out / "description.txt")
-    F.write_review(project, script, entries, cov_notes, warns, tl, final, voice_key, out / "REVIEW_CHECKLIST.md")
+    F.write_review(project, script, entries, cov_notes, warns, tl, final, voice_key, out / "REVIEW_CHECKLIST.md",
+                   disclosure_mode=cfg["disclosure"].get("mode", "full"))
     if (project.dir / "script.md").exists():
         shutil.copy(project.dir / "script.md", out / "script_used.md")
     if not args.max_seconds:
@@ -226,13 +257,14 @@ def main(argv=None):
         sp.add_argument("asin")
         sp.add_argument("--no-vision", action="store_true", help="skip AI image checks (tests only)")
         if script or render:
-            sp.add_argument("--length", choices=["standard", "short"], help="standard 5-9 min (default) or short 1.5-4.8 min")
+            sp.add_argument("--length", choices=["auto", "standard", "short"], help="auto = by video type, always under 9 min (default); short = 1.5-4.8 min")
         if script:
             sp.add_argument("--angle", choices=list(S.ANGLES), help="video angle (default: rotates automatically)")
             sp.add_argument("--force", action="store_true", help="overwrite script.md / ignore daily limit")
         if voice:
             sp.add_argument("--voice", help="voice key from config.yaml (see 'voices')")
         if render:
+            sp.add_argument("--template", help="visual template: one, two, three, four or best (default from config.yaml)")
             sp.add_argument("--no-length-check", action="store_true")
             sp.add_argument("--max-seconds", type=float, help="render only the first N seconds (preview)")
             for k in ("width", "height", "fps", "crf"):
@@ -241,7 +273,10 @@ def main(argv=None):
     sp = sub.add_parser("scenes", help="plan AI b-roll scenes (scenes.md) for the free-GPU notebook")
     common(sp, script=False)
     sp.add_argument("--force", action="store_true", help="overwrite scenes.md")
-    sp.add_argument("--count", type=int, default=10, help="how many scenes to plan (default 10)")
+    sp.add_argument("--count", type=int, default=None, help="how many scenes to plan (default from config.yaml)")
+    sp2 = sub.add_parser("preview", help="one sample picture per visual template")
+    common(sp2)
+    sp2.add_argument("--template", help="only this template (default: all five)")
     common(sub.add_parser("index", help="check and describe your assets"))
     common(sub.add_parser("script", help="write script.md for review"), script=True)
     common(sub.add_parser("render", help="voice + render from script.md"), voice=True, render=True)
@@ -250,7 +285,7 @@ def main(argv=None):
     sub.add_parser("eleven-voices", help="list voices available to your ElevenLabs key")
 
     args = p.parse_args(argv)
-    {"index": cmd_index, "script": cmd_script, "render": cmd_render, "all": cmd_all, "scenes": cmd_scenes,
+    {"index": cmd_index, "script": cmd_script, "render": cmd_render, "all": cmd_all, "scenes": cmd_scenes, "preview": cmd_preview,
      "voices": cmd_voices, "eleven-voices": cmd_eleven_voices}[args.cmd](args)
 
 

@@ -14,6 +14,7 @@ from .project import Project, check_text
 
 ANGLES = {
     "comparison": "A fair side-by-side comparison of 2-3 products for one kind of buyer (used automatically for comparison projects).",
+    "list": "A Top-N list of 3-9 products ranked by the creator, each presented as the creator's pick with honest limits (used automatically for list projects).",
     "first_impressions": "A hands-on first look: what it is, what stands out, and what a buyer should know before deciding.",
     "who_its_for": "A decision guide: who this suits, who should skip it, and how to decide for yourself.",
     "problem_solution": "Open with the everyday problem this product addresses, then walk through how each feature deals with it.",
@@ -24,7 +25,7 @@ ANGLES = {
 }
 
 SECTION_LABELS = {
-    "head_to_head": "Head to head",
+    "head_to_head": "Head to head", "criteria": "How I picked", "recap": "Recap",
     "hook": "Intro", "disclosure": "Intro", "context": "What to look for", "overview": "Overview",
     "features": "Key features", "in_use": "In use", "limits": "Limitations",
     "who_for": "Who it suits", "who_skip": "Who should skip it", "verdict": "Verdict", "outro": "Verdict",
@@ -44,7 +45,8 @@ HARD RULES
 8. Write for the ear. Each segment is 1-3 sentences, 14-32 words. Spell out units ("20 ounces"). No emojis, no markdown, no abbreviations a voice would mispronounce.
 9. onscreen is optional: at most 4 words, and only a fact that appears in FACTS (e.g. "20 oz capacity"). Otherwise "".
 10. asset_ids: pick 1-3 ids from AVAILABLE FOOTAGE that match what the narration is talking about. Use [] if nothing fits. Never describe something the footage does not show.
-11. Output ONLY JSON, no commentary."""
+11. KEYWORDS, if present in FACTS, are phrases viewers search for. Work 2 to 4 of them naturally into the title and description_intro (the title should contain the first keyword). Never stuff or repeat them, and never let a keyword imply a claim FACTS do not support.
+12. Output ONLY JSON, no commentary."""
 
 SECTION_GUIDE = (
     "Section order: hook (2-3 segments, no greeting, start in the middle of a thought), context, overview, "
@@ -80,7 +82,8 @@ HARD RULES
 10. onscreen is optional: at most 4 words, only a fact from FACTS (e.g. "Pack of 4"). Otherwise "".
 11. product = "1", "2" or "3" for a line about ONE product; "all" for lines about the comparison itself or general advice. asset_ids: 1-3 ids from AVAILABLE FOOTAGE that belong to the product the line is about (ids start with P1-, P2-, P3-; X- is shared footage). For "all" lines any footage is fine. Never describe something the footage does not show.
 12. Do not write a disclosure line or a sign-off; both are added automatically.
-13. Output ONLY JSON, no commentary."""
+13. KEYWORDS, if present in FACTS, are phrases viewers search for. Work 2 to 4 of them naturally into the title and description_intro (the title should contain the first keyword). Never stuff or repeat them, and never let a keyword imply a claim FACTS do not support.
+14. Output ONLY JSON, no commentary."""
 
 COMPARE_GUIDE = (
     "Section order: hook (2-3 lines: the question a buyer is asking, no greeting), context (what to look for in this kind of product), "
@@ -102,12 +105,65 @@ COMPARE_SCHEMA = """{
 priority: 1 = essential, 2 = useful, 3 = nice to have (cut first if the video runs long)."""
 
 
+LIST_SYSTEM = """You write narration for a faceless TOP-LIST video ("Top N ...") that presents 3 to 9 products the creator chose and ranked. A human creator reviews every script, an AI voice reads it, and the creator posts it.
+Your narration must sound like one real person talking to one viewer: contractions, varied sentence length (some very short), concrete detail, natural transitions, honest asides. No sales-pitch voice.
+
+HARD RULES
+1. Facts come ONLY from FACTS, and every fact belongs to exactly ONE product. Say the product's label whenever you state a product-specific detail. NEVER move or blend a fact between products.
+2. The ORDER of the list, each product's rank_label and best_for, and the CRITERIA are the creator's own decisions. Present them as "my pick for ...", never as an objective or tested result. Explain a ranking ONLY with that product's facts, its hands_on_notes and the CRITERIA. Never invent test results, sales or popularity rankings, or comparisons with products that are not on the list.
+3. If a product has fewer than 3 hands_on_notes, do not claim you tested it in any particular way: describe it from its facts ("on paper", "the brand says") and say plainly that the ranking follows the stated criteria.
+4. manufacturer_claims are the brand's words: attribute them ("the brand says").
+5. First-person experience only from that product's own hands_on_notes.
+6. Each item has: what it is (one line), why it sits at this rank (facts, notes, criteria), who it suits (best_for), and one honest limit (cons / not_for) when given.
+7. NEVER mention: prices, price level (cheap, affordable, budget), discounts, deals, coupons, star ratings, review counts, what customers say, "best seller", "Amazon's Choice", other retailers, health claims, guarantees.
+8. Avoid: game-changer, revolutionary, must-have, life-changing, perfect for everyone, "in today's video". No hype.
+9. Write for the ear. Each segment is 1-3 sentences, 14-32 words. Spell out units. No emojis, markdown or abbreviations a voice would mispronounce.
+10. onscreen is optional: at most 4 words, only a fact from FACTS (e.g. "Pack of 4"). Otherwise "".
+11. product = the item's RANK NUMBER as a string ("1" to "9") for a line about that one product; "all" for the intro, criteria, recap and verdict lines. asset_ids: 1-3 ids from AVAILABLE FOOTAGE that belong to the product the line is about (ids start with P1-, P2- ... ; X- is shared footage). Never describe something the footage does not show.
+12. Do not write a disclosure line or a sign-off; both are added automatically.
+13. KEYWORDS, if present in FACTS, are phrases viewers search for. Work 2 to 4 of them naturally into the title and description_intro (the title should contain the first keyword). Never stuff or repeat them, and never let a keyword imply a claim FACTS do not support.
+14. Output ONLY JSON, no commentary."""
+
+LIST_GUIDE = (
+    "Section order: hook (2-3 lines: the question a buyer is asking, no greeting), criteria (how the list was chosen and ranked: use the "
+    "creator's CRITERIA only; 2-4 lines), then ONE section per product named item_<rank> (for example item_6, item_5 ... item_1), in EXACTLY "
+    "the presentation order given by ORDER in FACTS, 5-9 lines each, then recap (one line per product: rank, label, who it suits; in rank order), "
+    "verdict (who should start with which pick; no unsupported 'best')."
+)
+
+LIST_SCHEMA = """{
+ "title": "YouTube title, under 70 chars, e.g. 'Top 6 cooling towels for hot weather'; contains the first keyword; no clickbait, no price",
+ "description_intro": "2-3 plain sentences describing the list, no hype, no price",
+ "tags": ["8-12 relevant tags"],
+ "segments": [
+  {"id": 1, "section": "hook|criteria|item_<rank>|recap|verdict",
+   "product": "1-9|all", "text": "narration", "onscreen": "", "asset_ids": ["P1-A01"], "source": "product|handson|general", "priority": 1}
+ ]
+}
+priority: 1 = essential, 2 = useful, 3 = nice to have (cut first if the video runs long)."""
+
+
+def _kind(project: Project):
+    return project.compare["kind"] if project.compare else None
+
+
 def _system(project: Project) -> str:
-    return COMPARE_SYSTEM if project.compare else SYSTEM
+    k = _kind(project)
+    return LIST_SYSTEM if k == "list" else COMPARE_SYSTEM if k == "compare" else SYSTEM
+
+
+def _guide(project: Project) -> str:
+    k = _kind(project)
+    return LIST_GUIDE if k == "list" else COMPARE_GUIDE if k == "compare" else SECTION_GUIDE
+
+
+def _schema(project: Project) -> str:
+    k = _kind(project)
+    return LIST_SCHEMA if k == "list" else COMPARE_SCHEMA if k == "compare" else SCHEMA
 
 
 # ---------------------------------------------------------------------------
-_FACT_KEYS = ["product_name", "brand", "category", "audience", "manufacturer_claims", "specs",
+_FACT_KEYS = ["product_name", "brand", "category", "audience", "keywords", "manufacturer_claims", "specs",
               "hands_on_notes", "pros", "cons", "not_for", "use_cases", "notes"]
 
 
@@ -118,13 +174,28 @@ def _facts_one(f: dict) -> str:
 
 def facts_yaml(project: Project) -> str:
     if project.compare:
+        c = project.compare
         parts = []
-        for i, (sub, label) in enumerate(zip(project.compare["products"], project.compare["labels"]), 1):
-            parts.append(f"PRODUCT {i}  (label: {label}; folder: {sub.asin})\n{_facts_one(sub.facts)}")
+        if c["kind"] == "list":
+            n = len(c["products"])
+            order = list(range(n, 0, -1)) if c["order"] == "countdown" else list(range(1, n + 1))
+            parts.append(f"LIST: {project.facts['product_name']}\nORDER: {c['order']} (present the sections in this order: "
+                         + ", ".join(f"item_{k}" for k in order) + ")\nCRITERIA: " + (c["criteria"] or "(none given: say only that this is your order)"))
+        for i, (sub, label) in enumerate(zip(c["products"], c["labels"]), 1):
+            head = f"PRODUCT {i}  (" + (f"rank #{i}; " if c["kind"] == "list" else "") + f"label: {label}; folder: {sub.asin}"
+            if c["kind"] == "list":
+                if c["rank_labels"][i - 1]:
+                    head += f"; rank_label: {c['rank_labels'][i - 1]}"
+                if c["best_for"][i - 1]:
+                    head += f"; best_for: {c['best_for'][i - 1]}"
+                head += f"; hands_on_notes: {len(sub.facts.get('hands_on_notes') or [])}"
+            parts.append(head + f")\n{_facts_one(sub.facts)}")
         extra = {k: project.facts[k] for k in ("compare_points", "notes") if project.facts.get(k)}
         if extra:
             parts.append("COMPARISON NOTES\n" + yaml.safe_dump(extra, sort_keys=False, allow_unicode=True, width=1000))
-        parts.append(f"PICK_ALLOWED: {'true' if project.compare['pick_ok'] else 'false'}")
+        if project.facts.get("keywords"):
+            parts.append("KEYWORDS: " + ", ".join(project.facts["keywords"]))
+        parts.append(f"PICK_ALLOWED: {'true' if c['pick_ok'] else 'false'}")
         return "\n\n".join(parts)
     return _facts_one(project.facts)
 
@@ -153,15 +224,15 @@ def estimate_minutes(segments: list[dict], cfg: dict) -> float:
 
 def pick_angle(project: Project, cfg: dict, forced: str | None) -> str:
     if project.compare:
-        return "comparison"
+        return "list" if project.compare["kind"] == "list" else "comparison"
     if forced:
-        if forced not in ANGLES or forced == "comparison":
-            raise SystemExit(f"Unknown angle '{forced}'. Choose from: {', '.join(a for a in ANGLES if a != 'comparison')}")
+        if forced not in ANGLES or forced in ("comparison", "list"):
+            raise SystemExit(f"Unknown angle '{forced}'. Choose from: {', '.join(a for a in ANGLES if a not in ('comparison', 'list'))}")
         return forced
-    if project.facts.get("angle") in ANGLES and project.facts.get("angle") != "comparison":
+    if project.facts.get("angle") in ANGLES and project.facts.get("angle") not in ("comparison", "list"):
         return project.facts["angle"]
     recent = [e.get("angle") for e in load_archive()[-8:]]
-    pool = sorted((a for a in ANGLES if a != "comparison"), key=lambda a: (recent.count(a), a))
+    pool = sorted((a for a in ANGLES if a not in ("comparison", "list")), key=lambda a: (recent.count(a), a))
     least = [a for a in pool if recent.count(a) == recent.count(pool[0])]
     return random.Random(project.asin).choice(least)
 
@@ -222,7 +293,7 @@ def _norm(t: str) -> str:
 
 def _product_tag(v) -> str:
     t = str(v or "all").strip().lower()
-    m = re.search(r"[123]", t)
+    m = re.search(r"[1-9]", t)
     return m.group(0) if m and t != "all" else "all"
 
 
@@ -277,11 +348,10 @@ def parse_script_reply(txt: str) -> dict | None:
 
 
 def generate(project: Project, cfg: dict, entries: list[dict], angle: str, target_words: int) -> dict:
-    comp = bool(project.compare)
-    base = (f"ANGLE: {angle}: {ANGLES[angle]}\n\n{COMPARE_GUIDE if comp else SECTION_GUIDE}\n\n"
+    base = (f"ANGLE: {angle}: {ANGLES[angle]}\n\n{_guide(project)}\n\n"
             "LENGTH: about {words} words of narration in total across all segments (plus or minus 8%).\n\n"
             f"FACTS:\n{facts_yaml(project)}\n\nAVAILABLE FOOTAGE:\n{assets_block(entries)}\n\n"
-            f"Return JSON in this shape:\n{COMPARE_SCHEMA if comp else SCHEMA}")
+            f"Return JSON in this shape:\n{_schema(project)}")
     words, note, data = target_words, "", None
     for attempt in range(3):
         txt = ask(cfg["llm"]["model"], _system(project), base.replace("{words}", str(words)) + note, max_tokens=12000, temperature=0.85)
@@ -298,8 +368,13 @@ def generate(project: Project, cfg: dict, entries: list[dict], angle: str, targe
         raise RuntimeError("The model did not return a usable script after 3 tries. Try again, or choose another model in "
                            "config.yaml (llm.model). Reasoning models can run out of tokens; llama/maverick-style models are steadier.")
     segs = _clean_segments(data["segments"])
+    kws = list(project.facts.get("keywords") or [])
+    tags = []
+    for t in kws + [str(x) for x in (data.get("tags") or [])]:
+        if t.strip() and t.strip().lower() not in {x.lower() for x in tags}:
+            tags.append(t.strip())
     return {"title": data.get("title") or project.facts["product_name"],
-            "description_intro": data.get("description_intro", ""), "tags": data.get("tags", []),
+            "description_intro": data.get("description_intro", ""), "tags": tags[:15],
             "angle": angle, "segments": segs}
 
 
@@ -311,7 +386,12 @@ def factcheck(project: Project, cfg: dict, script: dict) -> list[dict]:
     tag = (lambda s: f" [product {s.get('product', 'all')}]") if project.compare else (lambda s: "")
     segs = "\n".join(f"[{s['id']}] ({s['source']}){tag(s)} {s['text']}  || onscreen: {s['onscreen']}" for s in script["segments"])
     extra = ""
-    if project.compare:
+    if _kind(project) == "list":
+        extra = ("(f) attributes a fact, hands-on observation or manufacturer claim to the WRONG product, or blends two products; "
+                 "(g) states or implies a test, measurement or comparison the creator did not make (the ranking is the creator's opinion and "
+                 "must be presented as such, supported only by FACTS and CRITERIA); (h) invents ranking criteria that are not in CRITERIA; "
+                 "(i) calls a product the best / number one / top other than as the creator's own pick for its rank_label or best_for. ")
+    elif project.compare:
         extra = ("(f) attributes a fact, hands-on observation or manufacturer claim to the WRONG product, or blends two products; "
                  "(g) compares a point when any compared product has no fact for it; "
                  "(h) declares a winner or says better/worse/best without the hands_on_notes of BOTH products supporting it "
@@ -371,7 +451,7 @@ def expand(project: Project, cfg: dict, entries: list[dict], script: dict, need_
             "(4) honest limits and who it does or does not suit. Do not invent specs, results or experiences. "
             'Return {"segments": [{"after_id": "<id of the existing segment this follows>", "section": "...", "text": "...", '
             '"onscreen": "", "asset_ids": [], "source": "product|handson|general", "priority": 2'
-            + (', "product": "1|2|3|all"' if project.compare else "") + "}]}"
+            + ((', "product": "1-9|all"' if _kind(project) == "list" else ', "product": "1|2|3|all"') if project.compare else "") + "}]}"
             + (" Keep every fact with its own product, and never compare a point unless every compared product has a fact for it."
                if project.compare else ""))
     txt = ask(cfg["llm"]["model"], _system(project), user, max_tokens=6500, temperature=0.8)
@@ -494,9 +574,12 @@ def assemble(script: dict, project: Project, cfg: dict) -> list[dict]:
     n_hook = max(1, min(n_hook, 3))
     disclosure = {"id": "D", "section": "disclosure", "text": rng.choice(d["spoken"]), "onscreen": "",
                   "asset_ids": [], "source": "fixed", "priority": 1, "banner": True, "product": "all"}
-    outro_pool = d.get("outro_compare") if (project.compare and d.get("outro_compare")) else d["outro"]
+    k = _kind(project)
+    outro_pool = (d.get("outro_list") if k == "list" else d.get("outro_compare") if k == "compare" else None) or d["outro"]
     outro = {"id": "O", "section": "outro", "text": rng.choice(outro_pool), "onscreen": "",
              "asset_ids": [], "source": "fixed", "priority": 1, "endcard": True, "product": "all"}
+    if d.get("mode", "full") != "full":      # no spoken/banner disclosure inside the video
+        return segs + [outro]
     return segs[:n_hook] + [disclosure] + segs[n_hook:] + [outro]
 
 
@@ -507,9 +590,11 @@ def script_to_md(script: dict, project: Project) -> str:
     if project.compare:
         L.append("# PRODUCTS: " + "; ".join(f"{i}={lab} ({sub.asin})" for i, (sub, lab) in
                                             enumerate(zip(project.compare["products"], project.compare["labels"]), 1)))
+        if project.compare["kind"] == "list":
+            L.append(f"# ORDER: {project.compare['order']} (1 = your best pick; sections run in presentation order)")
     L += ["#", "# HOW TO EDIT: change any wording, delete a line to cut it, add a line with a new id (e.g. [n1]).",
-         "# Format:  [id] narration | product: 1/2/3/all | callout: up to 4 words | assets: A01,A02 | p: 1-3",
-         "# The affiliate disclosure and the sign-off are added automatically. Do not add prices, ratings or review quotes.",
+         "# Format:  [id] narration | product: 1-9/all | callout: up to 4 words | assets: A01,A02 | p: 1-3",
+         "# The sign-off is added automatically; where the affiliate disclosure appears is set in config.yaml (disclosure: mode). Do not add prices, ratings or review quotes.",
          "# Edit this file in place (projects/%s/script.md), commit, then run the render step." % project.asin, ""]
     cur = None
     for s in script["segments"]:

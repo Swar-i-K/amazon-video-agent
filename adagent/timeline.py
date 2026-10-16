@@ -80,6 +80,8 @@ def chapters(tl: Timeline, labels: list[str] | None = None) -> list[tuple[float,
         label = SECTION_LABELS.get(sec, sec.replace("_", " ").title())
         if labels and sec.startswith("product_") and sec[8:].isdigit() and 1 <= int(sec[8:]) <= len(labels):
             label = labels[int(sec[8:]) - 1]
+        elif labels and sec.startswith("item_") and sec[5:].isdigit() and 1 <= int(sec[5:]) <= len(labels):
+            label = f"#{int(sec[5:])} {labels[int(sec[5:]) - 1]}"
         if not out:
             out.append((0.0, label))
         elif label != out[-1][1] and r.start - out[-1][0] >= 20:

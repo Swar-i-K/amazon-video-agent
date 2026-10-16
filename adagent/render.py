@@ -30,6 +30,7 @@ from .assets import load_image_bgr
 from .cinematic import CinematicProduct, can_cutout
 from .common import log, video_info
 from .overlay import Overlay
+from .templates import Grader, blend_frames, tpl_of
 
 STAGE = 1.2  # photos are composed 20% larger than the output so zooms stay sharp
 
@@ -183,7 +184,8 @@ class Shot:
         z, fx, fy = z0 + (z1 - z0) * e, ax + (bx - ax) * e, ay + (by - ay) * e
         if self.cine is not None:
             if self._cp is None:
-                self._cp = CinematicProduct(load_image_bgr(self.path), W, H, variant=self.cine["variant"], seed=self.cine["seed"])
+                self._cp = CinematicProduct(load_image_bgr(self.path), W, H, variant=self.cine["variant"], seed=self.cine["seed"],
+                                            palette=self.cine.get("palette", "studio"))
             return self._cp.render(t, self.dur)
         if self.asset["kind"] == "image":
             if self._stage is None:
@@ -262,7 +264,7 @@ def plan_shots(rows, total: float, entries: list[dict], project_assets: Path, cf
                 sc = 0.0
                 if e["id"] in want_ids:
                     sc += 1.6
-                if seg_product in ("1", "2", "3") and e.get("product") in ("1", "2", "3"):
+                if seg_product.isdigit() and str(e.get("product", "")).isdigit():
                     sc += 2.5 if e["product"] == seg_product else -4.0
                 sc += 0.25 * len(txt & tokens(e["description"])) / 3
                 sc -= 0.45 * usage[e["id"]] / max(1, len(usable) ** 0.5)
@@ -277,7 +279,7 @@ def plan_shots(rows, total: float, entries: list[dict], project_assets: Path, cf
             shot = Shot(start=bounds[i] + k * per, dur=per, asset=e, path=path, W=W, H=H)
             if e["kind"] == "image" and cine_eligible(e) and rng.random() < share:
                 shot.cine = {"variant": cine_count[e["id"]] + (rng.randrange(4) if e["id"] not in first_move else first_move[e["id"]] % 4),
-                             "seed": rng.randrange(1000)}
+                             "seed": rng.randrange(1000), "palette": tpl_of(cfg).get("backdrop", "studio")}
                 first_move.setdefault(e["id"], rng.randrange(len(MOVES)))
                 cine_count[e["id"]] += 1
                 shot.move = dict(z=(1.0, 1.0), c=((.5, .5), (.5, .5)))
@@ -304,19 +306,14 @@ def plan_shots(rows, total: float, entries: list[dict], project_assets: Path, cf
 
 
 # ----------------------------- main render ----------------------------------
-def vignette_mask(W: int, H: int) -> np.ndarray:
-    y, x = np.ogrid[:H, :W]
-    d = np.sqrt(((x - W / 2) / (W / 2)) ** 2 + ((y - H / 2) / (H / 2)) ** 2)
-    m = 1.0 - 0.28 * np.clip(d - 0.55, 0, 1) ** 1.5
-    return np.repeat((m * 255).astype(np.uint8)[..., None], 3, axis=2)
-
-
 def render_video(shots: list[Shot], overlays: list[Overlay], total: float, cfg: dict, out_path: Path,
                  log_path: Path, max_seconds: float | None = None) -> None:
     v = cfg["video"]
     W, H, fps, xf = v["width"], v["height"], v["fps"], v["crossfade"]
     n_frames = int(round((max_seconds or total) * fps))
-    vig = vignette_mask(W, H)
+    tpl = tpl_of(cfg)
+    grader = Grader(tpl, W, H)
+    transition = tpl["transition"].get("kind", "fade")
     cmd = ["ffmpeg", "-y", "-loglevel", "error", "-f", "rawvideo", "-pix_fmt", "bgr24", "-s", f"{W}x{H}",
            "-r", str(fps), "-i", "-", "-an", "-c:v", "libx264", "-preset", v["preset"], "-crf", str(v["crf"]),
            "-pix_fmt", "yuv420p", "-movflags", "+faststart", str(out_path)]
@@ -335,10 +332,8 @@ def render_video(shots: list[Shot], overlays: list[Overlay], total: float, cfg: 
                 fr = sh.render(t - sh.start)
                 if k > 0 and t - sh.start < xf:
                     pv = shots[k - 1]
-                    a = smooth((t - sh.start) / xf)
-                    fr = cv2.addWeighted(pv.render(t - pv.start), 1 - a, fr, a, 0)
-                fr = cv2.convertScaleAbs(fr, alpha=1.04, beta=-4)       # gentle contrast
-                fr = cv2.multiply(fr, vig, scale=1 / 255.0)             # soft vignette
+                    fr = blend_frames(pv.render(t - pv.start), fr, (t - sh.start) / xf, transition)
+                fr = grader(fr, fi)                                     # template colour grade, vignette, grain, letterbox
                 for ov in overlays:
                     ov.apply(fr, t)
                 proc.stdin.write(np.ascontiguousarray(fr).tobytes())
