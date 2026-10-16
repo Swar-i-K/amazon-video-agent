@@ -10,6 +10,11 @@ short_name: "Brand"            # short label used in comparison videos (optional
 category: "insulated water bottle"        # plain words: what kind of product is it?
 audience: "people who carry a drink to work or the gym"
 
+# Phrases viewers search for (5-15 is plenty; the first one goes into the video title). Optional.
+keywords:
+  - insulated water bottle
+  - best water bottle for gym
+
 # Your Amazon affiliate link (SiteStripe short link amzn.to/xxxx, or an amazon.* link with your tag=).
 # Third-party link shorteners / cloakers are not allowed in Associates.
 affiliate_url: "https://amzn.to/XXXXXXX"
