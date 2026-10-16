@@ -8,7 +8,8 @@ video:
   crf: 18            # lower = better quality, bigger file (17-20 is good)
   preset: medium     # slower = smaller file. medium is fine.
   shot_seconds: 5.0  # average length of one shot
-  crossfade: 0.35
+  crossfade: 0.35    # set per template (templates: ... transition)
+  template: best     # one | two | three | four | best   (see templates: below; choose in the workflow dropdown)
   accent_color: [255, 176, 0]   # callout accent bar (R,G,B)
   cinematic: true         # TV-commercial style product shots from clean studio photos (free, no AI model)
   cinematic_share: 0.6    # share of eligible photo shots that use it (the rest use normal pan/zoom)
@@ -17,17 +18,80 @@ video:
     - /usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf
     - C:/Windows/Fonts/arialbd.ttf
 
-length:              # hard limits requested: 5-9 minutes
-  min_minutes: 5.0
-  max_minutes: 9.0
-  target_minutes: 7.0
+length:              # defaults = a single-product review; comparison and list videos use their own presets below
+  min_minutes: 3.5
+  max_minutes: 8.0
+  target_minutes: 5.0
   wpm: 155           # narration speed used for the pre-voice estimate
   lead_in: 0.8       # seconds of picture before the voice starts
   tail: 4.0          # seconds of end card after the voice ends
 
-length_presets:      # choose with --length  (or the 'length' dropdown in the workflow)
-  standard: {min_minutes: 5.0, max_minutes: 9.0, target_minutes: 7.0}
-  short:    {min_minutes: 1.5, max_minutes: 4.8, target_minutes: 3.0}
+length_presets:      # picked automatically by video type; 'short' can be chosen in the workflow for any type
+  review:  {min_minutes: 3.5, max_minutes: 8.0, target_minutes: 5.0}    # single product
+  compare: {min_minutes: 5.5, max_minutes: 8.8, target_minutes: 7.5}    # 2-3 products
+  list:    {min_minutes: 5.5, max_minutes: 8.8, target_minutes: 7.5}    # Top N (3-9 products)
+  short:   {min_minutes: 1.5, max_minutes: 4.8, target_minutes: 3.0}
+  # every video stays under 9 minutes
+
+# ---- visual templates (pick with the 'template' dropdown). caption styles: pill | light | solid | outline | glass
+# grade: contrast, brightness, saturation, tint [R,G,B offsets], vignette (0-0.5), grain (0-0.05). letterbox = black bar height share.
+# transition kinds: fade | slide | dip.  backdrop (cinematic product shots): studio | light | vivid | dark | pastel
+templates:
+  one:
+    label: "Clean & minimal"
+    accent: [47, 111, 237]
+    caption: {style: light}
+    grade: {contrast: 1.00, brightness: 0, saturation: 1.00, tint: [0, 0, 0], vignette: 0.06, grain: 0.0}
+    letterbox: 0.0
+    transition: {kind: fade, seconds: 0.40}
+    backdrop: light
+    badge: outline
+    endcard: {bg: [246, 247, 250, 238], text: [24, 26, 31]}
+  two:
+    label: "Bold & vibrant"
+    accent: [255, 61, 127]
+    caption: {style: solid}
+    grade: {contrast: 1.08, brightness: -2, saturation: 1.28, tint: [0, 0, 0], vignette: 0.14, grain: 0.0}
+    letterbox: 0.0
+    transition: {kind: slide, seconds: 0.35}
+    backdrop: vivid
+    badge: solid
+    endcard: {bg: [40, 10, 44, 220], text: [255, 255, 255]}
+  three:
+    label: "Dark cinematic"
+    accent: [255, 196, 87]
+    caption: {style: outline}
+    grade: {contrast: 1.14, brightness: -6, saturation: 0.92, tint: [-6, 0, 8], vignette: 0.38, grain: 0.025}
+    letterbox: 0.085
+    transition: {kind: dip, seconds: 0.55}
+    backdrop: dark
+    badge: glow
+    endcard: {bg: [5, 6, 9, 222], text: [255, 255, 255]}
+  four:
+    label: "Modern glass"
+    accent: [64, 224, 208]
+    caption: {style: glass}
+    grade: {contrast: 1.05, brightness: -2, saturation: 1.06, tint: [0, 0, 0], vignette: 0.16, grain: 0.0}
+    letterbox: 0.0
+    transition: {kind: fade, seconds: 0.45}
+    backdrop: pastel
+    badge: glass
+    endcard: {bg: [18, 24, 36, 212], text: [255, 255, 255]}
+  best:
+    label: "Modern (default)"
+    accent: [255, 176, 0]
+    caption: {style: pill}
+    grade: {contrast: 1.04, brightness: -4, saturation: 1.00, tint: [0, 0, 0], vignette: 0.28, grain: 0.0}
+    letterbox: 0.0
+    transition: {kind: fade, seconds: 0.35}
+    backdrop: studio
+    badge: solid
+    endcard: {bg: [8, 8, 10, 175], text: [255, 255, 255]}
+
+# ---- AI ad-clip scenes (see notebooks/make_ai_clips.ipynb)
+scenes:
+  count: 10               # scenes planned per product
+  max_product_scenes: 6   # clips animated from YOUR product photos (commercial camera/light moves only); the rest are faceless mood scenes
 
 llm:
   provider: groq                                   # groq (free tier available) or anthropic (paid)
@@ -64,6 +128,12 @@ voice:
   pause_section: 0.75    # extra pause when the section changes
 
 disclosure:
+  # Where the affiliate disclosure appears INSIDE the video (the description and pinned comment always carry it):
+  #   full             = spoken line + on-screen banner + "Contains affiliate links" tag + end-card line
+  #   on_screen        = text on screen only (about 6 seconds near the start, plus the end card); NO voice-over line
+  #   description_only = nothing inside the video; only description.txt and pinned_comment.txt
+  # The FTC says a disclosure in the video itself is clearer than one in the description box; on_screen is the middle option.
+  mode: description_only
   spoken:
     - "Quick note before we get into it: the link below is an affiliate link, and as an Amazon Associate I earn from qualifying purchases."
     - "Before we start, I should say this video has an affiliate link, and as an Amazon Associate I earn from qualifying purchases."
@@ -74,6 +144,10 @@ disclosure:
     - "If you want to look at either one yourself, the links are in the description, each next to its name. Thanks for watching."
     - "That's the comparison. You'll find a link for each product in the description. Thanks for watching."
     - "Links to both are in the description if you want a closer look. Thanks for watching."
+  outro_list:
+    - "Links to every product on the list are in the description, each next to its name. Thanks for watching."
+    - "That's the list. You'll find a link for each product in the description. Thanks for watching."
+    - "Every product here is linked in the description if you want a closer look. Thanks for watching."
   ai_voice_note: "Narration in this video is AI-generated."
   ai_tag: "AI-generated scene"
   ai_scenes_note: "Some scenes in this video are AI-generated."
@@ -83,5 +157,5 @@ disclosure:
     - "You'll find the link in the description if it sounds like a fit. Thanks for watching."
 
 safety:
-  max_videos_per_day: 3        # anti mass-production brake (override with --force)
+  max_videos_per_day: 2        # anti mass-production brake (override with --force)
   max_similarity: 0.22         # 4-gram overlap with your earlier scripts; above this the script is regenerated

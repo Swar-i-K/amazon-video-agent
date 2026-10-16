@@ -1,108 +1,83 @@
 # Amazon Ad Agent
 
-Builds a **faceless product-ad video (MP4, 5-9 minutes)** from the photos and clips *you* supply, with a natural-sounding
-script and voice-over, an automatic affiliate disclosure, and a review checklist. It runs on GitHub Actions, **never
-uploads anything**, and you review and post the video yourself.
+Builds faceless product videos (MP4, **always under 9 minutes**) from the photos and clips *you* supply, with a natural script, voice-over,
+five visual templates, and a review checklist. It runs on GitHub Actions, **never uploads anything**, and you review and post each video yourself.
 
-> **No Amazon scraping.** Amazon's Associates licence prohibits bots/data-extraction tools, and without the
-> Creators/PA API you may not pull its images, ratings, reviews or prices. So the agent uses footage and facts you put in
-> the project folder. The ASIN is only used to name the project and the link. When your API access is approved, the
-> data source can be swapped in (`adagent/assets.py` is the only place that reads footage).
+> **No Amazon scraping.** Amazon's Associates licence prohibits bots/data-extraction tools, and without the Creators/PA API you may not pull
+> its images, ratings, reviews or prices. So the agent uses footage and facts you put in the project folders.
 
-## What it does
+## Three video types
 
-| Step | What happens |
+| Type | Folder holds | Length (auto) | What you get |
+|---|---|---|---|
+| **Review** (one product) | `facts.yaml` + `assets/` | about 5 min (3.5-8) | hook, overview, features, in use, limits, who it suits, verdict |
+| **Comparison** (2-3 products) | `compare.yaml` | about 7.5 min (5.5-8.8) | a section per product, head-to-head on points every product has facts for, who each suits |
+| **Top-N list** (3-9 products) | `list.yaml` | about 7.5 min (5.5-8.8) | countdown with a big **#N** badge per item, "best for" labels, recap |
+
+`length: short` in the workflow gives 1.5-4.8 minutes for any type. All presets are in `config.yaml` (`length_presets`).
+**Max 2 videos per day** (`safety.max_videos_per_day`), a brake against mass-production.
+
+## Five visual templates (workflow dropdown `template`, or `video.template` in `config.yaml`)
+
+| Key | Look |
 |---|---|
-| 1. Check assets | Claude looks at every photo/clip: describes it, **excludes anything with a human face** (even on packaging) or **showing prices / star ratings / Amazon UI**. |
-| 2. Script | Written from `facts.yaml` **only**. A second AI pass fact-checks every line; regex rules block prices, ratings, review quotes, promo language, other retailers. Angle rotates so videos don't share a template; scripts are compared with your earlier ones. |
-| 3. You review | `projects/<ASIN>/script.md` is plain text. Edit freely on GitHub. |
-| 4. Voice | Per-line TTS (cached, so edits never re-bill you). Switch voices with one dropdown. |
-| 5. Edit | Studio/blur backgrounds, smooth pan-zoom (different framing on every reuse), cross-fades, captions, feature callouts, vignette, optional ducked music, end card. |
-| 6. Output | `*.mp4` (1080p, loudness-normalised), `description.txt` (disclosure + link + chapters), `REVIEW_CHECKLIST.md`. |
+| `one` | Clean and minimal: white panels, blue accent, soft fades |
+| `two` | Bold and vibrant: solid colour captions, vivid backdrops, push transitions |
+| `three` | Dark cinematic: letterbox bars, film grain, outlined captions, dip-to-black |
+| `four` | Modern glass: real frosted-glass panels, pastel bokeh |
+| `best` | Modern default: dark pill captions, amber accent |
 
-Length is enforced: the script is sized to 5-9 min before any voice is paid for, and the final file is rejected if it falls outside.
-A daily cap (default 3 videos) is a brake against mass-producing.
+Run **mode: preview** to get `template_preview.png`, one sample picture per template on one of your own photos. Templates are plain settings in
+`config.yaml` (`templates:`), so you can tweak colours, caption style, grade, letterbox and transitions.
 
-## New: comparison videos (2 or 3 products)
+## Where things go
 
-Make one video that compares your own products side by side. Each product keeps its own `facts.yaml`, footage and affiliate link.
-1. Make sure every product is already a normal project folder (`projects/<ASIN>/` with `facts.yaml` and `assets/`).
-   Optional: add `short_name: YESLIFE` to each `facts.yaml` for tidy on-screen labels.
-2. Copy `projects/_template_compare/` to `projects/<NAME>/` (any 3-40 letters/digits/-/_, for example `COMPARE-TOWELS`),
-   and fill in `compare.yaml` (title, the 2-3 product folders, category, audience).
-3. Run **Make video** with that **NAME** as the project, mode **script**; read/edit `projects/<NAME>/script.md`; then mode **render**.
-
-What it does: an intro, a section per product, a head-to-head on points that **every** product has facts for, who each one suits, and a verdict.
-Every line is tagged to a product (`| product: 1`), shows that product's own footage, and gets an "A | name" chip on screen.
-The description lists each product's own link; chapters carry the product names.
-Rules: facts are never moved between products; a point is compared only if every product has a fact for it; no price/rating/review
-comparisons; "better/best/winner" or a personal pick only when **every** product has 3+ `hands_on_notes` (otherwise the verdict names who each suits).
-The fact-check also flags claims attributed to the wrong product. AI scenes are made per product (`scenes` mode on each product);
-`ai_*` clips in a product's `assets/` are used automatically.
-
-## New: cinematic shots, short ads, AI clips
-
-**Cinematic product shots (free, automatic).** Photos with a clean plain backdrop are cut out and shown on a styled studio backdrop with a soft
-shadow, floor reflection, a light sweep and slow camera moves, like a TV product ad. About 60% of eligible photo shots use it
-(`video.cinematic_share` in `config.yaml`). If a cut-out edge looks rough, list the photo under `assets_no_cutout:` in `facts.yaml`,
-or set `cinematic: false` there to turn it off for the product.
-
-**Short ads.** The workflow has a **length** dropdown: `standard` (5-9 min) or `short` (1.5-4.8 min). Same as `--length short`.
-
-**AI-generated clips (free GPU, optional).**
-1. Run **Make video** with **mode: scenes**. It writes `projects/<ASIN>/scenes.md`: faceless mood scenes plus at most 2 gentle product-photo scenes.
-   Unsafe prompts (faces, frost/steam/instant effects, brand names, prices) are dropped automatically. Edit the file if you like.
-2. Open `notebooks/make_ai_clips.ipynb` in Kaggle or Colab (free GPU), follow the instructions at its top, and run it. It makes
-   `ai_s01.mp4`, `ai_s02.mp4` ... and saves them into `projects/<ASIN>/assets/`. **This notebook is untested on a real GPU.**
-3. Run **render** as usual. Clips named `ai_*` get an on-screen "AI-generated scene" tag, an AI note in `description.txt`, and a
-   reminder to answer YES to YouTube's altered/synthetic content question. AI clips are still screened for faces and prices.
-Check every AI clip yourself: AI video can distort hands and objects, and a clip must never imply a product effect you cannot support.
-
-## Setup (10 minutes)
-
-1. Create a **private** GitHub repo and upload this folder. (Private matters: your footage lives in it.)
-2. **Settings -> Secrets and variables -> Actions**, add:
-   - `ANTHROPIC_API_KEY` (required: script, fact-check, image checks)
-   - `ELEVENLABS_API_KEY` (only for `eleven_*` voices)
-   - `OPENAI_API_KEY` (only for `openai_*` voices)
-3. **Settings -> Actions -> General -> Workflow permissions -> Read and write** (so it can save `script.md`).
-4. For each product: copy `projects/_template/` to `projects/<ASIN>/`, fill `facts.yaml`, drop footage into `assets/`
-   (see `assets/README.md`), commit.
+```
+projects/<ASIN>/            a product:  facts.yaml, assets/ (photos + clips), music/ (optional), script.md
+projects/<NAME>/            a comparison: compare.yaml  (or a list: list.yaml), script.md
+projects/_template*/        blank copies to start from
+```
+**Keywords:** add `keywords:` to `facts.yaml`, `compare.yaml` or `list.yaml`. They are worked naturally into the title, description and tags (never stuffed).
 
 ## Making a video
 
-1. **Actions -> Make video -> Run workflow**: ASIN, mode **script**. Open `projects/<ASIN>/script.md`, read it, edit it.
-2. Run again with mode **render**, pick a voice. Start with `preview_seconds = 60` and an `edge_*` voice to check the look cheaply.
-3. Download the artifact (zip) from the run page, **watch the whole video**, then upload to YouTube yourself and paste `description.txt`.
-   Re-running render after edits is free of voice cost for unchanged lines.
+1. Product folder: copy `projects/_template/` to `projects/<ASIN>/`, fill `facts.yaml` (true notes; **3+ hands_on_notes** from real use), add 8+ photos and some clips to `assets/`.
+2. For a comparison or list: copy `projects/_template_compare/` or `projects/_template_list/` to `projects/<NAME>/` and fill it in.
+3. **Actions -> Make video -> Run workflow**: project name, **mode: script** (tick **force** only to overwrite an existing script). Edit `projects/<NAME>/script.md`.
+4. Optional: **mode: preview** to compare the five templates.
+5. **mode: render** with `preview_seconds: 60` and an `edge_*` voice first; then again with `0`. Download the zip from the run's **Artifacts**:
+   the `.mp4`, `title.txt`, `description.txt`, `pinned_comment.txt` and `REVIEW_CHECKLIST.md`.
+6. Watch the whole video with sound before posting.
 
-Mode **all** does both steps at once if you don't want a review pause (not recommended).
+You can also write your own `script.md` (one line per sentence: `[id] text | product: k | callout: ... | assets: ...`) and just render.
 
-Same thing locally: `pip install -r requirements.txt`, install ffmpeg, then `python -m adagent script B0XXXXXXXX` and
-`python -m adagent render B0XXXXXXXX --voice edge_male`.
+## AI ad clips (optional, free GPU, untested on a real GPU)
 
-## Voices (switch any time)
+**Make video -> mode: scenes** plans `scenes.md` for one product: polished commercial-style clips animated from your own product photos
+(slow orbit/push-in, light sweep, rim light; up to `scenes.max_product_scenes`, product scenes first) plus faceless mood scenes. Unsafe prompts
+(faces, frost/steam/instant effects, brand names, prices) are dropped. Then run `notebooks/make_ai_clips.ipynb` in Kaggle or Colab; it saves
+`ai_*.mp4` into `assets/`. Renders use them automatically, add an on-screen "AI-generated scene" tag, an AI note in the description, and a
+reminder to answer YES to YouTube's synthetic-content question. Your own video clips are graded and styled by the template but are not
+AI-converted. Always check AI clips for distorted products or hands.
 
-`python -m adagent voices` lists them; edit `config.yaml` to add more. `python -m adagent eleven-voices` lists what your ElevenLabs key can use.
+## Where the affiliate disclosure goes (`disclosure: mode:` in `config.yaml`)
+`full` = spoken line + on-screen banner + tag | `on_screen` = silent text near the start + end card | `description_only` = nothing in the video
+(shipped setting). Every run writes `description.txt` (Amazon's sentence on its **first line**) and `pinned_comment.txt`. The FTC says a
+disclosure inside the video is clearer than one in the description box; `on_screen` is the middle option. You are responsible for compliance.
 
-| Key | Provider | Notes |
-|---|---|---|
-| `eleven_female`, `eleven_female_2`, `eleven_male`, `eleven_male_2` | ElevenLabs | Most natural. IDs are ElevenLabs' stock voices; verify with `eleven-voices`. |
-| `edge_*` | Microsoft Edge neural voices (free) | Good for previews. Unofficial endpoint, no commercial-licence statement. |
-| `openai_*` | OpenAI TTS | Pay-as-you-go. |
+## Voices
+`edge_*` free (no commercial-licence statement), `eleven_*` ElevenLabs (free plan: about one video a month, non-commercial, attribution added
+automatically), `openai_*` pay-as-you-go. List with `python -m adagent voices`.
 
-**ElevenLabs free-plan reality check:** the free plan gives 10,000 credits/month, roughly 10 minutes of audio, which is about **one 7-minute video per month**, and its output is **non-commercial with required attribution**. A monetised affiliate channel needs a paid plan (Starter, $5/month at time of writing; check current terms). The agent reads your plan: on free it **auto-adds the "Voice generated by ElevenLabs" attribution** and warns you; it also stops before spending if you lack credits. `eleven_flash_v2_5` costs half the credits but sounds less natural (set `credits_per_char: 0.5` in `config.yaml`).
+## Setup
+1. Private GitHub repo with this project. 2. Secrets: `GROQ_API_KEY` (AI), optional `ELEVENLABS_API_KEY`, `OPENAI_API_KEY`.
+3. Settings -> Actions -> General -> Workflow permissions -> Read and write. 4. `.github/workflows/` must contain only `make-video.yml`.
 
-## Compliance guard-rails (and what they don't cover)
+## Guard-rails
+Spoken/on-screen rules block prices, price wording, star ratings, review quotes, "best seller", other retailers and health claims. Facts are never
+moved between products. Rankings are presented as **your** pick. A winner in a comparison needs 3+ hands_on_notes on every product. Footage is
+screened for faces and price/Amazon UI. You still own accuracy, YouTube's rules, music and image rights.
 
-Built in: spoken + on-screen "As an Amazon Associate I earn from qualifying purchases", affiliate-link-only description, no prices/ratings/review text/other retailers, no faces, no Amazon UI, attribution of brand claims, AI-voice note in the description, and a checklist.
-
-Still on you: the **channel must be listed in your Associates account**; **accuracy** of what you put in `facts.yaml`; **YouTube's** rules (its upload form asks about altered/synthetic content; answer honestly for your AI voice); **music/image rights**; and not posting near-identical videos. If you only ever feed it thin facts and stock-looking footage, the result will look like mass-produced content to a viewer or to YouTube, whatever the tool does. Your own hands-on notes and clips are what prevent that.
-
-## Test status (be aware)
-
-Verified in a sandbox without network keys: the whole render path (asset indexing, shot planning, pan/zoom, crossfades, captions, disclosure banner, end card, music ducking, loudness, 5-9 min gate, 1080p output), the script pipeline logic using a **simulated** AI (policy flags, fact-check/revise loop, length retry/trim, markdown round-trip), and the workflow YAML syntax.
-
-**Not verified:** live calls to Anthropic, ElevenLabs, Edge TTS and OpenAI, and the real GitHub Actions run. Do a first run with a preview before relying on it. Expect to tweak the prompt text in `adagent/scriptgen.py` once you hear real output.
-
-Offline test: `python tests/make_fixture.py && python -m adagent render TEST000001 --voice mock --no-vision --width 640 --height 360 --fps 24`
+## Test status
+Offline (simulated AI/voice): script, comparison and list logic, templates (grade, transitions, 5 caption styles, preview), disclosure modes, scenes,
+asset checks, full renders under every template. **Not verified:** live Groq / ElevenLabs / Edge calls, the real GitHub run, and the AI-clip notebook on a real GPU.
