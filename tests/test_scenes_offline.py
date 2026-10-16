@@ -12,6 +12,7 @@ from adagent.common import load_config
 from adagent.project import load_project
 
 cfg = load_config()
+cfg["scenes"]["max_product_scenes"] = 2          # the shipped default is higher; this test checks the cap itself
 p = load_project("TEST000001")
 
 # --- prompt rules

@@ -64,11 +64,15 @@ print("generations:", calls, "| estimated minutes:", round(est, 2), "| segments:
 assert calls["gen"] == 1 and calls["expand"] >= 1, "short draft must be EXPANDED, not regenerated"
 assert any(x["id"].startswith("x") for x in sc["segments"]) and "length_warning" not in rv
 assert calls["revise"] == 1 and any(s["text"].startswith("Rewritten") for s in sc["segments"])
-assert 5.3 <= est <= 8.6, est
+ln = cfg["length"]
+assert ln["min_minutes"] + 0.35 <= est <= ln["max_minutes"] - 0.45, (est, ln)
 ids = [x["id"] for x in sc["segments"]]
 assert len(ids) == len(set(ids)), "segment ids must stay unique"
 assert any(i["id"] == "7" for i in rv["policy"]), "price line must be flagged"
-assert segs[0]["section"] == "hook" and any(s["section"] == "disclosure" for s in segs) and segs[-1]["section"] == "outro"
+assert segs[0]["section"] == "hook" and segs[-1]["section"] == "outro"
+assert not any(s["section"] == "disclosure" for s in segs), "default mode must not speak a disclosure in the video"
+cfg_full = {**cfg, "disclosure": {**cfg["disclosure"], "mode": "full"}}
+assert any(s["section"] == "disclosure" for s in S.assemble(sc, p, cfg_full)), "full mode keeps the spoken disclosure"
 
 md = S.script_to_md(sc, p)
 back = S.md_to_script(md)

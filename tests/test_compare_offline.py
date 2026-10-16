@@ -64,11 +64,13 @@ def fake_ask(model, system, user, **kw):
 
 
 S.ask = fake_ask
+cli.choose_length(cfg, p, None)                     # comparison videos use the 'compare' length preset (7.5 min aim)
+assert (cfg["length"]["min_minutes"], cfg["length"]["max_minutes"]) == (5.5, 8.8)
 sc = S.make_script(p, cfg, entries, force=True)
 segs = S.assemble(sc, p, cfg)
 est = S.estimate_minutes(segs, cfg)
 assert sc["angle"] == "comparison" and seen["gen"] == 1 and seen["expand"] >= 1
-assert 5.3 <= est <= 8.6, est
+assert cfg["length"]["min_minutes"] + 0.35 <= est <= cfg["length"]["max_minutes"] - 0.45, est
 assert {s["product"] for s in sc["segments"]} >= {"1", "2", "all"}
 assert "WRONG product" in seen["check"] and "[product 1]" in seen["check"] and "PICK_ALLOWED" in seen["check"]
 assert segs[-1]["section"] == "outro" and any(w in segs[-1]["text"] for w in ("each", "both", "either"))
@@ -134,7 +136,7 @@ try:
     load_project("CMPTEST001")
     raise AssertionError("one product is not a comparison")
 except SystemExit as e:
-    assert "2 or 3" in str(e)
+    assert "2 to 3" in str(e)
 cf.write_text(orig)
 other = load_project("TEST000002")
 f2 = Path(other.dir / "facts.yaml")
