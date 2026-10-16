@@ -7,15 +7,20 @@ on:
         description: "Project folder name under projects/ (a product ASIN, or a comparison folder)"
         required: true
       mode:
-        description: "script = write script.md | render = build the mp4 from script.md | all = both | scenes = plan AI clip scenes"
+        description: "script = write script.md | render = build the mp4 | all = both | scenes = plan AI clip scenes | preview = sample picture of all 5 templates"
         type: choice
         default: script
-        options: [script, render, all, scenes]
+        options: [script, render, all, scenes, preview]
       length:
-        description: "Video length: standard = 5-9 min, short = 1.5-4.8 min"
+        description: "auto = by video type (review ~5 min, comparison/list ~7.5 min, always under 9) | short = 1.5-4.8 min"
         type: choice
-        default: standard
-        options: [standard, short]
+        default: auto
+        options: [auto, short]
+      template:
+        description: "Visual template (render/all): best = modern, one = clean minimal, two = bold vibrant, three = dark cinematic, four = modern glass"
+        type: choice
+        default: best
+        options: [best, one, two, three, four]
       voice:
         description: "Narration voice"
         type: choice
@@ -59,6 +64,7 @@ jobs:
       ASIN: ${{ inputs.asin }}
       MODE: ${{ inputs.mode }}
       LENGTH: ${{ inputs.length }}
+      TEMPLATE: ${{ inputs.template }}
       VOICE: ${{ inputs.voice }}
       ANGLE: ${{ inputs.angle }}
       PREVIEW: ${{ inputs.preview_seconds }}
@@ -74,10 +80,13 @@ jobs:
 
       - name: Validate ASIN
         run: |
-          [[ "$ASIN" =~ ^[A-Za-z0-9][A-Za-z0-9_-]{2,39}$ ]] || { echo "Project name must be 3-40 letters, digits, - or _"; exit 1; }
+          ASIN="$(printf '%s' "$ASIN" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"   # trim stray spaces
+          ASIN="${ASIN#projects/}"; ASIN="${ASIN%/}"                                              # allow "projects/NAME/"
+          echo "Project name received: [$ASIN]"
+          [[ "$ASIN" =~ ^[A-Za-z0-9][A-Za-z0-9_-]{2,39}$ ]] || { echo "Project name [$ASIN] is not valid: use 3-40 letters, digits, - or _ (no spaces, slashes, dots or commas), exactly like the folder name under projects/"; exit 1; }
           ASIN=$(echo "$ASIN" | tr a-z A-Z)
           echo "ASIN=$ASIN" >> "$GITHUB_ENV"
-          [ -d "projects/$ASIN" ] || { echo "Folder projects/$ASIN not found"; exit 1; }
+          [ -d "projects/$ASIN" ] || { echo "Folder projects/$ASIN not found. Check the spelling against the folders in your repo."; exit 1; }
 
       - uses: actions/setup-python@v5
         with:
@@ -101,11 +110,12 @@ jobs:
         run: |
           args=("$MODE" "$ASIN")
           if [ "$MODE" = "render" ] || [ "$MODE" = "all" ]; then args+=(--voice "$VOICE"); fi
-          if [ "$MODE" != "scenes" ] && [ -n "$LENGTH" ]; then args+=(--length "$LENGTH"); fi
+          if [ "$MODE" = "render" ] || [ "$MODE" = "all" ]; then if [ -n "$TEMPLATE" ]; then args+=(--template "$TEMPLATE"); fi; fi
+          if [ "$MODE" = "script" ] || [ "$MODE" = "render" ] || [ "$MODE" = "all" ]; then if [ -n "$LENGTH" ]; then args+=(--length "$LENGTH"); fi; fi
           if [ "$MODE" = "script" ] || [ "$MODE" = "all" ]; then
             if [ -n "$ANGLE" ]; then args+=(--angle "$ANGLE"); fi
           fi
-          if [ "$MODE" != "render" ] && [ "$FORCE" = "true" ]; then args+=(--force); fi
+          if [ "$MODE" = "script" ] || [ "$MODE" = "all" ] || [ "$MODE" = "scenes" ]; then if [ "$FORCE" = "true" ]; then args+=(--force); fi; fi
           if [ "$MODE" = "render" ] || [ "$MODE" = "all" ]; then
             if [ "$PREVIEW" != "0" ] && [ -n "$PREVIEW" ]; then args+=(--max-seconds "$PREVIEW"); fi
           fi
@@ -118,6 +128,7 @@ jobs:
           name: ${{ env.ASIN }}-${{ inputs.mode }}-${{ github.run_number }}
           path: |
             projects/${{ env.ASIN }}/out/*.mp4
+            projects/${{ env.ASIN }}/out/*.png
             projects/${{ env.ASIN }}/out/*.txt
             projects/${{ env.ASIN }}/out/*.md
           retention-days: 14
