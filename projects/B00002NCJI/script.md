@@ -10,14 +10,14 @@
 
 
 ## hook
-[1] Imagine a chilly night, and the living room stays warm because the windows aren't letting the heat slip away. | assets: A02 | p: 1
-[2] That tiny gap you ignore could be costing you more than just a draft. | p: 1
+[1] Imagine a chilly night, and the living room stays warm because the windows aren't letting the heat slip away because of air sealing. | assets: A02 | p: 1
+[2] That tiny gap you ignore could be costing you more than just a draft. stop drafts in house | p: 1
 
 ## context
-[3] Many renters and owners look for a quick fix before the heating season kicks in, and 3M offers a seasonal kit for that purpose. | assets: A01 | p: 1
+[3] Many renters and owners look for a quick fix home energy efficiency before the heating season kicks in, and 3M offers a seasonal DIY window insert kit for that purpose. | assets: A01 | p: 1
 
 ## overview
-[4] The kit comes with five sheets of clear film, each meant for windows up to three feet by five feet, plus tape and a drying tool. | assets: A03 | p: 1
+[4] The Plastic film kit comes with five sheets of clear film, each meant for windows up to three feet by five feet, plus tape and a drying tool. | assets: A03 | p: 1
 [x1] The kit includes five clear film sheets, each paired with a strip of double-sided tape designed for indoor glass surfaces only, according to the product specifications. | assets: A01 | p: 2
 
 ## features
@@ -40,19 +40,24 @@
 [13] Energy savings vary by home, climate, and how well the installation is done; the kit doesn't guarantee a specific reduction. | p: 2
 
 ## who_for
-[14] Ideal for renters who can’t replace windows, and for homeowners wanting a seasonal, low-cost addition to their weatherproofing plan. | assets: A06 | p: 1
-[15] Also fits DIY enthusiasts looking to add a layer of air sealing without permanent changes to the window frame. | p: 2
+[14] Ideal for renters who can’t replace windows, and for homeowners wanting a seasonal, low-cost but heavy duty window insulation kit addition to their weatherproofing home plan. | assets: A06 | p: 1
+[15] Also fits DIY home improvement enthusiasts looking to add a layer of air sealing without permanent changes to the window frame. | p: 2
 
 ## who_skip
 [16] Skip it if you need insulation for exterior glass, or if your windows are larger than three feet by five feet. | p: 2
 [17] Those seeking a permanent repair for broken seals or expecting guaranteed heating cost cuts should consider other solutions. | p: 2
 
 ## verdict
-[18] Overall, the 3M Indoor Window Insulator Kit offers a straightforward, seasonal way to stop drafts in house and add a bit of comfort. | assets: A07 | p: 1
+[18] Overall, the 3M Indoor Window Insulator Kit offers a straightforward, seasonal way to stop drafts in house and add a bit of comfort and reduce heating and cooling costs. | assets: A07 | p: 1
 [19] It works best when paired with weatherstripping and other air sealing steps, forming part of a broader home energy efficiency effort. | p: 2
 [20] If you’re comfortable measuring, cleaning glass, and applying film, the kit is a handy DIY home improvement tool for winter. | p: 1
 [21] Just remember the film may need replacement each season, and the warranty has typical exclusions. | p: 2
 [22] For the right windows, it’s a low-effort addition that can help keep your space warmer without major upgrades. | p: 1
+
+## outro
+[O1] If you liked this video, give it a like and subscribe to the channel. In the comments, tell me if you liked the 3M Indoor Window Insulation Kit. | p: 1
+[O2] I've put the product links in the video description below. | p: 1
+[O3] Thank you very much for watching the whole video. Hope to see you in the next video. Take care. | p: 1
 
 <!-- REVIEW NOTES (ignored when rendering)
 estimated length: 4.1 min; similarity to earlier scripts: 0.002
