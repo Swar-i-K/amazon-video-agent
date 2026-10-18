@@ -1,1 +1,111 @@
 
+# ------------------------------------------------------------------
+# Copy this whole folder to projects/<ASIN>/ and fill it in.
+# The script writer may ONLY use what is written here. Anything you
+# leave out will simply not be said. More real facts = better video.
+# ------------------------------------------------------------------
+asin: B00002NCJI
+product_name: "3M Indoor Window Insulator Kit - Five Pack"
+brand: "3M"
+short_name: "3M"
+category: "Home Improvement"
+audience: "Homeowners and renters who want to reduce window drafts and improve winter comfort with a DIY indoor window insulation kit."
+
+# Your Amazon affiliate link (SiteStripe short link amzn.to/xxxx, or an amazon.* link with your tag=).
+# Third-party link shorteners / cloakers are not allowed in Associates.
+affiliate_url: "https://amzn.to/4hAPcGI"
+
+# What the brand/listing SAYS (the video will attribute these: "the brand says ...").
+# Type them yourself in your own words. Do not paste customer reviews, prices or star ratings.
+manufacturer_claims:
+  - "Designed for indoor windows up to 3 feet by 5 feet."
+  - "Five-pack intended to cover five standard-size windows."
+  - "Designed to help reduce heat loss through indoor windows."
+  - "Designed to help reduce condensation and frost buildup on indoor glass."
+  - "The product includes a one-year limited warranty; terms and exclusions apply."
+  - "Designed as a DIY seasonal window insulation option."
+
+# Hard specs you can verify on the product / box / brand site.
+specs:
+  - "Product: 3M Indoor Window Insulator Kit, Five Pack."
+  - "ASIN: B00002NCJI."
+  - "Brand: 3M."
+  - "Pack size: five window insulation film sheets."
+  - "Intended window size: up to 3 feet by 5 feet per window, according to the supplied product information."
+  - "Intended use: indoor windows, not exterior glass surfaces."
+  - "The supplied product information lists a one-year limited warranty."
+  - "Installation instructions and warranty conditions should be checked on the current package."
+  - "Actual energy savings depend on the home, windows, climate, and installation."
+
+# YOUR OWN observations from actually handling the product. This is what makes the video
+# yours (and keeps it clear of YouTube's 'inauthentic content' rules). Aim for 6+ lines.
+hands_on_notes:
+  - "These are practical observations based on the supplied product information, not firsthand testing."
+  - "The five-pack is potentially useful when several windows need seasonal insulation, provided each window fits the stated dimensions."
+  - "Measuring every window before opening the kit can help avoid discovering that a pane is too large."
+  - "Careful surface preparation and following the product's specific instructions are important for a neat installation."
+  - "This kit adds a layer over indoor glass; it does not repair damaged frames, failed seals, or large gaps around a window."
+  - "Window film may be one part of a broader plan to stop drafts in a house, alongside weatherstripping and repairs where needed."
+  - "The film may need replacement over time, so buyers should consider it a seasonal measure rather than a permanent window upgrade."
+  - "For home energy efficiency, results depend on the home's existing insulation and the source of heat loss."
+  - "Do not describe these notes as personal testing unless the product has actually been handled and tested."
+
+pros:
+  - "Five-sheet pack intended to cover multiple standard-size indoor windows."
+  - "DIY option for homeowners and renters seeking seasonal window insulation."
+  - "May help reduce heat loss and improve comfort near windows."
+  - "Designed to help reduce condensation and frost buildup on indoor glass."
+  - "One-year limited warranty, subject to its terms."
+
+cons:
+  - "Designed for indoor windows up to 3 feet by 5 feet; larger panes may need another solution."
+  - "Not intended for exterior glass surfaces."
+  - "Does not repair damaged frames, failed seals, or structural gaps."
+  - "Actual energy savings vary and are not guaranteed."
+  - "The film may need replacement over time."
+  - "The limited warranty has terms and exclusions."
+
+not_for:
+  - "People who need insulation film for exterior glass surfaces."
+  - "People whose windows exceed the kit's specified dimensions and do not want to use another solution."
+  - "Anyone seeking a permanent repair for damaged frames or failed window seals."
+  - "Anyone expecting guaranteed reductions in heating or cooling costs."
+  - "People looking specifically for attic insulation or an attic air-sealing product."
+
+# Optional extras
+use_cases:
+  - "indoor window insulation"
+  - "winter draft reduction"
+  - "home energy efficiency"
+  - "seasonal DIY home improvement"
+  - "window condensation and frost management"
+  - "part of a broader home weatherproofing plan"
+
+notes: |
+  SEO keywords:
+  - "air sealing"
+  - "attic air sealing"
+  - "air sealing attic"
+  - "stop drafts in house"
+  - "how to seal air leaks"
+  - "home energy efficiency"
+  - "attic insulation"
+  - "reduce heating and cooling costs"
+  - "weatherproofing your home"
+  - "DIY home improvement"
+
+  Keyword usage guidance:
+  - Use "air sealing," "stop drafts in house," "how to seal air leaks,"
+    "home energy efficiency," "weatherproofing your home," and
+    "DIY home improvement" where they fit the topic naturally.
+  - "Attic air sealing," "air sealing attic," and "attic insulation"
+    are related home-improvement search terms, but this product is a
+    window insulation kit, not an attic insulation product. Mention them
+    only when explaining that attic air sealing is a separate project.
+  - Do not claim a guaranteed amount of energy savings.
+  - Do not invent firsthand testing, customer feedback, prices, or ratings.
+  - Recheck the current Amazon listing before using price, rating,
+    review count, or availability in content.
+
+# angle: honest_pros_cons
+# assets_allow: [03_closeup.jpg]
