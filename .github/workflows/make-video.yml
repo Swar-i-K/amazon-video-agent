@@ -99,8 +99,8 @@ jobs:
           sudo apt-get install -y -qq ffmpeg fonts-dejavu-core
           pip install -r requirements.txt
 
-      - name: Restore voice/asset cache (saves ElevenLabs credits on re-runs)
-        uses: actions/cache@v4
+      - name: Restore voice/asset cache (saves ElevenLabs credits + Groq tokens on re-runs)
+        uses: actions/cache/restore@v4
         with:
           path: projects/${{ env.ASIN }}/.cache
           key: adagent-${{ env.ASIN }}-${{ github.run_id }}
@@ -119,7 +119,28 @@ jobs:
           if [ "$MODE" = "render" ] || [ "$MODE" = "all" ]; then
             if [ "$PREVIEW" != "0" ] && [ -n "$PREVIEW" ]; then args+=(--max-seconds "$PREVIEW"); fi
           fi
-          python -m adagent "${args[@]}"
+          set -o pipefail
+          python -u -m adagent "${args[@]}" 2>&1 | tee run.log
+
+      - name: Show the result on the run summary page
+        if: always()
+        run: |
+          {
+            echo "### Video agent log (last 60 lines)"
+            echo '```'
+            tail -n 60 run.log 2>/dev/null || echo "(no log was written)"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          # put the real failure reason into the red Annotations box instead of only "exit code 1"
+          msg=$(grep -E "STOPPED|These lines break|Error|failed" run.log 2>/dev/null | tail -1 | cut -c1-900)
+          if [ -n "$msg" ]; then echo "::error title=Video agent::${msg}"; fi
+
+      - name: Save cache (also after a failed run, so paid-for vision results are kept)
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: projects/${{ env.ASIN }}/.cache
+          key: adagent-${{ env.ASIN }}-${{ github.run_id }}
 
       - name: Upload results
         if: always()
@@ -131,11 +152,14 @@ jobs:
             projects/${{ env.ASIN }}/out/*.png
             projects/${{ env.ASIN }}/out/*.txt
             projects/${{ env.ASIN }}/out/*.md
+            run.log
           retention-days: 14
           if-no-files-found: ignore
 
       - name: Save script + anti-duplication history
-        if: success()
+        # always(): if render fails after the script was written (e.g. a policy flag), the script is still saved to the
+        # repo so you can edit projects/<ASIN>/script.md and run mode=render, instead of it being lost with the run.
+        if: always()
         continue-on-error: true
         run: |
           mkdir -p /tmp/keep/scripts_archive
