@@ -3,21 +3,22 @@
 # The script writer may ONLY use what is written here. Anything you
 # leave out will simply not be said. More real facts = better video.
 # ------------------------------------------------------------------
-asin: B0XXXXXXXX                 # must match the folder name
-product_name: "Brand Model Name 20 oz Insulated Bottle"
-brand: "Brand"
-short_name: "Brand"            # short label used in comparison videos (optional)
-category: "insulated water bottle"        # plain words: what kind of product is it?
-audience: "people who carry a drink to work or the gym"
+asin: B08S3M2HKL                 # must match the folder name
+product_name: "Alien Draft Seal"
+brand: "Alien"
+short_name: "Alien"            # short label used in comparison videos (optional)
+category: "Home Improvement"        # plain words: what kind of product is it?
+audience: "people who want comfort in winter season"
 
 # Phrases viewers search for (5-15 is plenty; the first one goes into the video title). Optional.
 keywords:
-  - insulated water bottle
-  - best water bottle for gym
+  - No more cold drafts
+  - seals gaps around windows and doors
+  - keep your house warm in Winter weather
 
 # Your Amazon affiliate link (SiteStripe short link amzn.to/xxxx, or an amazon.* link with your tag=).
 # Third-party link shorteners / cloakers are not allowed in Associates.
-affiliate_url: "https://amzn.to/XXXXXXX"
+affiliate_url: "https://link.amazon/B0fEO7ybC"
 
 # What the brand/listing SAYS (the video will attribute these: "the brand says ...").
 # Type them yourself in your own words. Do not paste customer reviews, prices or star ratings.
