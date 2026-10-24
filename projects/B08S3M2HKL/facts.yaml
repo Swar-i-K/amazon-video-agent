@@ -3,50 +3,118 @@
 # The script writer may ONLY use what is written here. Anything you
 # leave out will simply not be said. More real facts = better video.
 # ------------------------------------------------------------------
-asin: B08S3M2HKL                 # must match the folder name
+
+asin: B08S3M2HKL
 product_name: "Alien Draft Seal"
 brand: "Alien"
-short_name: "Alien"            # short label used in comparison videos (optional)
-category: "Home Improvement"        # plain words: what kind of product is it?
-audience: "people who want comfort in winter season"
+short_name: "Alien Draft Seal"
+category: "Door and window weather stripping"
+audience: "US homeowners and renters who want to reduce cold drafts, seal gaps around windows and doors, keep their homes more comfortable during winter, and limit unwanted air entering through small openings"
 
 # Phrases viewers search for (5-15 is plenty; the first one goes into the video title). Optional.
+
 keywords:
-  - No more cold drafts
-  - seals gaps around windows and doors
-  - keep your house warm in Winter weather
+  - "No more cold drafts"
+  - "seals gaps around windows and doors"
+  - "keep your house warm in Winter weather"
+  - "how to stop cold air coming through windows"
+  - "best way to insulate windows for winter"
+  - "how to seal drafty windows"
+  - "keep your house warm in winter"
+  - "door and window weather stripping"
+  - "seal gaps around doors"
+  - "transparent silicone draft seal"
 
 # Your Amazon affiliate link (SiteStripe short link amzn.to/xxxx, or an amazon.* link with your tag=).
 # Third-party link shorteners / cloakers are not allowed in Associates.
+
 affiliate_url: "https://link.amazon/B0fEO7ybC"
 
 # What the brand/listing SAYS (the video will attribute these: "the brand says ...").
 # Type them yourself in your own words. Do not paste customer reviews, prices or star ratings.
+
 manufacturer_claims:
-  - "Double-wall vacuum insulation"
-  - "Lid is leak resistant"
+  - "The manufacturer describes Alien Draft Seal as a flexible sealing strip designed to close gaps around doors and windows"
+  - "Its flexible flap design is intended to help block drafts by covering gaps where unwanted air enters or indoor air escapes"
+  - "The transparent design is intended to blend in with compatible surfaces without creating the appearance of a bulky weather seal"
+  - "The product uses adhesive backing for installation without screws or specialized mounting hardware"
+  - "The manufacturer describes the installation process as measuring, cutting the strip to the required length, peeling off the backing, and sticking it onto the prepared surface"
+  - "The manufacturer says the seal is designed for indoor and outdoor applications"
+  - "The product is advertised as moisture-resistant and waterproof for suitable sealing applications, including certain shower-door gaps"
+  - "The flexible silicone material is intended to remain flexible rather than becoming stiff during use"
+  - "The product is promoted for sealing gaps around windows, doors, sliding doors, vents, mail slots, and other suitable openings"
+  - "The manufacturer says the product can help reduce drafts and improve indoor comfort; actual results depend on the gap, surface, placement, and installation quality"
 
 # Hard specs you can verify on the product / box / brand site.
+
 specs:
-  - "Capacity: 20 ounces"
-  - "Weight: 14 ounces empty"
-  - "Fits most standard cup holders"
+  - "Product type: Adhesive-backed flexible draft seal and weather-stripping strip"
+  - "Brand: Alien"
+  - "Material: Silicone"
+  - "Color: Transparent"
+  - "Package quantity: 3 rolls"
+  - "Combined length: Approximately 49 feet"
+  - "Length per roll: Approximately 16.34 feet"
+  - "Strip width: Approximately 1.4 inches"
+  - "Advertised thickness: Approximately 0.19 inches"
+  - "Installation method: Measure, cut, peel, and stick"
+  - "Intended applications: Suitable gaps around windows and doors"
+  - "Additional advertised applications: Sliding doors, selected shower-door gaps, vents, and mail slots"
+  - "Manufacturer: Emson"
+  - "Model number: 7688"
+  - "ASIN: B08S3M2HKL"
 
 # YOUR OWN observations from actually handling the product. This is what makes the video
 # yours (and keeps it clear of YouTube's 'inauthentic content' rules). Aim for 6+ lines.
+
 hands_on_notes:
-  - "The lid needs a firm quarter turn to seal; easy with one hand once you know it"
-  - "Powder coat feels grippy but shows fingerprints"
+  - "The main appeal is its flexible flap design: rather than covering a gap with a bulky object, the strip is intended to create a closer barrier along a suitable door or window edge"
+  - "With approximately 49 feet across three rolls, the package offers material for multiple gaps, although buyers should measure the areas first to determine whether the length will be sufficient"
+  - "The transparent silicone construction is a practical choice for people who want to seal drafty windows or door edges without adding a highly visible foam strip"
+  - "The measure-cut-peel-and-stick installation method makes this a DIY option for small sealing jobs, but accurate measurements and careful placement matter because the adhesive-backed strip needs to line up with the gap"
+  - "For households dealing with cold air entering around window edges, the flexible flap is designed to help close those openings and support a more comfortable indoor environment during winter"
+  - "The adhesive-backed design avoids the need for screws or specialized mounting hardware, but the surface still needs to be compatible, clean, and properly prepared for reliable adhesion"
+  - "The flexible silicone strip may be useful in locations where a rigid seal would be less practical, provided the flap can sit correctly against the surface without interfering with normal door or window movement"
+  - "Because the strip is transparent, it can be a less visually intrusive option for sealing selected gaps around windows, glass doors, and other compatible surfaces"
+  - "The product is intended for more than cold-weather use, with the manufacturer also advertising moisture-resistant sealing applications; however, the correct placement and application depend on the specific gap"
+  - "This product is best understood as a targeted gap-sealing solution, not a replacement for repairing damaged window frames, failed seals, or major structural air leaks"
+  - "The manufacturer promotes reduced drafts and improved comfort, but the degree of improvement depends on where the strip is installed and how well it closes the gap"
+  - "No firsthand testing has been provided, so these notes describe the product's design, stated uses, and practical considerations rather than personal test results"
 
 pros:
-  - "Fits my car cup holder"
+  - "Approximately 49 feet of sealing material across three rolls"
+  - "Flexible silicone construction"
+  - "Transparent appearance"
+  - "Adhesive-backed installation without screws"
+  - "Can be measured and cut to fit suitable gaps"
+  - "Designed to seal selected gaps around doors and windows"
+  - "Manufacturer advertises indoor and outdoor use"
+  - "Potentially useful for reducing drafts around suitable openings"
+  - "Can be considered for additional compatible applications, such as selected sliding-door and shower-door gaps"
+
 cons:
-  - "No carry handle"
+  - "Accurate measurement and installation are important for effective gap coverage"
+  - "Adhesion depends on surface condition and compatibility"
+  - "The strip may not suit every gap size, shape, or door and window configuration"
+  - "Incorrect placement may interfere with normal opening and closing"
+  - "The transparent strip may still be visible depending on the surface and installation"
+  - "It is not a substitute for repairing damaged frames or major structural gaps"
+  - "The manufacturer’s performance claims do not guarantee a specific reduction in drafts or heating costs"
+  - "No firsthand testing has been provided for this product"
+
 not_for:
-  - "Anyone who wants a straw lid"
+  - "Anyone who needs to repair severely damaged window frames or structural gaps"
+  - "Anyone whose gaps are too large or irregular for this strip to seal properly"
+  - "Anyone unwilling to measure, cut, and carefully apply adhesive-backed weather stripping"
+  - "Anyone with surfaces that are incompatible with the adhesive"
+  - "Anyone looking for a freestanding weighted door draft stopper rather than an adhesive strip"
+  - "Anyone expecting guaranteed energy savings or complete elimination of every draft"
 
 # Optional extras
-use_cases: ["commuting", "gym bag", "desk"]
-notes: ""
-# angle: honest_pros_cons        # force a specific video angle (otherwise rotates automatically)
-# assets_allow: [03_closeup.jpg] # files the face/price checker flagged wrongly
+
+use_cases: ["sealing gaps around windows", "sealing door edges", "reducing cold drafts", "winter home weatherization", "keeping indoor air more comfortable", "sliding doors", "selected shower-door gaps", "vents", "mail slots", "DIY home improvement", "seasonal draft prevention"]
+
+notes: "US audience. The core video angle is solving the problem of cold air entering through gaps around windows and doors. Use the supplied keyword phrases naturally in the voice-over, with the strongest emphasis on 'No more cold drafts' and 'seals gaps around windows and doors.' Explain the product's flexible transparent silicone flap, approximate 49-foot total length, and measure-cut-peel-and-stick installation method. Clarify that it is adhesive-backed weather stripping, not a window insulation film kit or a weighted under-door draft stopper. Do not claim firsthand testing, guaranteed energy savings, complete elimination of drafts, or a specific temperature improvement. Explain that buyers should identify the source of the draft, measure the gap, and check surface compatibility before installation."
+
+# angle: honest_pros_cons
+# assets_allow: []
