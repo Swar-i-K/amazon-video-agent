@@ -12,6 +12,7 @@
 ## hook
 [1] No more cold drafts—just a thin, clear strip that slides onto your frames and Seal Gaps. Let’s see why that matters. | assets: A09 | p: 1
 [2] You’ll notice the silicone stays flexible, even after you cut it to fit. | assets: A07 | p: 1
+[I1] Please subscribe to our channel if you haven't yet. Let's get started with the Alien Draft kit for Windows and Doors. | p: 1
 
 ## context
 [3] Winter weather pushes cold air through any opening, no matter how small the gap around windows or doors. | p: 2
@@ -56,6 +57,11 @@
 ## verdict
 [18] Overall, the Alien Draft Seal offers a flexible, transparent option for DIY weatherproofing, provided you measure carefully and match the right surfaces. | p: 1
 [19] It won’t eliminate every draft, but many users find it helps keep their house warm during winter months. | p: 1
+
+## outro
+[O1] If you liked this video, give it a like and subscribe to the channel. In the comments, tell me if you liked the Alien Draft kit. | p: 1
+[O2] I've put the product links in the video description below. | p: 1
+[O3] Thank you very much for watching the whole video. Hope to see you in the next video. Take care. | p: 1
 
 <!-- REVIEW NOTES (ignored when rendering)
 estimated length: 4.4 min; similarity to earlier scripts: 0.003
