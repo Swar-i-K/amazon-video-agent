@@ -1,0 +1,37 @@
+name: Clean old artifacts
+
+# Frees GitHub Actions artifact storage. The free plan has only 500 MB (shared with GitHub Packages) and a video download can be
+# a big part of it; when it is full, new downloads fail to upload. Downloads already expire after 3 days on their own;
+# use this when you want space back sooner.
+# Run it manually: Actions tab -> "Clean old artifacts" -> Run workflow.
+# DOWNLOAD any video you still need first: deleted artifacts cannot be recovered.
+on:
+  workflow_dispatch:
+    inputs:
+      older_than_days:
+        description: "Delete downloads older than this many days (1 = keep only the last day; 0 = delete ALL)"
+        required: true
+        default: "1"
+
+permissions:
+  actions: write
+
+jobs:
+  clean:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DAYS: ${{ inputs.older_than_days }}
+        run: |
+          set -e
+          case "${DAYS:-1}" in (*[!0-9]*|"") echo "Enter a whole number of days"; exit 1;; esac
+          ids=$(gh api --paginate "repos/${{ github.repository }}/actions/artifacts?per_page=100" \
+            | jq -r --argjson d "${DAYS:-1}" '.artifacts[] | select((.created_at | fromdateiso8601) < (now - $d*86400)) | .id')
+          n=0
+          for id in $ids; do
+            gh api -X DELETE "repos/${{ github.repository }}/actions/artifacts/$id" >/dev/null && n=$((n+1)) || true
+          done
+          echo "Deleted $n artifact(s)."
+          echo "Deleted $n artifact(s). GitHub recalculates storage every 6-12 hours, so uploads may keep failing until then." >> "$GITHUB_STEP_SUMMARY"

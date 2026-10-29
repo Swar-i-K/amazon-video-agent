@@ -99,15 +99,17 @@ jobs:
           sudo apt-get install -y -qq ffmpeg fonts-dejavu-core
           pip install -r requirements.txt
 
-      - name: Restore voice/asset cache (saves ElevenLabs credits + Groq tokens on re-runs)
+      - name: Restore saved photo checks and voice lines (all projects)
         uses: actions/cache/restore@v4
         with:
-          path: projects/${{ env.ASIN }}/.cache
-          key: adagent-${{ env.ASIN }}-${{ github.run_id }}
-          restore-keys: adagent-${{ env.ASIN }}-
+          path: projects/*/.cache
+          key: adagent-cache-${{ github.run_id }}
+          restore-keys: adagent-cache-
 
       - name: Run
+        id: run
         run: |
+          set -o pipefail
           args=("$MODE" "$ASIN")
           if [ "$MODE" = "render" ] || [ "$MODE" = "all" ]; then args+=(--voice "$VOICE"); fi
           if [ "$MODE" = "render" ] || [ "$MODE" = "all" ]; then if [ -n "$TEMPLATE" ]; then args+=(--template "$TEMPLATE"); fi; fi
@@ -119,7 +121,6 @@ jobs:
           if [ "$MODE" = "render" ] || [ "$MODE" = "all" ]; then
             if [ "$PREVIEW" != "0" ] && [ -n "$PREVIEW" ]; then args+=(--max-seconds "$PREVIEW"); fi
           fi
-          set -o pipefail
           python -u -m adagent "${args[@]}" 2>&1 | tee run.log
 
       - name: Show the result on the run summary page
@@ -131,16 +132,18 @@ jobs:
             tail -n 60 run.log 2>/dev/null || echo "(no log was written)"
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
-          # put the real failure reason into the red Annotations box instead of only "exit code 1"
-          msg=$(grep -E "STOPPED|These lines break|Error|failed" run.log 2>/dev/null | tail -1 | cut -c1-900)
-          if [ -n "$msg" ]; then echo "::error title=Video agent::${msg}"; fi
+          # put the real reason into the red Annotations box instead of only "exit code 1"
+          if [ "${{ steps.run.outcome }}" = "failure" ]; then
+            msg=$(grep -v '^[[:space:]]*$' run.log 2>/dev/null | tail -n 4 | tr '\n' ' ' | cut -c1-900)
+            if [ -n "$msg" ]; then echo "::error title=Video agent stopped::${msg}"; fi
+          fi
 
-      - name: Save cache (also after a failed run, so paid-for vision results are kept)
+      - name: Save photo checks and voice lines (also after a failed run)
         if: always()
         uses: actions/cache/save@v4
         with:
-          path: projects/${{ env.ASIN }}/.cache
-          key: adagent-${{ env.ASIN }}-${{ github.run_id }}
+          path: projects/*/.cache
+          key: adagent-cache-${{ github.run_id }}
 
       - name: Upload results
         if: always()
@@ -153,12 +156,12 @@ jobs:
             projects/${{ env.ASIN }}/out/*.txt
             projects/${{ env.ASIN }}/out/*.md
             run.log
-          retention-days: 14
+          retention-days: 3          # short on purpose: the free plan has only 500 MB of artifact storage, download your video soon
           if-no-files-found: ignore
 
       - name: Save script + anti-duplication history
-        # always(): if render fails after the script was written (e.g. a policy flag), the script is still saved to the
-        # repo so you can edit projects/<ASIN>/script.md and run mode=render, instead of it being lost with the run.
+        # always(): if the render fails after the script was written (for example a policy flag), the script is still saved to the
+        # repo, so you can edit projects/<ASIN>/script.md and run mode=render instead of it being lost with the run.
         if: always()
         continue-on-error: true
         run: |
