@@ -17,6 +17,13 @@ import requests
 
 from .common import load_config, log
 
+class DailyLimitError(RuntimeError):
+    """Groq's per-day quota for a model is used up. Waiting a minute will not help, so callers fail over or stop at once."""
+
+
+_exhausted: set = set()   # models whose daily quota ran out during this run (skipped on later calls)
+
+
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 GROQ_MODELS_URL = "https://api.groq.com/openai/v1/models"
 
@@ -102,7 +109,7 @@ def _ask_groq(model, system, user, images, max_tokens, temperature) -> str:
     if vision:  # instructions go in the user turn: most reliable with image input
         content = [{"type": "text", "text": system + "\n\n" + user}]
         for im in images:
-            content.append({"type": "image_url", "image_url": {"url": "data:image/jpeg;base64," + jpeg_b64(im, 1024)}})
+            content.append({"type": "image_url", "image_url": {"url": "data:image/jpeg;base64," + jpeg_b64(im, int(_llm_cfg().get("vision_max_side", 640)))}})
         messages = [{"role": "user", "content": content}]
     else:
         messages = [{"role": "system", "content": system}, {"role": "user", "content": user}]
@@ -147,6 +154,24 @@ def _ask_groq(model, system, user, images, max_tokens, temperature) -> str:
         if r.status_code == 400 and "response_format" in body and "json" in r.text.lower():
             body.pop("response_format")  # model without JSON mode: our parser copes with plain text
             continue
+        if r.status_code in (413, 429) and "request too large" in r.text.lower():
+            # Not a "wait a minute" problem: this single request is bigger than the per-minute limit allows.
+            m = re.search(r"limit\s+(\d+),\s*requested\s+(\d+)", r.text, re.I)
+            if m and ("output tokens" in r.text.lower() or "max_tokens" in r.text.lower()):
+                limit, req = int(m.group(1)), int(m.group(2))
+                new = max(200, int(body["max_tokens"] * limit / max(req, 1) * 0.8))
+                if new < body["max_tokens"]:
+                    log(f"  Request exceeds {body['model']}'s output-tokens/minute limit ({limit}); "
+                        f"lowering max_tokens {body['max_tokens']} -> {new} and retrying.")
+                    body["max_tokens"] = new
+                    continue
+            raise RuntimeError(f"Groq says this single request is too large for {body['model']}'s per-minute "
+                               f"token limit, so waiting will not help. {last}")
+        if r.status_code == 429 and re.search(r"tokens per day|\(TPD\)|requests per day|\(RPD\)|per day", r.text, re.I):
+            m = re.search(r"Limit (\d+), Used (\d+), Requested (\d+)", r.text)
+            detail = f" ({int(m.group(2)):,} of {int(m.group(1)):,} used today)" if m else ""
+            raise DailyLimitError(f"Groq's daily limit for the model '{body['model']}' is used up{detail}. "
+                                  "Waiting a minute will not help: the quota refills gradually over about 24 hours.")
         if r.status_code == 429:
             wait = min(65.0, float(r.headers.get("retry-after", 8 + attempt * 6)))
             log(f"  Groq rate limit, waiting {wait:.0f}s ...")
@@ -186,8 +211,32 @@ def _ask_anthropic(model, system, user, images, max_tokens, temperature) -> str:
 
 def ask(model: str, system: str, user: str, images: list[np.ndarray] | None = None,
         max_tokens: int = 8000, temperature: float = 0.8) -> str:
-    fn = _ask_groq if _llm_cfg().get("provider", "groq") == "groq" else _ask_anthropic
-    return fn(model, system, user, images, max_tokens, temperature)
+    if _llm_cfg().get("provider", "groq") != "groq":
+        return _ask_anthropic(model, system, user, images, max_tokens, temperature)
+    # Groq: when a model's DAILY quota is gone, move on to the next model listed under llm.vision_fallbacks /
+    # llm.text_fallbacks in config.yaml (every model has its own daily quota).
+    kind = "vision" if images else "text"
+    chain = [model] + [x for x in (_llm_cfg().get(f"{kind}_fallbacks") or []) if x != model]
+    last = None
+    for i, m in enumerate(chain):
+        if m in _exhausted:
+            continue
+        try:
+            return _ask_groq(m, system, user, images, max_tokens, temperature)
+        except DailyLimitError as e:
+            _exhausted.add(m)
+            last = e
+            nxt = next((x for x in chain[i + 1:] if x not in _exhausted), None)
+            log(f"  Daily limit reached for '{m}'." + (f" Trying '{nxt}' instead ..." if nxt else ""))
+        except RuntimeError as e:
+            if not any(x in _exhausted for x in chain[:i]):
+                raise                           # the first-choice model failed for another reason: report it as before
+            log(f"  Fallback model '{m}' could not be used ({str(e)[:140]}); trying the next one ...")
+            last = last or e
+    if len(chain) > 1:
+        raise DailyLimitError(f"Every configured {kind} model has hit its daily limit today ({', '.join(chain)}). "
+                              "Waiting a minute will not help: the quotas refill gradually over about 24 hours.")
+    raise last
 
 
 if __name__ == "__main__":

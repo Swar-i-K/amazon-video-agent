@@ -16,7 +16,7 @@ import numpy as np
 from PIL import Image, ImageOps
 
 from .common import extract_json, log, sha1_file, video_info
-from .llm import ask
+from .llm import DailyLimitError, ask
 from .project import Project
 
 IMG_EXT = {".jpg", ".jpeg", ".png", ".webp", ".bmp"}
@@ -128,15 +128,22 @@ def describe(cfg: dict, frames: list[np.ndarray], kind: str) -> dict:
     for _ in range(2):
         try:
             txt = ask(cfg["llm"]["vision_model"], VISION_SYSTEM, VISION_PROMPT.format(what=what),
-                      images=[img], max_tokens=1500, temperature=0.0)
+                      images=[img], max_tokens=400, temperature=0.0)
             return extract_json(txt)
+        except DailyLimitError:
+            raise
         except Exception as e:
             last = e
     raise RuntimeError(f"Vision check failed: {last}")
 
 
 def build_index(project: Project, cfg: dict, vision: bool = True) -> list[dict]:
-    """Return a list of asset dicts (usable and unusable) and cache it."""
+    """Return a list of asset dicts (usable and unusable) and cache it. Progress is saved after every photo, so a stopped
+    run never has to re-check what was already checked."""
+    if vision and not cfg.get("llm", {}).get("vision_check", True):
+        log("  (AI photo check is turned off in config.yaml: llm.vision_check. Faces are only checked locally; "
+            "look through your photos yourself for faces, prices and Amazon page elements.)")
+        vision = False
     cache_file = project.cache_dir / "assets_index.json"
     cache = {}
     if cache_file.exists():
@@ -147,12 +154,21 @@ def build_index(project: Project, cfg: dict, vision: bool = True) -> list[dict]:
     allow = {str(x).lower() for x in (project.facts.get("assets_allow") or [])}
     files = sorted(p for p in project.assets_dir.glob("*") if p.suffix.lower() in IMG_EXT | VID_EXT)
     entries: list[dict] = []
+
+    def save() -> None:
+        merged = dict(cache)
+        merged.update({x["hash"]: x for x in entries if "hash" in x})
+        cache_file.write_text(json.dumps(list(merged.values()), indent=1))
+
+    n_new = 0
     for i, p in enumerate(files, 1):
         h = sha1_file(p)
+        fresh = False
         if h in cache and (cache[h].get("vision") or not vision):
             e = dict(cache[h])
             e["file"], e["id"] = p.name, f"A{i:02d}"
         else:
+            fresh = True
             kind = "image" if p.suffix.lower() in IMG_EXT else "clip"
             e = {"id": f"A{i:02d}", "file": p.name, "hash": h, "kind": kind, "vision": vision}
             if kind == "image":
@@ -171,7 +187,17 @@ def build_index(project: Project, cfg: dict, vision: bool = True) -> list[dict]:
             e["haar_face"] = haar_has_face(frames)
             if vision:
                 log(f"  describing {p.name} ...")
-                v = describe(cfg, frames, kind)
+                try:
+                    v = describe(cfg, frames, kind)
+                except DailyLimitError as err:
+                    save()
+                    raise SystemExit(
+                        f"{err}\n"
+                        f"Your progress is saved: {len(entries)} of {len(files)} files in projects/{project.asin}/assets were already checked "
+                        "and will not be checked again.\n"
+                        "What you can do: (1) run again tomorrow, (2) add models under llm.vision_fallbacks in config.yaml (names from "
+                        "your Groq account's model list), (3) turn the AI photo check off with  llm: vision_check: false  in config.yaml "
+                        "(then check your own photos for faces and Amazon page elements), or (4) upgrade the Groq tier.")
                 e["description"] = str(v.get("description", p.stem))
                 e["shows_product"] = as_bool(v.get("shows_product"), True)
                 e["llm_face"] = as_bool(v.get("has_human_face"), False)
@@ -190,7 +216,10 @@ def build_index(project: Project, cfg: dict, vision: bool = True) -> list[dict]:
         e["usable"] = not reasons
         e["reason"] = "; ".join(reasons)
         entries.append(e)
-    cache_file.write_text(json.dumps(entries, indent=1))
+        if fresh:
+            n_new += 1
+            save()
+    save()
     return entries
 
 

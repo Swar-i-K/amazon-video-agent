@@ -12,9 +12,37 @@ import yaml
 ROOT = Path(__file__).resolve().parent.parent
 
 
+class _StrictLoader(yaml.SafeLoader):
+    """YAML loader that refuses a key written twice (the second one would silently replace the first)."""
+
+
+def _no_duplicate_keys(loader, node, deep=False):
+    seen = set()
+    for knode, _ in node.value:
+        key = loader.construct_object(knode, deep=deep)
+        if key in seen:
+            raise yaml.constructor.ConstructorError(None, None, f"the line '{key}:' appears twice (the second would replace the first)",
+                                                    knode.start_mark)
+        seen.add(key)
+    return yaml.constructor.SafeConstructor.construct_mapping(loader, node, deep)
+
+
+_StrictLoader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, _no_duplicate_keys)
+
+
+def load_yaml_strict(text: str):
+    return yaml.load(text, Loader=_StrictLoader)
+
+
 def load_config(path: str | None = None) -> dict:
     p = Path(path) if path else ROOT / "config.yaml"
-    return yaml.safe_load(p.read_text(encoding="utf-8"))
+    try:
+        return load_yaml_strict(p.read_text(encoding="utf-8"))
+    except yaml.YAMLError as e:
+        mark = getattr(e, "problem_mark", None)
+        where = f" (line {mark.line + 1})" if mark is not None else ""
+        raise SystemExit(f"config.yaml has a formatting error{where}: {getattr(e, 'problem', None) or e}. "
+                         "Fix that line on GitHub (pencil icon); the spaces at the start of a line matter.")
 
 
 def log(msg: str) -> None:

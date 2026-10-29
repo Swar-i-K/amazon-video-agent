@@ -37,7 +37,7 @@ Your narration must sound like one real person talking to one viewer: contractio
 HARD RULES
 1. Product facts come ONLY from FACTS. Never invent or infer specs, materials, numbers, features, certifications, compatibility, durability, or results. If a detail is not in FACTS, do not state it.
 2. Items under manufacturer_claims are the brand's words: attribute them ("the brand says", "according to the listing"). Do not present them as your own findings.
-3. First-person experience ("I", "in my use") is allowed ONLY when supported by hands_on_notes. Otherwise stay neutral ("if you're the kind of person who...").
+3. First-person experience ("I", "in my use") is allowed ONLY when supported by hands_on_notes. Otherwise stay neutral ("if you're the kind of person who..."). NEVER say 'hands-on notes', 'the notes' or 'the facts' out loud: speak in the first person ('in my use') or say 'the brand says'.
 4. General guidance about the product category (what to look for, common trade-offs) is allowed, but it must not assert anything about this specific product. Mark such segments source = "general".
 5. NEVER mention: prices, discounts, deals, coupons, limited-time offers, star ratings, review counts, what customers/reviewers say, "best seller", "Amazon's Choice", other retailers, health or medical claims, guarantees.
 6. Avoid: game-changer, revolutionary, must-have, life-changing, perfect for everyone, "in today's video", "smash that like". No exclamation-mark hype.
@@ -73,7 +73,7 @@ HARD RULES
 1. Facts come ONLY from FACTS, and every fact belongs to exactly ONE product. Say the product's label whenever you state a product-specific detail. NEVER move or blend a fact between products.
 2. Compare a point ONLY if EVERY product being compared has a fact for it. If one product lacks it, skip the point, or say you are only describing the one that has it. Never guess the missing side.
 3. manufacturer_claims are the brand's words: attribute them ("the brand says").
-4. First-person experience only from that product's own hands_on_notes. A personal preference ("I'd pick X for ...") is allowed ONLY when PICK_ALLOWED is true and it is tied to a stated observation. When PICK_ALLOWED is false, do not pick a winner: say which kind of buyer each product suits, using the facts.
+4. First-person experience only from that product's own hands_on_notes. NEVER say 'hands-on notes', 'the notes' or 'the facts' out loud: speak in the first person ('in my use') or say 'the brand says'. A personal preference ("I'd pick X for ...") is allowed ONLY when PICK_ALLOWED is true and it is tied to a stated observation. When PICK_ALLOWED is false, do not pick a winner: say which kind of buyer each product suits, using the facts.
 5. Words like better, best, worse, wins, beats, outperforms are allowed ONLY for a point where the hands_on_notes of BOTH products support the difference.
 6. General buying advice is allowed (source = general) if it claims nothing specific about any of the products.
 7. NEVER mention: prices, discounts, deals, coupons, star ratings, review counts, what customers say, "best seller", "Amazon's Choice", other retailers, health claims, guarantees.
@@ -113,7 +113,7 @@ HARD RULES
 2. The ORDER of the list, each product's rank_label and best_for, and the CRITERIA are the creator's own decisions. Present them as "my pick for ...", never as an objective or tested result. Explain a ranking ONLY with that product's facts, its hands_on_notes and the CRITERIA. Never invent test results, sales or popularity rankings, or comparisons with products that are not on the list.
 3. If a product has fewer than 3 hands_on_notes, do not claim you tested it in any particular way: describe it from its facts ("on paper", "the brand says") and say plainly that the ranking follows the stated criteria.
 4. manufacturer_claims are the brand's words: attribute them ("the brand says").
-5. First-person experience only from that product's own hands_on_notes.
+5. First-person experience only from that product's own hands_on_notes. NEVER say 'hands-on notes', 'the notes' or 'the facts' out loud: speak in the first person ('in my use') or say 'the brand says'.
 6. Each item has: what it is (one line), why it sits at this rank (facts, notes, criteria), who it suits (best_for), and one honest limit (cons / not_for) when given.
 7. NEVER mention: prices, price level (cheap, affordable, budget), discounts, deals, coupons, star ratings, review counts, what customers say, "best seller", "Amazon's Choice", other retailers, health claims, guarantees.
 8. Avoid: game-changer, revolutionary, must-have, life-changing, perfect for everyone, "in today's video". No hype.
@@ -440,6 +440,29 @@ def revise(project: Project, cfg: dict, script: dict, issues: list[dict]) -> dic
     return script
 
 
+PROTECTED = ("hook", "verdict", "recap", "outro", "disclosure")
+
+
+def _pick_section(segs: list[dict], n: dict, product: str, kind) -> str:
+    """Where a new line belongs: its own section if it exists, else its product's section, else a sensible general one.
+    Never the hook, verdict or recap (extra lines used to pile up under the verdict)."""
+    have = [s["section"] for s in segs]
+    sec = str(n.get("section", "")).strip().lower()
+    if sec in have and sec not in PROTECTED:
+        return sec
+    if product != "all":
+        cand = f"product_{product}" if kind == "compare" else f"item_{product}" if kind == "list" else None
+        if cand in have:
+            return cand
+    prefs = {"compare": ("head_to_head", "who_for", "context", "overview"), "list": ("criteria",),
+             None: ("features", "in_use", "limits", "overview", "context")}[kind]
+    for cand in prefs:
+        if cand in have:
+            return cand
+    ordinary = [x for x in have if x not in PROTECTED]
+    return ordinary[-1] if ordinary else (have[-1] if have else "features")
+
+
 def expand(project: Project, cfg: dict, entries: list[dict], script: dict, need_words: int) -> dict:
     """Add NEW lines to a script that is too short, without rewriting what is already there."""
     current = "\n".join(f"[{s['id']}] ({s['section']}) {s['text']}" for s in script["segments"])
@@ -464,14 +487,16 @@ def expand(project: Project, cfg: dict, entries: list[dict], script: dict, need_
     used = {s["id"] for s in segs}
     n_added = 0
     for n in new:
-        after = str(n.get("after_id", ""))
-        idx = next((i for i, s in enumerate(segs) if s["id"] == after), None)
-        if idx is None:  # unknown anchor: put it at the end of the section it names, else before the last section
-            sec = str(n.get("section", "")).lower()
-            same = [i for i, s in enumerate(segs) if s["section"] == sec]
-            idx = same[-1] if same else max(0, len(segs) - 2)
         seg = _clean_segments([n])[0]
-        seg["section"] = segs[idx]["section"]       # keep each section in one block
+        sec = _pick_section(segs, n, seg["product"], _kind(project))
+        same = [i for i, s in enumerate(segs) if s["section"] == sec]
+        if same:
+            idx = same[-1]                           # end of that section
+        else:
+            after = str(n.get("after_id", ""))
+            idx = next((i for i, s in enumerate(segs) if s["id"] == after), max(0, len(segs) - 2))
+            sec = segs[idx]["section"]
+        seg["section"] = sec                         # keep each section in one block
         k = 1
         while f"x{k}" in used:
             k += 1
@@ -530,11 +555,6 @@ def make_script(project: Project, cfg: dict, entries: list[dict], angle: str | N
     log(f"  final length ~{est:.1f} min")
 
     review: dict = {"estimated_minutes": round(est, 1), "fact_issues": [], "policy": [], "style": []}
-    if est < ln["min_minutes"]:
-        words_needed = int((ln["min_minutes"] + 0.2 - est) * 60 * ln["wpm"] / 60)
-        review["length_warning"] = (f"Script is only ~{est:.1f} min; the video must be at least {ln['min_minutes']:.0f}. "
-                                    f"Add about {words_needed} more words (roughly {words_needed // 22} lines), "
-                                    "ideally by adding real facts and hands_on_notes to facts.yaml and re-running the script step with force.")
     for rnd in range(2):
         issues = factcheck(project, cfg, script)
         log(f"  fact-check round {rnd + 1}: {len(issues)} issue(s)")
@@ -544,6 +564,20 @@ def make_script(project: Project, cfg: dict, entries: list[dict], angle: str | N
         script = revise(project, cfg, script, issues)
     if review["fact_issues"]:
         review["fact_issues"] = factcheck(project, cfg, script)  # what is still open after revision
+    open_issues = {str(i.get("id")): i for i in review["fact_issues"] if str(i.get("id")) != "*"}
+    if open_issues:                                   # still unsupported after a rewrite attempt: take it out, but tell the creator
+        review["removed"] = [{"id": x["id"], "text": x["text"], "problem": open_issues[x["id"]].get("problem", "")}
+                             for x in script["segments"] if x["id"] in open_issues]
+        script["segments"] = [x for x in script["segments"] if x["id"] not in open_issues]
+        review["fact_issues"] = [i for i in review["fact_issues"] if str(i.get("id")) not in open_issues]
+        log(f"  removed {len(review['removed'])} line(s) that stayed unsupported after a rewrite (listed in script.md)")
+    est = estimate_minutes(assemble(script, project, cfg), cfg)
+    review["estimated_minutes"] = round(est, 1)
+    if est < ln["min_minutes"]:
+        words_needed = int((ln["min_minutes"] + 0.2 - est) * 60 * ln["wpm"] / 60)
+        review["length_warning"] = (f"Script is only ~{est:.1f} min; the video must be at least {ln['min_minutes']:.0f}. "
+                                    f"Add about {words_needed} more words (roughly {words_needed // 22} lines), "
+                                    "ideally by adding real facts and hands_on_notes to facts.yaml and re-running the script step with force.")
 
     for s in script["segments"]:
         pol, sty = check_text(s["text"] + " " + s["onscreen"])
@@ -562,21 +596,33 @@ def make_script(project: Project, cfg: dict, entries: list[dict], angle: str | N
 
 
 # ----------------------------- fixed segments ------------------------------
+def _asks_to_subscribe(text: str) -> bool:
+    return bool(re.search(r"subscrib", text, re.I))
+
+
 def assemble(script: dict, project: Project, cfg: dict) -> list[dict]:
-    """Body segments + automatically inserted disclosure + sign-off."""
+    """Body segments + automatic subscribe intro + disclosure (full mode only) + subscribe/like/share sign-off."""
     rng = random.Random(project.asin)
-    d, segs = cfg["disclosure"], script["segments"]
+    d, cta, segs = cfg["disclosure"], cfg.get("cta", {}), list(script["segments"])
     n_hook = 0
     for s in segs:  # count the leading run of hook segments
         if s["section"] != "hook":
             break
         n_hook += 1
     n_hook = max(1, min(n_hook, 3))
+    # subscribe ask near the start (skipped if the script already has one in its opening lines)
+    if cta.get("intro", True) and cta.get("intro_lines") and not any(_asks_to_subscribe(x["text"]) for x in segs[:n_hook + 2]):
+        pos = 1 if cta.get("intro_position", "after_hook") == "after_hook" else 0
+        segs.insert(min(pos, len(segs)), {"id": "S", "section": "hook", "text": rng.choice(cta["intro_lines"]), "onscreen": "",
+                                          "asset_ids": [], "source": "fixed", "priority": 1, "product": "all"})
+        n_hook += 1
     disclosure = {"id": "D", "section": "disclosure", "text": rng.choice(d["spoken"]), "onscreen": "",
                   "asset_ids": [], "source": "fixed", "priority": 1, "banner": True, "product": "all"}
     k = _kind(project)
-    outro_pool = (d.get("outro_list") if k == "list" else d.get("outro_compare") if k == "compare" else None) or d["outro"]
-    outro = {"id": "O", "section": "outro", "text": rng.choice(outro_pool), "onscreen": "",
+    pool = (d.get("outro_list") if k == "list" else d.get("outro_compare") if k == "compare" else None) or d["outro"]
+    if any(re.search(r"subscrib|share (it|this)", x["text"], re.I) for x in script["segments"][-3:]) and d.get("outro_plain"):
+        pool = d["outro_plain"]                       # the script already asks for a subscribe/share: do not ask twice
+    outro = {"id": "O", "section": "outro", "text": rng.choice(pool), "onscreen": "",
              "asset_ids": [], "source": "fixed", "priority": 1, "endcard": True, "product": "all"}
     if d.get("mode", "full") != "full":      # no spoken/banner disclosure inside the video
         return segs + [outro]
@@ -617,6 +663,8 @@ def script_to_md(script: dict, project: Project) -> str:
         L.append(f"estimated length: {rv.get('estimated_minutes')} min; similarity to earlier scripts: {rv.get('similarity')}")
         if rv.get("length_warning"):
             L.append("LENGTH: " + rv["length_warning"])
+        for r in rv.get("removed", []):
+            L.append(f"REMOVED (unsupported, taken out of the script) [{r['id']}]: {r['text']}  -- {r['problem']}")
         for i in rv.get("fact_issues", []):
             L.append(f"FACT CHECK [{i.get('id')}]: {i.get('problem')} -> {i.get('fix')}")
         for i in rv.get("policy", []):
