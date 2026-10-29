@@ -1,0 +1,19 @@
+# ------------------------------------------------------------------
+# COMPARISON VIDEO (2 or 3 products)
+# 1. Copy this folder to projects/<NAME>/   (NAME = any 3-40 letters/digits/-/_, e.g. COMPARE-TOWELS)
+# 2. Fill in the lines below. Do NOT copy this file's name into facts.yaml: a comparison folder holds ONLY compare.yaml
+#    (plus an optional script.md the agent writes, and an optional assets/ folder of shared footage).
+# 3. Every product listed must already be a normal product folder (projects/<ASIN>/) with its own
+#    facts.yaml, assets/ and affiliate link. Each product's own footage and facts are used for it.
+# 4. Run Make video with  mode: script  and the comparison folder name, then  mode: render.
+# ------------------------------------------------------------------
+title: "Duck Brand vs Alien Draft Seal compared"     # optional; becomes the video title basis
+products: [B0DK5XXVTX, B08S3M2HKL]                      # 2 or 3 existing product folders
+category: "Air Draft Seal"
+audience: "people who want to stop cold air coming through windows"
+keywords: [keep your house warm in winter, best door and window draft stoppers]    # optional; the first one goes into the title
+compare_points: ["pack size", "size", "how it felt in use"]   # optional hints; only points with facts for EVERY product are used
+notes: ""
+# Tip: give each product's facts.yaml a short label so the on-screen chips read well:
+#      short_name: YESLIFE
+# A personal pick/winner is only allowed when EVERY product has 3+ hands_on_notes; otherwise the verdict says who each suits.
