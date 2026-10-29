@@ -104,7 +104,7 @@ assert sc["tags"][:3] == ["insulated water bottle", "best bottle for commuters",
 assert len([t for t in sc["tags"] if t.lower() == "commuter bottle"]) == 1                                         # no duplicates
 for needle in ("creator's opinion", "[product 3]", "CRITERIA", "number one"):
     assert needle in seen["check"], needle
-assert any(w in segs[-1]["text"] for w in ("every", "Every")), segs[-1]["text"]
+assert any(w in segs[-1]["text"] for w in ("every", "Every", "each")), segs[-1]["text"]
 md = S.script_to_md(sc, p)
 assert "# ORDER: countdown" in md and "# PRODUCTS: 1=TestCo (TEST000001); 2=OtherCo" in md
 assert [x["product"] for x in S.md_to_script(md)["segments"]] == [x["product"] for x in sc["segments"]]

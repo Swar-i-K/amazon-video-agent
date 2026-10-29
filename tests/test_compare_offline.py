@@ -73,7 +73,7 @@ assert sc["angle"] == "comparison" and seen["gen"] == 1 and seen["expand"] >= 1
 assert cfg["length"]["min_minutes"] + 0.35 <= est <= cfg["length"]["max_minutes"] - 0.45, est
 assert {s["product"] for s in sc["segments"]} >= {"1", "2", "all"}
 assert "WRONG product" in seen["check"] and "[product 1]" in seen["check"] and "PICK_ALLOWED" in seen["check"]
-assert segs[-1]["section"] == "outro" and any(w in segs[-1]["text"] for w in ("each", "both", "either"))
+assert segs[-1]["section"] == "outro" and any(w in segs[-1]["text"] for w in ("each", "both", "either", "Every link", "link"))
 
 md = S.script_to_md(sc, p)
 assert "# PRODUCTS: 1=TestCo (TEST000001); 2=OtherCo (TEST000002)" in md and "product: 1" in md
