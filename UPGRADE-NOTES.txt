@@ -6,10 +6,22 @@ HOW TO UPDATE YOUR REPO (one pass, keep your own work!)
    and projects/_template/, projects/_template_compare/, projects/_template_list/.
    (Easiest: replace the whole project folder, then copy your own projects/<ASIN>/ folders back in.)
 3. config.yaml replaces yours: if you changed anything in it (models, voices, disclosure mode), re-apply it.
-4. .github/workflows/make-video.yml: open it on GitHub (pencil icon), select all, paste the separate make-video.yml. It must be the ONLY file there.
+4. .github/workflows/: this folder now holds TWO files, make-video.yml and clean-artifacts.yml. Add or replace both (on GitHub: Add file -> Create new file ->
+   type  .github/workflows/clean-artifacts.yml  and paste; for make-video.yml use the pencil icon, select all, paste).
 5. Secrets (GROQ_API_KEY, ELEVENLABS_API_KEY) stay as they are.
 
-WHAT IS NEW
+WHAT IS NEW IN THIS UPDATE (fixes for failing runs and for your last script)
+- Groq daily token limit: stops at once with a clear message; photo checks are saved after every photo; the workflow keeps them for ALL projects,
+  even after a failed run; photos are shrunk for the check; llm.vision_check: false turns the AI check off.
+- Subscribe in the intro and subscribe+like+share in the outro are added automatically (config.yaml: cta / disclosure outro*).
+- Unsupported lines that survive a rewrite are removed and listed; extra lines go to the right section; 'hands-on notes' is never spoken.
+- A key written twice in config.yaml / facts.yaml is reported with its line number.
+- Fallback models when a Groq model's daily limit is used up (llm.vision_fallbacks / llm.text_fallbacks); 'request too large' lowers the output size.
+- The run summary page shows the log and the real error; run.log is in the download; the script is saved even if the render fails.
+- A blocked render shows the matched words. Downloads expire after 3 days; 'Clean old artifacts' frees storage (merged from the fix bundle you sent).
+- config.yaml: I rebuilt the disclosure section; if you had changed it, re-apply your change.
+
+WHAT WAS NEW BEFORE
 - Video types: review (one product), comparison (compare.yaml, 2-3 products), Top-N list (list.yaml, 3-9 products).
 - Templates one/two/three/four/best (workflow dropdown), mode: preview for a sample of all five.
 - Length is automatic by type and always under 9 minutes; 'short' option; max 2 videos per day.

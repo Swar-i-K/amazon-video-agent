@@ -60,6 +60,32 @@ You can also write your own `script.md` (one line per sentence: `[id] text | pro
 reminder to answer YES to YouTube's synthetic-content question. Your own video clips are graded and styled by the template but are not
 AI-converted. Always check AI clips for distorted products or hands.
 
+## Subscribe / like / share lines
+Added automatically (`cta:` and `disclosure: outro*` in `config.yaml`): a **subscribe** ask in the intro (after your first hook line; `intro_position: start` moves it
+to the very beginning, `intro: false` turns it off) and **subscribe + like + share** in the outro. Do not write your own; if your script already has a
+subscribe line in its opening or closing lines, the agent does not add a second one.
+
+## Groq limits and saved progress
+Groq's free tier has a **daily token limit per model**. When it is used up the agent stops at once and tells you (waiting a minute does not help).
+Every photo check is saved as it finishes (and the workflow keeps those saved checks for all projects, even after a failed run), so the next run
+only checks what is left. To use fewer tokens, photos are shrunk for the AI check (`llm.vision_max_side`), or you can turn the AI photo check off
+(`llm.vision_check: false`); then you check your own photos for faces, prices and Amazon page elements.
+
+**Fallback models.** If a model's daily limit is used up, the agent moves to the next one in `llm.vision_fallbacks` / `llm.text_fallbacks`
+(config.yaml). Check those names at console.groq.com/docs/models; a name your account does not have is replaced by a model from your own list.
+
+## When a run fails, and storage
+- The run's **Summary** page shows the last 60 lines of the log, and the red error box says why it stopped. `run.log` is also in the download.
+- If a render fails after the script was written, the script is still saved to the repo: edit `projects/<NAME>/script.md` and run **render**.
+- A blocked render shows the exact words that matched the rule and the line.
+- GitHub's free plan has only **500 MB** of download storage. Downloads expire after **3 days** on their own. To free space sooner, download your video,
+  then run **Actions -> Clean old artifacts** (default: deletes downloads older than 1 day; `0` deletes all). GitHub updates the number every 6 to 12 hours.
+
+## Script safety
+Lines that stay unsupported by your facts after a rewrite are **removed** and listed at the bottom of `script.md` ("REMOVED"). The narration never says
+"hands-on notes" aloud (a render is blocked if it does). Extra lines are added to their own section, never under the verdict. A key written twice in
+`config.yaml` or `facts.yaml` is reported with its line number instead of silently replacing the first.
+
 ## Where the affiliate disclosure goes (`disclosure: mode:` in `config.yaml`)
 `full` = spoken line + on-screen banner + tag | `on_screen` = silent text near the start + end card | `description_only` = nothing in the video
 (shipped setting). Every run writes `description.txt` (Amazon's sentence on its **first line**) and `pinned_comment.txt`. The FTC says a
@@ -71,7 +97,7 @@ automatically), `openai_*` pay-as-you-go. List with `python -m adagent voices`.
 
 ## Setup
 1. Private GitHub repo with this project. 2. Secrets: `GROQ_API_KEY` (AI), optional `ELEVENLABS_API_KEY`, `OPENAI_API_KEY`.
-3. Settings -> Actions -> General -> Workflow permissions -> Read and write. 4. `.github/workflows/` must contain only `make-video.yml`.
+3. Settings -> Actions -> General -> Workflow permissions -> Read and write. 4. `.github/workflows/` holds exactly two files: `make-video.yml` and `clean-artifacts.yml`.
 
 ## Guard-rails
 Spoken/on-screen rules block prices, price wording, star ratings, review quotes, "best seller", other retailers and health claims. Facts are never
@@ -80,4 +106,4 @@ screened for faces and price/Amazon UI. You still own accuracy, YouTube's rules,
 
 ## Test status
 Offline (simulated AI/voice): script, comparison and list logic, templates (grade, transitions, 5 caption styles, preview), disclosure modes, scenes,
-asset checks, full renders under every template. **Not verified:** live Groq / ElevenLabs / Edge calls, the real GitHub run, and the AI-clip notebook on a real GPU.
+asset checks, fallback models, full renders under every template. **Not verified:** live Groq / ElevenLabs / Edge calls, the real GitHub run, and the AI-clip notebook on a real GPU.

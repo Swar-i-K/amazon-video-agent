@@ -97,7 +97,16 @@ llm:
   provider: groq                                   # groq (free tier available) or anthropic (paid)
   model: openai/gpt-oss-120b                       # script writing + fact check
   vision_model: qwen/qwen3.8-27b                   # looks at your photos/clips (Qwen 3.8 is multimodal)
-  groq_max_tokens: 6500                            # keeps requests inside free-tier per-minute limits
+  vision_fallbacks:       # used in order when vision_model hits its DAILY limit (check these names at console.groq.com/docs/models;
+    - qwen/qwen3.6-27b    # a name your account does not have is skipped automatically)
+    - meta-llama/llama-4-scout-17b-16e-instruct
+    - meta-llama/llama-4-maverick-17b-128e-instruct
+  text_fallbacks:         # the same idea for writing the script
+    - openai/gpt-oss-20b
+    - qwen/qwen3-32b
+  groq_max_tokens: 6500
+  vision_check: true      # false = skip the AI photo check (saves Groq tokens; you then check faces/prices yourself)
+  vision_max_side: 640    # photos are shrunk to this size for the AI check (cheaper; the product is still clearly visible)                            # keeps requests inside free-tier per-minute limits
   # For Anthropic instead: provider: anthropic, model: claude-sonnet-5-5, vision_model: claude-sonnet-5-5
   # Check current Groq model names at console.groq.com/docs/models
 
@@ -127,6 +136,14 @@ voice:
   pause_sentence: 0.40   # seconds of silence after each narration line
   pause_section: 0.75    # extra pause when the section changes
 
+cta:                 # subscribe ask in the intro (like + share are only in the outro)
+  intro: true
+  intro_position: after_hook      # after_hook = after the first hook line (keeps the hook first) | start
+  intro_lines:
+    - "If you haven't yet, please subscribe to the channel. Now, let's get into it."
+    - "Quick favour: if you haven't subscribed yet, please do. Alright, let's get started."
+    - "If you're new here, subscribe to the channel. Let's dive in."
+
 disclosure:
   # Where the affiliate disclosure appears INSIDE the video (the description and pinned comment always carry it):
   #   full             = spoken line + on-screen banner + "Contains affiliate links" tag + end-card line
@@ -140,21 +157,24 @@ disclosure:
     - "One thing up front: I use affiliate links, and as an Amazon Associate I earn from qualifying purchases."
   on_screen: "As an Amazon Associate I earn from qualifying purchases."
   tag: "Contains affiliate links"
-  outro_compare:
-    - "If you want to look at either one yourself, the links are in the description, each next to its name. Thanks for watching."
-    - "That's the comparison. You'll find a link for each product in the description. Thanks for watching."
-    - "Links to both are in the description if you want a closer look. Thanks for watching."
-  outro_list:
-    - "Links to every product on the list are in the description, each next to its name. Thanks for watching."
-    - "That's the list. You'll find a link for each product in the description. Thanks for watching."
-    - "Every product here is linked in the description if you want a closer look. Thanks for watching."
   ai_voice_note: "Narration in this video is AI-generated."
   ai_tag: "AI-generated scene"
   ai_scenes_note: "Some scenes in this video are AI-generated."
-  outro:
-    - "If you want to look at it yourself, the link is in the description. Thanks for watching."
-    - "That's the rundown. The link is in the description if you want a closer look. Thanks for watching."
-    - "You'll find the link in the description if it sounds like a fit. Thanks for watching."
+  outro:       # subscribe + like + share (the intro only asks for a subscribe; see cta: above)
+    - "If this helped, please subscribe, give it a like, and share it with someone who might need it. The link is in the description. Thanks for watching."
+    - "That's the rundown. If it was useful, subscribe, like the video, and share it with a friend. The link is in the description."
+    - "Thanks for watching. Please subscribe, like the video, and share it with someone who could use it. You'll find the link in the description."
+  outro_compare:
+    - "If this helped you choose, please subscribe, like the video, and share it with someone who might need it. The links are in the description, each next to its name."
+    - "That's the comparison. If it was useful, subscribe, like, and share it with a friend. You'll find a link for each product in the description."
+    - "Thanks for watching. Please subscribe, like, and share this with someone deciding between these products. Every link is in the description."
+  outro_list:
+    - "If this list helped, please subscribe, like the video, and share it with someone who might need it. Every product is linked in the description."
+    - "That's the list. If it was useful, subscribe, like, and share it with a friend. You'll find a link for each product in the description."
+    - "Thanks for watching. Please subscribe, like, and share this list with someone who might need it. Every link is in the description."
+  outro_plain:   # used only when your own script already ends with a subscribe/share ask
+    - "The link is in the description. Thanks for watching."
+    - "You'll find the link or links in the description. Thanks for watching."
 
 safety:
   max_videos_per_day: 2        # anti mass-production brake (override with --force)
