@@ -17,11 +17,9 @@ products:                      # YOUR ranking: #1 is the first line
   - id: B0DK5XXVTX
     label: "Best all-round"            # optional, your own words for this pick (no price words)
     best_for: "Best heavy duty window insulation kit"       # optional: who it suits
-  products:                      # YOUR ranking: #1 is the first line
   - id: B00G7009LM
     label: "Best for pets"            # optional, your own words for this pick (no price words)
     best_for: "Best for home with Frisky pets"       # optional: who it suits
-  products:                      # YOUR ranking: #1 is the first line
   - id: B00002NCJI
     label: "DIY Home Improvement Project"            # optional, your own words for this pick (no price words)
     best_for: "Bigger home with large windows"       # optional: who it suits
