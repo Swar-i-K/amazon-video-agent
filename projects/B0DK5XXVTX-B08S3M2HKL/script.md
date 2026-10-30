@@ -58,7 +58,7 @@
 [18] Duck’s kit suits homeowners with big windows or patio doors who don’t mind a few minutes of heat-gun work. | product: 1 | assets: P1-A03 | p: 1
 [x15] If your biggest issue is a single, wide pane that lets cold air slip around the edges, a large-area film like Duck’s may be more appropriate. | p: 2
 [19] Alien’s seal fits renters or DIYers who need a quick, low-profile fix for narrow gaps around doors and windows. | product: 2 | assets: P2-A04 | p: 1
-[x16] If you’re mainly battling drafts around door frames or narrow window sashes, a flexible silicone strip such as Alien’s can target those problem spots without covering the whole glass. | p: 2
+[x16] If you’re mainly battling drafts around door frames or narrow window sashes, a flexible silicone strip such as Alien’s can fix those problem spots without covering the whole glass. | p: 2
 
 ## verdict
 [20] If you need coverage for a large window pane, Duck’s film gives a clear, full-area barrier. For tight gaps around frames, Alien’s silicone strip is quicker and less visible. | assets: P1-A07,P2-A07 | p: 1
