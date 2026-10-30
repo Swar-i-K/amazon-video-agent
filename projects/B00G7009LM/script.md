@@ -42,7 +42,7 @@ best window insulation kit, heavy duty window insulation kit, how to stop cold a
 
 [x5] Second, installation takes some care. You'll need to clean the frame, apply tape evenly, position the film, trim it, and shrink it with a hair dryer. Rushing the process can leave wrinkles or weak spots.
 
-[9] Third, this is temporary film, not a repair for broken seals, damaged frames, or structural gaps. If you can feel a strong draft around the trim, weatherstripping or a more targeted repair may address the actual problem better.
+[9] Third, this is temporary film, not a repair for broken seals, damaged frames, or structural gaps. If you can feel a strong draft around the trim, weatherstripping or a more fixed repair may address the actual problem better.
 
 [x6] And if you're looking for a window insulation kit for homes with pets, keep expectations realistic. The film is still plastic and can be scratched, torn, or punctured. It should not be described as pet-proof, so consider whether your pets can reach the covered window.
 
