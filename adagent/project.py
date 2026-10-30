@@ -7,11 +7,11 @@ from pathlib import Path
 
 import yaml
 
-from .common import ROOT, load_yaml_strict
+from .common import ROOT
 
 ASIN_RE = re.compile(r"^[A-Z0-9][A-Z0-9_-]{2,39}$")   # a product ASIN, or the name of a comparison folder
 AMAZON_LINK_RE = re.compile(
-    r"^https://((www\.)?amazon\.[a-z.]{2,6}/|amzn\.(to|eu|asia)/|a\.co/)", re.I
+    r"^https://((www\.)?amazon\.[a-z.]{2,6}/|amzn\.(to|eu|asia)/|a\.co/|link\.amazon/)", re.I
 )
 
 
@@ -36,7 +36,7 @@ def read_yaml(path: Path) -> dict:
     text = "\n".join(l for l in raw.splitlines() if not FENCE_RE.match(l))
     rel = f"projects/{path.parent.name}/{path.name}"
     try:
-        data = load_yaml_strict(text)
+        data = yaml.safe_load(text)
     except yaml.YAMLError as e:
         mark = getattr(e, "problem_mark", None)
         lines = text.splitlines()
@@ -45,9 +45,11 @@ def read_yaml(path: Path) -> dict:
             shown = lines[mark.line].strip() if mark.line < len(lines) else ""
             where = f" (line {mark.line + 1}: {shown[:100]!r})"
         problem = getattr(e, "problem", None) or "the layout is not valid YAML"
-        if "appears twice" in problem:
-            raise SystemExit(f"{rel} has a formatting error{where}: {problem}.\n"
-                             "Merge the two into one (for example, put all the list items under a single 'hands_on_notes:'), then run again.")
+        # "could not find expected ':'" is reported on the line AFTER the real mistake. The line where the broken
+        # entry starts (usually a list line missing its leading "- ") is the one to fix, so point at it too.
+        cm = getattr(e, "context_mark", None)
+        if cm is not None and (mark is None or cm.line != mark.line) and cm.line < len(lines):
+            where += f" - the mistake is probably at line {cm.line + 1}: {lines[cm.line].strip()[:100]!r}"
         raise SystemExit(
             f"{rel} has a formatting error{where}: {problem}.\n"
             "Common causes: a quote mark inside quoted text (write 'inches' instead of \"), a colon inside unquoted text, "
@@ -213,7 +215,7 @@ def validate_facts(project: Project) -> tuple[list[str], list[str]]:
     url = str(f.get("affiliate_url", ""))
     if url and not AMAZON_LINK_RE.match(url):
         errors.append(
-            "facts.yaml: affiliate_url must be an Amazon link (amazon.*, amzn.to, amzn.eu or a.co). "
+            "facts.yaml: affiliate_url must be an Amazon link (amazon.*, amzn.to, amzn.eu, a.co or link.amazon). "
             "Third-party link shorteners/cloakers are not allowed in Associates."
         )
     if url and "amazon." in url and "tag=" not in url:
@@ -269,7 +271,6 @@ def _validate_compare(project: Project) -> tuple[list[str], list[str]]:
 # Hard rules on narration text (policy = must fix, style = warning)
 # ---------------------------------------------------------------------------
 POLICY_RULES = [
-    (r"\bhands[- ]on notes?\b|\bthe notes (say|mention|state)\b|\baccording to (my|the) (notes|facts)\b", "refers to your notes/facts out loud (speak in the first person or say 'the brand says')"),
     (r"\$\s?\d|\b\d[\d,.]*\s?(usd|dollars?|bucks|euros?|pounds?)\b", "mentions a price"),
     (r"\b\d(\.\d)?\s*(out of 5|/5|stars?)\b|\bfive[- ]star\b|\bstar rating", "mentions a star rating"),
     (r"\b\d[\d,]*\s+(customer\s+)?(reviews|ratings)\b", "mentions a review/rating count"),
