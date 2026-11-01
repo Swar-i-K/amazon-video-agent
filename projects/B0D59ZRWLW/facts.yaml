@@ -1,1 +1,139 @@
+# ------------------------------------------------------------------
+# Copy this whole folder to projects/<ASIN>/ and fill it in.
+# The script writer may ONLY use what is written here. Anything you
+# leave out will simply not be said. More real facts = better video.
+# ------------------------------------------------------------------
 
+asin: B0D59ZRWLW
+product_name: "Sunolga Door Draft Stopper Blocks Hot and Cold Air, 38 Inch, Gray Cat"
+brand: "Sunolga"
+short_name: "Sunolga Cat Draft Stopper"
+category: "weighted under door draft stopper"
+audience: "US homeowners, renters, and pet lovers who want to reduce hot and cold airflow, keep insects and dust from entering beneath doors, and add a cute cat-themed accessory to their home"
+
+# Phrases viewers search for (5-15 is plenty; the first one goes into the video title).
+keywords:
+  - "door draft stopper for pets"
+  - "under door gap blocker"
+  - "keep bugs from coming under door"
+  - "stop insects coming under door"
+  - "door snake"
+  - "draft guard"
+  - "draught excluder"
+  - "bottom door foam"
+  - "under door draft stopper"
+  - "cat door draft stopper"
+  - "door draft stopper for cats and dogs"
+  - "block hot and cold air under door"
+  - "door gap blocker for dust and bugs"
+
+# Your Amazon affiliate link.
+affiliate_url: "https://amzn.to/4z1FgfK"
+
+# What the brand/listing says. Attribute these claims to the brand.
+manufacturer_claims:
+  - "Designed to help block hot and cold air passing through gaps beneath doors"
+  - "Designed to help reduce unwanted airflow throughout different seasons"
+  - "Promoted to help block dust, insects, small critters, and unwanted odors"
+  - "Designed to help reduce noise and light entering through door gaps"
+  - "Features a weighted construction intended to help the stopper remain in position"
+  - "Uses high-density cotton filling and weighted sand bags, according to the product description"
+  - "Features a grey cat design that adds a decorative animal-themed appearance"
+  - "Designed for use beneath compatible doors and selected window openings"
+  - "Includes a hanging loop for convenient storage when not in use"
+
+# Hard specs to verify on the product / box / brand site.
+specs:
+  - "Product: Sunolga Door Draft Stopper Blocks Hot and Cold Air"
+  - "ASIN: B0D59ZRWLW"
+  - "Brand: Sunolga"
+  - "Color and design: Gray Cat"
+  - "Length: 38 inches"
+  - "Material listed: Cotton"
+  - "Filling described in product information: High-density cotton and weighted sand"
+  - "Construction: Weighted fabric draft stopper"
+  - "Package quantity: One"
+  - "Storage feature: Hanging loop"
+  - "Intended placement: Along the bottom of compatible doors"
+  - "Actual fit and performance depend on door width, floor surface, and gap dimensions"
+
+# These are practical observations based on supplied product information,
+# not firsthand testing. Do not present them as personal experience.
+hands_on_notes:
+  - "The 38-inch length makes measuring the door width important before purchasing, especially for wider entryways"
+  - "The weighted construction is intended to help the stopper remain in position along the bottom of a door"
+  - "The cotton filling and sand weighting provide a different design from lightweight foam strips and adhesive door seals"
+  - "The grey cat design gives the product a decorative appearance that may appeal to cat lovers and people who prefer animal-themed home accessories"
+  - "For households trying to keep bugs from coming under a door, the stopper is designed to cover the opening at floor level, although effectiveness depends on how closely it fits"
+  - "Blocking unwanted airflow beneath a door may help reduce cold air entering during winter and help retain indoor air conditioning during warmer weather"
+  - "The fabric barrier may also help reduce dust and light entering through a suitable door gap"
+  - "The product is promoted for reducing noise, but a fabric draft stopper should not be presented as a soundproofing solution"
+  - "The hanging loop provides a convenient storage option when the stopper is not in use"
+  - "Because this is a loose weighted stopper, it may need repositioning after a door is opened or closed"
+  - "Its 38-inch length and shape may not cover every door or unusually large gap"
+  - "The product is a weighted fabric door snake, not a foam-only under-door seal or a permanently installed door sweep"
+  - "No firsthand testing has been provided, so these notes describe the product's design and practical considerations rather than personal test results"
+
+pros:
+  - "38-inch length for compatible doors"
+  - "Weighted construction designed to help keep the stopper in position"
+  - "Cotton filling and weighted sand construction"
+  - "Cute grey cat design"
+  - "Designed to help block hot and cold air"
+  - "Promoted to help reduce the entry of insects, dust, and small critters"
+  - "May help reduce unwanted light and noise through door gaps"
+  - "Hanging loop for convenient storage"
+  - "Portable and does not require permanent installation"
+  - "Potentially useful throughout different seasons"
+
+cons:
+  - "The 38-inch length may not fit wider doors"
+  - "May need repositioning after opening and closing the door"
+  - "Effectiveness depends on the size and shape of the door gap"
+  - "May not completely seal uneven floors or unusually large gaps"
+  - "Does not provide a permanent door seal"
+  - "Not a substitute for a properly installed door sweep when a fixed seal is needed"
+  - "Noise reduction does not mean soundproofing"
+  - "No firsthand product testing has been supplied"
+
+not_for:
+  - "Anyone whose door is wider than the stopper's usable length"
+  - "Anyone who needs a permanent or airtight door-bottom seal"
+  - "Anyone with unusually large or irregular door gaps"
+  - "Anyone who does not want to reposition a loose stopper"
+  - "Anyone specifically looking for an adhesive foam door seal"
+  - "Anyone expecting guaranteed insect-proofing or complete elimination of drafts"
+  - "Anyone looking for a soundproofing product"
+
+# Optional extras
+use_cases:
+  - "blocking cold air under doors"
+  - "helping retain indoor air conditioning"
+  - "keeping insects from coming under doors"
+  - "reducing dust entering through door gaps"
+  - "bedroom door draft blocking"
+  - "pet-friendly home decor"
+  - "cat-themed home accessories"
+  - "seasonal home weatherproofing"
+  - "reducing unwanted light beneath doors"
+  - "portable door gap blocking"
+
+notes: |
+  SEO keyword guidance:
+
+  - Use "door draft stopper for pets" as a search phrase, but clarify that the product is a household draft stopper with a cat design, not a pet-training or pet-containment product.
+  - Use "under door gap blocker" and "under door draft stopper" naturally when explaining the product's main purpose.
+  - Use "keep bugs from coming under door" and "stop insects coming under door" when discussing its intended role as a barrier beneath a door. Do not guarantee that it blocks every insect.
+  - Use "door snake," "draft guard," and "draught excluder" as alternative names people use for this product category.
+  - "Bottom door foam" is a related search phrase, but this product is a weighted cotton-and-sand fabric stopper, not a foam-only door seal. Do not misrepresent its construction.
+  - Highlight the 38-inch length, weighted filling, grey cat design, and hanging loop.
+  - Explain that it is intended to help block both hot and cold air, making it relevant to winter drafts and retaining indoor air conditioning during warmer weather.
+  - Distinguish this product from adhesive foam seals, adjustable under-door foam sweeps, and permanently installed door sweeps.
+  - Do not promise complete insect protection, an airtight seal, total noise elimination, or guaranteed energy savings.
+  - Do not invent firsthand testing, customer feedback, prices, ratings, or review counts.
+  - Keep the video focused on practical door-gap blocking, seasonal comfort, insect and dust reduction, and the cute cat design for a US audience.
+  - Affiliate URL: https://amzn.to/4z1FgfK
+
+angle: "cute_pet_themed_all_season_draft_blocker"
+
+assets_allow: []
