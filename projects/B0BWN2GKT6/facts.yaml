@@ -1,1 +1,154 @@
+# ------------------------------------------------------------------
+# Copy this whole folder to projects/<ASIN>/ and fill it in.
+# The script writer may ONLY use what is written here. Anything you
+# leave out will simply not be said. More real facts = better video.
+# ------------------------------------------------------------------
 
+asin: B0BWN2GKT6
+product_name: "MARWOOD Under Door Draft Stopper - 48 Inch Grey Dog"
+brand: "MARWOOD"
+short_name: "MARWOOD"
+category: "weighted under door draft stopper"
+audience: "US homeowners, renters, and families with young children who want to reduce cold air, light, dust, and bugs entering through the gap beneath a door while adding a cute decorative touch to a room"
+
+# Phrases viewers search for (5-15 is plenty; the first one goes into the video title).
+keywords:
+  - "under door draft stopper"
+  - "door gap blocker to keep bugs out"
+  - "blocks air dust and bugs"
+  - "light blocker under door"
+  - "block cold air around door"
+  - "under door foam"
+  - "filler for door draft"
+  - "cute door draft stopper"
+  - "door draft blocker for bedroom"
+  - "door draft stopper for kids room"
+  - "stop drafts under doors"
+  - "door gap draft stopper"
+
+# Your Amazon affiliate link.
+affiliate_url: "https://amzn.to/4yv30aY"
+
+# What the brand/listing says. Attribute these claims to the brand.
+manufacturer_claims:
+  - "Designed to help block drafts entering through gaps beneath doors"
+  - "Designed to help reduce the entry of dust, bugs, and unwanted airflow"
+  - "Promoted to help block light and reduce unwanted noise coming through door gaps"
+  - "Uses a weighted design with nine evenly distributed internal sandbags to help it stay in position"
+  - "Features a soft polyester outer cover"
+  - "The filling is described as PP cotton and natural washed sand"
+  - "Features a decorative grey dog design that can also serve as a cute room accessory"
+  - "Includes hanging loops at both ends for convenient storage when not in use"
+  - "Designed for use along the bottom of compatible doors and selected window openings"
+
+# Hard specs you can verify on the product / box / brand site.
+specs:
+  - "Product: MARWOOD Under Door Draft Stopper"
+  - "ASIN: B0BWN2GKT6"
+  - "Brand: MARWOOD"
+  - "Color/design: Grey Dog"
+  - "Length: Approximately 48 inches"
+  - "Outer material: Polyester"
+  - "Filling: PP cotton and natural washed sand, according to the product description"
+  - "Internal construction: Nine evenly distributed sandbags"
+  - "Design: Weighted fabric door draft stopper"
+  - "Storage: Hanging loops at both ends"
+  - "Intended placement: Along the bottom of a compatible door"
+  - "Actual fit and effectiveness depend on door width, floor surface, and the size of the gap"
+
+# These are practical observations based on the supplied product information,
+# not firsthand testing. Do not present them as personal experience.
+hands_on_notes:
+  - "The weighted design is intended to help the stopper remain in place along the bottom of a door rather than relying on adhesive installation"
+  - "Its approximately 48-inch length makes measuring the door width important before purchasing"
+  - "Nine internal sandbags are designed to distribute weight along the stopper, helping it sit more evenly against the floor"
+  - "The polyester cover and grey dog appearance give it a softer, decorative look compared with plain foam or rubber door seals"
+  - "For a bedroom, reducing light that enters through the bottom door gap may help make the room feel darker, although the result depends on the size of the gap and how the stopper fits"
+  - "Blocking unwanted airflow beneath a door may help make a room feel more comfortable during colder weather"
+  - "The product is also promoted to help keep dust and small bugs from entering through the gap beneath a door"
+  - "Families with young children may appreciate the cute dog design, but this is a household draft stopper, not a toy"
+  - "The hanging loops at both ends provide a simple way to store the stopper when it is not being used"
+  - "Because it is a loose, weighted stopper, it may need repositioning after a door is opened or closed"
+  - "Its effectiveness depends on the door-to-floor clearance; a very large or uneven gap may not be fully covered"
+  - "This is a portable fabric draft stopper, not a permanently installed door sweep or an airtight seal"
+  - "No firsthand testing has been provided, so the video must not imply that the creator personally used or tested it"
+
+pros:
+  - "Approximately 48-inch length"
+  - "Weighted construction with nine internal sandbags"
+  - "Polyester outer cover"
+  - "PP cotton and natural washed sand filling, according to the product description"
+  - "Designed to help reduce cold drafts beneath doors"
+  - "Promoted to help block dust, bugs, and unwanted light"
+  - "Cute grey dog design adds a decorative touch"
+  - "Hanging loops at both ends for storage"
+  - "No adhesive or permanent installation required"
+  - "Can be moved between compatible doors"
+
+cons:
+  - "The 48-inch length may not fit every door"
+  - "May need repositioning after the door is opened or closed"
+  - "Effectiveness depends on the size and shape of the door gap"
+  - "May not create a complete seal against uneven floors"
+  - "Does not permanently seal the bottom of a door"
+  - "A loose weighted stopper may be less convenient than an installed door sweep in high-traffic doorways"
+  - "Noise reduction is not the same as soundproofing"
+  - "The product should not be treated as a child's toy"
+  - "No firsthand testing has been provided"
+
+not_for:
+  - "Anyone who needs a permanently installed door bottom seal"
+  - "Anyone whose door is wider than the stopper's usable length"
+  - "Anyone with unusually large or uneven door gaps"
+  - "Anyone who does not want to reposition a loose stopper after opening and closing the door"
+  - "Anyone looking for a complete airtight or soundproof door solution"
+  - "Anyone looking for an adjustable foam door sweep that attaches to the door"
+
+# Optional extras
+use_cases:
+  - "bedroom door draft reduction"
+  - "blocking cold air under doors"
+  - "reducing light entering beneath bedroom doors"
+  - "helping keep bugs out"
+  - "reducing dust entering through door gaps"
+  - "children's bedroom comfort"
+  - "nursery and family room comfort"
+  - "seasonal winter weatherproofing"
+  - "decorative door draft blocking"
+  - "temporary draft protection"
+  - "portable door gap blocking"
+
+notes: |
+  SEO keywords:
+  - "under door draft stopper"
+  - "door gap blocker to keep bugs out"
+  - "blocks air dust and bugs"
+  - "light blocker under door"
+  - "block cold air around door"
+  - "under door foam"
+  - "filler for door draft"
+  - "cute door draft stopper"
+  - "door draft blocker for bedroom"
+  - "door draft stopper for kids room"
+  - "stop drafts under doors"
+  - "door gap draft stopper"
+
+  Keyword usage guidance:
+  - Lead with the problem of cold air, light, dust, or bugs coming through the gap beneath a door.
+  - Use "under door draft stopper" as the main product phrase.
+  - Naturally incorporate "door gap blocker to keep bugs out" when explaining the product's intended use.
+  - Use "blocks air dust and bugs" as a description of the advertised purpose, not a guarantee of complete protection.
+  - Use "light blocker under door" when discussing bedroom comfort and unwanted light entering beneath a door.
+  - Include the cute grey dog design as a differentiating feature, especially for family bedrooms and children's rooms.
+  - Explain the weighted construction, nine internal sandbags, approximately 48-inch length, polyester cover, and hanging loops.
+  - Clarify that this is a weighted fabric stopper, not an adhesive door seal or adjustable foam door sweep.
+  - The phrase "under door foam" is a related search term, but this product is not described as a foam-only door sweep. Do not misrepresent its construction.
+  - Do not describe it as child-safe or as a toy. It is a household draft stopper that may be used in a family room.
+  - Do not promise complete insect protection, total darkness, soundproofing, or guaranteed energy savings.
+  - Do not invent firsthand testing, customer feedback, prices, ratings, or review counts.
+  - Keep the video focused on practical bedroom comfort, cold-air reduction, light blocking, and the decorative design for a US audience.
+  - Affiliate URL: https://amzn.to/4yv30aY
+
+angle: "cute_practical_problem_solver"
+
+assets_allow: []
