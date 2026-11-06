@@ -1,111 +1,154 @@
-
 # ------------------------------------------------------------------
 # Copy this whole folder to projects/<ASIN>/ and fill it in.
 # The script writer may ONLY use what is written here. Anything you
 # leave out will simply not be said. More real facts = better video.
 # ------------------------------------------------------------------
-asin: B00002NCJI
-product_name: "3M Indoor Window Insulator Kit - Five Pack"
-brand: "3M"
-short_name: "3M"
-category: "Home Improvement"
-audience: "Homeowners and renters who want to reduce window drafts and improve winter comfort with a DIY indoor window insulation kit."
 
-# Your Amazon affiliate link (SiteStripe short link amzn.to/xxxx, or an amazon.* link with your tag=).
-# Third-party link shorteners / cloakers are not allowed in Associates.
-affiliate_url: "https://amzn.to/4hAPcGI"
+asin: B001J4HQ76
+product_name: "PEET Original 2-Shoe Electric Shoe and Boot Dryer"
+brand: "PEET"
+short_name: "PEET Original"
+category: "electric shoe and boot dryer"
+audience: "US workers, tradespeople, outdoor enthusiasts, and anyone who regularly wears work boots or shoes and wants to dry damp footwear from sweat, rain, or everyday use"
 
-# What the brand/listing SAYS (the video will attribute these: "the brand says ...").
-# Type them yourself in your own words. Do not paste customer reviews, prices or star ratings.
+# Phrases viewers search for (5-15 is plenty; the first one goes into the video title).
+keywords:
+  - "boot dryer"
+  - "electric boot dryer"
+  - "work boot dryer"
+  - "shoe dryer"
+  - "best boot dryer"
+  - "sweaty work boots"
+  - "work boots dryer"
+  - "electric shoe dryer"
+  - "dry work boots"
+  - "boot warmer"
+  - "how to dry work boots"
+  - "shoe and boot dryer"
+
+# Your Amazon affiliate link.
+affiliate_url: "https://link.amazon/B0grqAe2Z"
+
+# What the brand/listing says. Attribute these claims to the brand.
 manufacturer_claims:
-  - "Designed for indoor windows up to 3 feet by 5 feet."
-  - "Five-pack intended to cover five standard-size windows."
-  - "Designed to help reduce heat loss through indoor windows."
-  - "Designed to help reduce condensation and frost buildup on indoor glass."
-  - "The product includes a one-year limited warranty; terms and exclusions apply."
-  - "Designed as a DIY seasonal window insulation option."
+  - "The PEET Original Dryer uses natural thermal convection to gently warm air and circulate it through footwear"
+  - "The dryer operates silently because it has no fans or moving parts"
+  - "It gently warms air rather than blowing hot air directly into footwear"
+  - "The brand recommends leaving footwear on the dryer overnight for best results"
+  - "Drying time varies depending on footwear material and how wet the footwear is"
+  - "The dryer is designed for shoes, work boots, athletic footwear, hunting footwear, and other compatible gear"
+  - "The manufacturer describes the dryer as suitable for leather, rubber, vinyl, neoprene, canvas, synthetics, fleece, microfiber, and other materials"
+  - "The manufacturer says the dryer can be left plugged in continuously"
+  - "The Original PEET Dryer includes a 25-year warranty when registered within 10 days of purchase, subject to warranty terms"
 
-# Hard specs you can verify on the product / box / brand site.
+# Hard specs verified from product information and manufacturer documentation.
 specs:
-  - "Product: 3M Indoor Window Insulator Kit, Five Pack."
-  - "ASIN: B00002NCJI."
-  - "Brand: 3M."
-  - "Pack size: five window insulation film sheets."
-  - "Intended window size: up to 3 feet by 5 feet per window, according to the supplied product information."
-  - "Intended use: indoor windows, not exterior glass surfaces."
-  - "The supplied product information lists a one-year limited warranty."
-  - "Installation instructions and warranty conditions should be checked on the current package."
-  - "Actual energy savings depend on the home, windows, climate, and installation."
+  - "Product: PEET Original 2-Shoe Electric Shoe and Boot Dryer"
+  - "ASIN: B001J4HQ76"
+  - "Brand: PEET"
+  - "Model: Original PEET Dryer, M97"
+  - "Drying method: Natural thermal convection"
+  - "Power consumption: 36 watts"
+  - "Electrical rating: 120 volts, US household configuration"
+  - "Capacity: One pair of footwear at a time"
+  - "Included components: Base, two AirChambers, two footwear DryPorts, and power cord"
+  - "Drying system: Gently warmed air rises through the AirChambers and DryPorts into footwear"
+  - "Operating noise: Silent operation with no fan or moving parts"
+  - "Maximum operating temperature is reached in approximately 10 minutes, according to manufacturer instructions; this does not mean footwear is dry in 10 minutes"
+  - "Recommended drying approach: Leave footwear on the dryer overnight"
+  - "Drying time varies with footwear material and moisture level"
+  - "Manufacturer warranty: 25 years when registered within 10 days of purchase, subject to terms"
+  - "Taller boots over approximately 11 inches may require optional 12-inch extensions, sold separately"
+  - "Made in the USA, according to PEET product information"
+  - "Electrical compatibility must be checked before use outside the intended voltage market"
 
-# YOUR OWN observations from actually handling the product. This is what makes the video
-# yours (and keeps it clear of YouTube's 'inauthentic content' rules). Aim for 6+ lines.
+# No firsthand observations have been supplied. These are practical product
+# considerations, not claims that the creator personally tested the product.
 hands_on_notes:
-  - "These are practical observations based on the supplied product information, not firsthand testing."
-  - "The five-pack is potentially useful when several windows need seasonal insulation, provided each window fits the stated dimensions."
-  - "Measuring every window before opening the kit can help avoid discovering that a pane is too large."
-  - "Careful surface preparation and following the product's specific instructions are important for a neat installation."
-  - "This kit adds a layer over indoor glass; it does not repair damaged frames, failed seals, or large gaps around a window."
-  - "Window film may be one part of a broader plan to stop drafts in a house, alongside weatherstripping and repairs where needed."
-  - "The film may need replacement over time, so buyers should consider it a seasonal measure rather than a permanent window upgrade."
-  - "For home energy efficiency, results depend on the home's existing insulation and the source of heat loss."
-  - "Do not describe these notes as personal testing unless the product has actually been handled and tested."
+  - "The PEET Original uses natural thermal convection, so it dries footwear differently from fan-powered electric boot dryers"
+  - "Instead of forcing hot air through boots, it gently warms air that rises through the AirChambers and DryPorts"
+  - "The lack of a fan makes it a quiet option for people who prefer to run a shoe dryer overnight"
+  - "Its two DryPorts are designed for one pair of shoes or boots at a time, so it is not the best choice for someone who needs to dry several pairs simultaneously"
+  - "For workers who finish a shift with sweaty work boots, using the dryer after wearing them may help remove accumulated moisture before the next use"
+  - "The dryer is not designed to produce instant results; the manufacturer recommends leaving footwear on it overnight"
+  - "Very wet footwear may need considerably more drying time than footwear that is only damp from perspiration"
+  - "The gentle warming approach is intended for a range of footwear materials, including leather, rubber, neoprene, canvas, and synthetics"
+  - "The DryPorts need to be fitted correctly so warm air can circulate into the footwear"
+  - "Loosening the laces and tongue helps create room for air circulation around the DryPorts"
+  - "The footwear should be positioned with the toe higher than the heel, following the manufacturer's instructions"
+  - "The dryer needs unobstructed rear air vents and at least six inches of clearance between the footwear and the base"
+  - "The standard configuration may not accommodate taller work boots; optional extensions may be needed for boots taller than approximately 11 inches"
+  - "This is a single-pair dryer, so people with multiple pairs of wet work boots may need a larger-capacity model or more drying time"
+  - "The 36-watt power rating is relatively low compared with many fan-powered heated dryers, but actual electricity costs depend on local rates and usage"
+  - "The 25-year warranty is subject to registration requirements and the manufacturer's terms; it should not be presented as unconditional coverage"
+  - "No firsthand testing has been provided, so the video must not claim the creator personally dried work boots or measured drying times"
 
 pros:
-  - "Five-sheet pack intended to cover multiple standard-size indoor windows."
-  - "DIY option for homeowners and renters seeking seasonal window insulation."
-  - "May help reduce heat loss and improve comfort near windows."
-  - "Designed to help reduce condensation and frost buildup on indoor glass."
-  - "One-year limited warranty, subject to its terms."
+  - "Designed for one pair of shoes or boots at a time"
+  - "Silent operation with no fan or moving parts"
+  - "Gentle thermal convection drying"
+  - "Uses 36 watts of power according to product documentation"
+  - "Designed for overnight drying"
+  - "Suitable for a broad range of footwear materials"
+  - "Can be used for everyday shoes, work boots, hunting footwear, and athletic footwear"
+  - "No direct hot-air blast"
+  - "Manufacturer offers a 25-year warranty when registered within 10 days, subject to terms"
+  - "Made in the USA, according to PEET product information"
 
 cons:
-  - "Designed for indoor windows up to 3 feet by 5 feet; larger panes may need another solution."
-  - "Not intended for exterior glass surfaces."
-  - "Does not repair damaged frames, failed seals, or structural gaps."
-  - "Actual energy savings vary and are not guaranteed."
-  - "The film may need replacement over time."
-  - "The limited warranty has terms and exclusions."
+  - "Dries one pair of footwear at a time"
+  - "Not intended for rapid drying in a short cycle"
+  - "Very wet footwear may require extended drying time"
+  - "No fan-powered airflow"
+  - "Taller boots may require separately purchased extensions"
+  - "Correct placement and unobstructed vents are important for proper operation"
+  - "Uses a 120-volt US electrical configuration; international buyers must check electrical compatibility"
+  - "Does not include a dedicated timer or selectable drying-speed settings"
+  - "The 25-year warranty has registration requirements and conditions"
 
 not_for:
-  - "People who need insulation film for exterior glass surfaces."
-  - "People whose windows exceed the kit's specified dimensions and do not want to use another solution."
-  - "Anyone seeking a permanent repair for damaged frames or failed window seals."
-  - "Anyone expecting guaranteed reductions in heating or cooling costs."
-  - "People looking specifically for attic insulation or an attic air-sealing product."
+  - "Anyone who needs to dry several pairs of boots simultaneously"
+  - "Anyone who needs footwear dried within an hour or another very short deadline"
+  - "Anyone specifically looking for a fan-powered forced-air dryer"
+  - "Anyone with very tall boots who does not want to purchase optional extensions"
+  - "Anyone who cannot use a 120-volt appliance safely with their electrical supply"
+  - "Anyone looking for a dedicated deodorizer or UV sanitizing device"
+  - "Anyone expecting instant drying of heavily soaked footwear"
 
 # Optional extras
 use_cases:
-  - "indoor window insulation"
-  - "winter draft reduction"
-  - "home energy efficiency"
-  - "seasonal DIY home improvement"
-  - "window condensation and frost management"
-  - "part of a broader home weatherproofing plan"
+  - "drying sweaty work boots"
+  - "drying damp work shoes"
+  - "overnight boot drying"
+  - "drying footwear after rainy weather"
+  - "drying hunting boots"
+  - "drying athletic shoes"
+  - "daily footwear moisture management"
+  - "reducing moisture buildup inside frequently worn boots"
+  - "drying leather and synthetic footwear"
+  - "workplace and home footwear care"
 
 notes: |
-  SEO keywords:
-  - "air sealing"
-  - "attic air sealing"
-  - "air sealing attic"
-  - "stop drafts in house"
-  - "how to seal air leaks"
-  - "home energy efficiency"
-  - "attic insulation"
-  - "reduce heating and cooling costs"
-  - "weatherproofing your home"
-  - "DIY home improvement"
+  SEO keyword guidance:
 
-  Keyword usage guidance:
-  - Use "air sealing," "stop drafts in house," "how to seal air leaks,"
-    "home energy efficiency," "weatherproofing your home," and
-    "DIY home improvement" where they fit the topic naturally.
-  - "Attic air sealing," "air sealing attic," and "attic insulation"
-    are related home-improvement search terms, but this product is a
-    window insulation kit, not an attic insulation product. Mention them
-    only when explaining that attic air sealing is a separate project.
-  - Do not claim a guaranteed amount of energy savings.
-  - Do not invent firsthand testing, customer feedback, prices, or ratings.
-  - Recheck the current Amazon listing before using price, rating,
-    review count, or availability in content.
+  - Use "boot dryer" as the primary search phrase and include it naturally in the video title.
+  - Use "electric boot dryer" and "work boot dryer" when explaining the product category and intended audience.
+  - Use "sweaty work boots" as a problem-focused hook for workers who wear boots for long shifts.
+  - Use "shoe dryer" and "electric shoe dryer" as broader category terms.
+  - Use "dry work boots" and "how to dry work boots" when explaining the overnight drying process.
+  - Use "boot warmer" carefully: the product gently warms air for drying, but it is not primarily a footwear-warming device.
+  - Explain the difference between natural thermal convection and fan-powered drying. This is one of the product's strongest differentiators.
+  - Emphasize silent operation, low 36-watt power consumption, one-pair capacity, and overnight use.
+  - Explain that drying time depends on how wet the footwear is and the material.
+  - Do not claim that the dryer eliminates odors, kills bacteria, disinfects footwear, or uses UV technology. Those features are not established for this Original model.
+  - Do not claim that the dryer dries boots in 10 minutes. Ten minutes refers to reaching maximum operating temperature, not completing the drying process.
+  - Do not claim that all tall work boots fit without optional extensions.
+  - Mention the 25-year warranty only with its registration requirement and applicable terms.
+  - Do not invent firsthand testing, customer feedback, prices, ratings, review counts, or availability.
+  - Do not imply that the creator personally tested the dryer.
+  - Keep the video focused on damp and sweaty work boots, quiet overnight drying, and practical footwear care for a US audience.
+  - Affiliate URL: https://link.amazon/B0grqAe2Z
 
-# angle: honest_pros_cons
-# assets_allow: [03_closeup.jpg]
+angle: "honest_work_boot_dryer_review"
+
+assets_allow: []
