@@ -1,1 +1,292 @@
+# ------------------------------------------------------------------
+# Copy this whole folder to projects/<ASIN>/ and fill it in.
+# The script writer may ONLY use what is written here. Anything you
+# leave out will simply not be said. More real facts = better video.
+# ------------------------------------------------------------------
+# PRODUCT RESEARCH FILE
+# Product: NABOWAN Weighted Door Draft Stopper
+# ASIN: B0CDLVYCJV
+#
+# EVIDENCE RULE:
+# The script writer must distinguish confirmed product information
+# from interpretations. Never turn an interpretation into a fact.
+# ------------------------------------------------------------------
 
+asin: "B0CDLVYCJV"
+product_name: "NABOWAN Weighted Door Draft Stopper"
+brand: "NABOWAN"
+short_name: "NABOWAN Weighted Draft Stopper"
+category: "Weighted under-door draft stopper"
+audience: "US homeowners, renters, apartment residents, and anyone who wants to reduce drafts, light leakage, or some noise passing through gaps beneath doors."
+
+# Phrases viewers search for.
+keywords:
+  primary:
+    - "seal door gap"
+  secondary:
+    - "gap filler"
+    - "door threshold seal"
+    - "seal bottom gap of windows and doors"
+    - "stop hot and cold air"
+    - "stop sound"
+    - "block light"
+    - "under door draft stopper"
+    - "weighted door draft stopper"
+    - "door gap blocker"
+    - "bottom of door seal"
+    - "door draft guard"
+
+# Amazon affiliate link — preserve exactly.
+affiliate_url: "https://amzn.to/481LQqy"
+
+# ------------------------------------------------------------------
+# 1. CONFIRMED PRODUCT FACTS
+#
+# Product details reported for this ASIN by the matching listing.
+# These are listing-supported facts, not independent laboratory
+# performance results or personally tested observations.
+# ------------------------------------------------------------------
+
+confirmed_facts:
+  product_identity:
+    - "Brand: NABOWAN."
+    - "Product: Weighted Door Draft Stopper."
+    - "ASIN: B0CDLVYCJV."
+    - "Manufacturer: NABOWAN."
+    - "Manufacturer part number reported for the matching 32-inch black version: BYT32-Black."
+
+  dimensions_and_design:
+    - "Length: 32 inches according to the ASIN-matched listing."
+    - "Color: Black."
+    - "Design: Weighted triangular under-door stopper."
+    - "Maximum advertised gap coverage: Up to 3 inches."
+    - "Quantity: One piece."
+
+  materials_and_construction:
+    - "Outer material: Polyester."
+    - "Filling: Polyester wadding and glass beads."
+    - "The glass beads add weight to the product."
+    - "The triangular design is intended to sit against the bottom of a door and the floor."
+
+  attachment_and_storage:
+    - "The product listing describes a hook-and-loop attachment strip."
+    - "The attachment is designed to help secure the stopper to the lower part of the door."
+    - "The listing describes hanging handles for storage."
+
+  advertised_purpose:
+    - "Designed to help reduce drafts beneath doors."
+    - "Advertised to help reduce cold air entering and cooled indoor air escaping."
+    - "Advertised to help reduce light passing through gaps beneath closed doors."
+    - "Advertised to help reduce noise passing through door gaps."
+    - "The listing also describes use around certain window gaps."
+
+# ------------------------------------------------------------------
+# 2. LISTING INFORMATION
+#
+# These details come from the product listing and associated
+# marketplace information. They should not be presented as
+# independently verified performance results.
+# ------------------------------------------------------------------
+
+listing_information:
+  - "The matching listing identifies the product as a 32-inch black model."
+  - "The listing reports a maximum gap coverage of up to 3 inches."
+  - "The listing describes the product as suitable for room, apartment, and porch doors."
+  - "The listing promotes year-round draft reduction for both cold and warm weather."
+  - "The listing advertises light and noise reduction."
+  - "The listing describes hook-and-loop attachment and hanging handles."
+  - "An ASIN-matched marketplace record reports a 4.5-star rating and 2,546 reviews. Ratings and review counts can change and must be checked on Amazon before publication."
+
+# ------------------------------------------------------------------
+# 3. REASONABLE INTERPRETATIONS
+#
+# These are analytical conclusions based on the product's design.
+# They are NOT independent test results or guaranteed outcomes.
+#
+# Use qualified language such as:
+# "designed to help", "may help", "can be useful for",
+# "the design suggests", or "one practical advantage is".
+# ------------------------------------------------------------------
+
+interpretations:
+  - interpretation: "The weighted construction may help the stopper remain positioned beneath the door."
+    basis: "Glass-bead filling and triangular design."
+    permitted_wording: "Its weighted triangular design is intended to help it stay positioned against the door and floor."
+
+  - interpretation: "The hook-and-loop attachment may reduce movement when the door is opened or closed."
+    basis: "The listing describes an attachment strip intended to secure the stopper to the door."
+    permitted_wording: "The hook-and-loop attachment is designed to help keep the stopper in place when the door moves."
+
+  - interpretation: "The product may help reduce unwanted airflow through a suitable bottom-door gap."
+    basis: "Weighted body and advertised draft-blocking purpose."
+    permitted_wording: "It is designed to help reduce drafts coming through the gap beneath a door."
+
+  - interpretation: "The product may help reduce some light entering beneath a closed door."
+    basis: "The listing advertises light reduction through bottom-door gaps."
+    permitted_wording: "It may help reduce light leaking into a room beneath a closed door."
+
+  - interpretation: "Filling a gap beneath a door may soften some noise passing through that opening."
+    basis: "The listing advertises noise reduction."
+    permitted_wording: "It may help reduce some noise passing through the gap, but it is not a soundproofing product."
+
+  - interpretation: "The product may be useful in both colder and warmer seasons."
+    basis: "Its advertised purpose includes reducing cold drafts and cooled indoor air escaping."
+    permitted_wording: "It is designed for year-round draft control, helping reduce unwanted airflow in different seasons."
+
+  - interpretation: "The product may be more convenient than a loose draft stopper because it has an attachment system."
+    basis: "Hook-and-loop attachment intended to secure the stopper to the door."
+    permitted_wording: "Unlike a loose door snake, this model is designed to attach to the door."
+
+  - interpretation: "The 32-inch length makes measuring the door important before purchasing."
+    basis: "The ASIN-matched listing identifies the product as 32 inches."
+    permitted_wording: "Measure your door before ordering to make sure the length is suitable."
+
+  - interpretation: "The advertised 3-inch maximum gap coverage does not guarantee a complete seal on every floor or door."
+    basis: "Actual fit depends on door dimensions, floor level, and gap shape."
+    permitted_wording: "Check your door gap and floor surface before buying; the advertised maximum does not guarantee a perfect fit in every situation."
+
+# ------------------------------------------------------------------
+# 4. PRACTICAL USE CASES
+#
+# These are plausible applications based on the product design
+# and advertised purpose, not guaranteed performance outcomes.
+# ------------------------------------------------------------------
+
+use_cases:
+  - "Reducing drafts beneath a bedroom door."
+  - "Reducing cold air entering beneath an exterior door."
+  - "Helping keep cooled indoor air from escaping beneath a door."
+  - "Reducing light entering beneath a closed bedroom door."
+  - "Helping reduce some noise passing through a door gap."
+  - "Filling a suitable gap beneath an apartment door."
+  - "Reducing unwanted airflow beneath a room or porch door."
+  - "Using as a removable under-door gap filler."
+  - "Helping manage drafts around suitable window gaps, if the dimensions and placement allow."
+
+# ------------------------------------------------------------------
+# 5. PROS AND TRADE-OFFS
+#
+# Evaluations derived from the product's documented design.
+# These are not independent comparative test results.
+# ------------------------------------------------------------------
+
+pros:
+  - "Weighted construction using glass beads and polyester wadding."
+  - "Triangular design intended to fit against the door and floor."
+  - "Hook-and-loop attachment designed to help keep the stopper in place."
+  - "Advertised to cover gaps up to 3 inches."
+  - "Designed to help reduce drafts beneath doors."
+  - "May help reduce light leakage beneath a closed door."
+  - "May help soften some noise passing through a door gap."
+  - "Hanging handles are described for convenient storage."
+  - "Designed for year-round draft management."
+
+trade_offs:
+  - "The ASIN-matched version is listed as 32 inches, so buyers need to check their door width."
+  - "The advertised maximum gap coverage is up to 3 inches; actual fit depends on the door and floor."
+  - "Noise reduction is limited and should not be confused with soundproofing."
+  - "Light reduction does not guarantee a completely dark room."
+  - "Hook-and-loop attachment requires suitable placement on the door."
+  - "It is designed primarily as an under-door stopper, not a permanent full-perimeter weather seal."
+  - "It should not be treated as a guaranteed insect-proof or waterproof barrier."
+
+# ------------------------------------------------------------------
+# 6. BUYER-FIT INTERPRETATIONS
+# ------------------------------------------------------------------
+
+good_fit_for:
+  - "People dealing with noticeable gaps beneath doors."
+  - "People looking for a weighted alternative to loose foam draft stoppers."
+  - "Renters or homeowners who want a removable under-door draft solution."
+  - "People who want to reduce some drafts and light leakage beneath a closed door."
+  - "People whose door width and bottom gap are compatible with the 32-inch model."
+  - "People who prefer an attachment system rather than a loose door snake."
+
+not_a_good_fit_for:
+  - "People who need a guaranteed airtight or waterproof seal."
+  - "People who need professional soundproofing."
+  - "People who require complete blackout conditions."
+  - "People whose door width is incompatible with the 32-inch model."
+  - "People whose bottom-door gap exceeds the product's advertised coverage."
+  - "People looking for a permanent rigid door sweep or full-perimeter weatherstripping."
+  - "People who need guaranteed insect protection."
+
+# ------------------------------------------------------------------
+# 7. UNVERIFIED OR PROHIBITED CLAIMS
+#
+# Do not include these as established product benefits.
+# ------------------------------------------------------------------
+
+unverified_claims:
+  - "The product completely seals every door gap."
+  - "The product is airtight."
+  - "The product is waterproof."
+  - "The product completely blocks all hot and cold air."
+  - "The product makes a room soundproof."
+  - "The product blocks all outside noise."
+  - "The product guarantees complete darkness."
+  - "The product prevents all insects or bugs from entering."
+  - "The product eliminates heating and cooling costs."
+  - "The product guarantees a specific amount of energy savings."
+  - "The product fits every standard door."
+  - "The product works equally well on every floor surface."
+  - "The product has been personally tested by the creator."
+  - "The creator measured noise reduction, temperature changes, or energy savings."
+  - "Customer reviews prove that every buyer gets the same results."
+
+# ------------------------------------------------------------------
+# 8. SCRIPT-WRITING GUIDANCE
+# ------------------------------------------------------------------
+
+notes: |
+  PRIMARY SEARCH PHRASE:
+  - "seal door gap"
+
+  SECONDARY SEARCH PHRASES:
+  - "gap filler"
+  - "door threshold seal"
+  - "seal bottom gap of windows and doors"
+  - "stop hot and cold air"
+  - "stop sound"
+  - "block light"
+  - "under door draft stopper"
+  - "weighted door draft stopper"
+  - "door gap blocker"
+
+  RECOMMENDED VIDEO ANGLE:
+  - Focus on the everyday problem of unwanted air coming through the gap beneath a door.
+  - Introduce the NABOWAN as a weighted triangular door draft stopper.
+  - Explain its polyester construction, glass-bead filling, and hook-and-loop attachment.
+  - Highlight the advertised maximum gap coverage of up to 3 inches.
+  - Explain how the attachment system is intended to help keep the stopper in place.
+  - Discuss its advertised benefits for reducing drafts, light leakage, and some noise.
+  - Explain the difference between this weighted attached stopper and a loose foam door snake.
+  - Remind viewers to measure their door before ordering the 32-inch model.
+
+  KEYWORD USAGE:
+  - Use "seal door gap" naturally in the title and introduction.
+  - Use "gap filler" when explaining the product's purpose.
+  - Use "door threshold seal" as a related search phrase, but clarify that this is a weighted fabric stopper rather than a permanent rigid threshold seal.
+  - Use "stop hot and cold air" as a problem-focused phrase, but do not promise complete air blockage.
+  - Use "stop sound" carefully. Say "helps reduce some noise" rather than "soundproofs your room."
+  - Use "block light" carefully. Say "helps reduce light leaking beneath the door" rather than promising complete blackout.
+  - The phrase "seal bottom gap of windows and doors" is broader than the main use. Keep the door application primary and mention window use only as a secondary advertised application.
+
+  EVIDENCE RULES:
+  - State listing-supported product specifications directly.
+  - Attribute advertised performance claims to the product listing.
+  - Present interpretations using qualified language.
+  - Never describe an interpretation as a guaranteed result.
+  - Do not invent product specifications, customer feedback, test results, prices, ratings, review counts, or availability.
+  - Do not claim complete soundproofing, airtight sealing, waterproofing, or guaranteed insect protection.
+  - Do not claim specific energy savings or reductions in utility bills.
+  - Do not imply that the creator personally tested the product.
+  - Do not confuse this weighted fabric stopper with adhesive foam weatherstripping or a rigid door sweep.
+  - Confirm the Amazon listing's selected variation before publishing dimensions, color, or other variant-specific details.
+
+  AFFILIATE LINK:
+  - Use exactly: https://amzn.to/481LQqy
+
+angle: "weighted_under_door_gap_filler_for_drafts_light_and_some_noise"
+
+assets_allow: []
