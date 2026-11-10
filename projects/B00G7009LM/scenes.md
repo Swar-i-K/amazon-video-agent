@@ -1,0 +1,12 @@
+# SCENES for B00G7009LM  (AI-generated clips, about 5 seconds each)
+# Next: run notebooks/make_ai_clips.ipynb on a free GPU (Kaggle or Colab). It writes ai_s01.mp4 ... into assets/.
+# Edit prompts freely. Keep every scene faceless and free of product-performance claims. Delete a line to skip a scene.
+# Format:  [id] type: mood|product | ref: none|photo file name | prompt: ...
+
+[s01] type: product | ref: product_image_01.jpg | prompt: A copper wire spool rests on a clear plastic film on a white surface. Soft, diffused studio light sweeps across the film, creating a faint rim glow. The camera slowly dollies forward, highlighting the material’s smoothness and the sturdy tape backing.
+[s02] type: product | ref: product_image_21.jpg | prompt: A grey silhouette holds the kit box, dimension lines faintly glowing beside it. A gentle tilt upward follows the silhouette’s hand, emphasizing the size cues while soft ambient light wraps the scene in a professional, commercial feel.
+[s03] type: product | ref: product_image_31.jpg | prompt: A hand presses a white weatherstripping seal into a window frame, the red backing visible. A slow push‑in captures the tactile contact, while a soft rim light outlines the seal, casting a faint bokeh of nearby light fixtures.
+[s04] type: product | ref: product_image_51.jpg | prompt: Hands in black sleeves stretch clear film across a window frame, the yellow wall providing contrast. A slow tilt follows the film’s edge as it aligns, while a soft light sweep highlights the film’s translucency and the careful placement of tape.
+[s05] type: product | ref: product_image_61.jpg | prompt: A hand holds a black hairdryer near a taut film on a window frame. A gentle push‑in captures the heat source’s glow, while a subtle rim light outlines the film’s surface, suggesting preparation without showing the film changing.
+[s06] type: mood | ref: none | prompt: A quiet living room at dusk, soft golden light spilling through a large window. A gentle breeze rustles sheer curtains, casting delicate shadows on a plush rug. The camera drifts slowly left, emphasizing the cozy atmosphere and the promise of warmth without showing any product.
+[s07] type: mood | ref: none | prompt: A cozy bedroom at night, a dim lamp casts a warm halo on a bedside table. Snowflakes drift past the window outside, visible as soft silhouettes. The camera drifts slowly toward the window, underscoring a peaceful, insulated retreat.
