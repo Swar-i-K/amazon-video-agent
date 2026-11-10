@@ -1,0 +1,13 @@
+# SCENES for B0DK5XXVTX  (AI-generated clips, about 5 seconds each)
+# Next: run notebooks/make_ai_clips.ipynb on a free GPU (Kaggle or Colab). It writes ai_s01.mp4 ... into assets/.
+# Edit prompts freely. Keep every scene faceless and free of product-performance claims. Delete a line to skip a scene.
+# Format:  [id] type: mood|product | ref: none|photo file name | prompt: ...
+
+[s01] type: product | ref: product_image_01.jpg | prompt: Hands peel back the clear film from its roll, the matte edge catching a soft rim light. The camera orbits slowly, revealing the film’s thickness and the included tape, while a warm indoor light sweeps across the surface, hinting at its clear, unobtrusive finish.
+[s02] type: product | ref: product_image_11.jpg | prompt: A pair of hands, wearing orange‑tipped scissors, trim excess clear film along a white window frame. The camera drifts left‑to‑right, following the clean cut line, while a gentle backlight highlights the film’s clarity and the neat, puncture‑resistant edges.
+[s03] type: product | ref: product_image_21.jpg | prompt: Two hands unroll a wide sheet of MAX Strength film from the box, the roll glinting under a soft ceiling light. A slow push‑in showcases the film’s large dimensions and the accompanying tape, emphasizing its ready‑to‑use, DIY nature.
+[s04] type: product | ref: product_image_31.jpg | prompt: Hands align a clear protective film over a picture frame, the glass surface reflecting a faint sunrise. The camera tilts upward, following the film as it settles, while a subtle dust‑bokeh drift adds a cinematic feel to the precise placement.
+[s05] type: product | ref: product_image_61.jpg | prompt: A grey‑shirted hand grips a green‑handle tool, guiding clear plastic sheeting onto a window frame. The camera orbits slowly, catching the sheen of the film and the gentle heat of a nearby hair dryer, hinting at the shrinking step without displaying the dryer itself.
+[s06] type: mood | ref: none | prompt: Early morning light streams through a large living‑room window, dust motes dancing in the soft golden glow. A slow drift pans from the frosted glass to the cozy interior, emphasizing the chill outside while the room feels warm and inviting.
+[s07] type: mood | ref: none | prompt: A close‑up of a hand‑sized silhouette tracing the edge of a window frame, fingertips brushing the wood as a faint draft stirs a thin curtain. The camera pushes in gently, highlighting the subtle movement of the fabric in cool air.
+[s08] type: mood | ref: none | prompt: A winter‑dressed silhouette stands at a doorway, hands tucked into coat pockets, looking toward a frosted pane. The camera slowly pushes in on the window, emphasizing the contrast between the chilly exterior and the warm interior ambience.
