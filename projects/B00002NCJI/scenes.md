@@ -1,0 +1,12 @@
+# SCENES for B00002NCJI  (AI-generated clips, about 5 seconds each)
+# Next: run notebooks/make_ai_clips.ipynb on a free GPU (Kaggle or Colab). It writes ai_s01.mp4 ... into assets/.
+# Edit prompts freely. Keep every scene faceless and free of product-performance claims. Delete a line to skip a scene.
+# Format:  [id] type: mood|product | ref: none|photo file name | prompt: ...
+
+[s01] type: product | ref: product_image_11.jpg | prompt: White window frame with clear glass stands against a blurred green landscape. Light reflects off the glass as a subtle light sweep glides across the pane. Camera drifts left to right, creating a calm, inviting atmosphere for indoor window improvement.
+[s02] type: product | ref: product_image_21.jpg | prompt: Two silver insulation sheets lie on a matte surface, copper tape coiled beside them. A soft dusting of floating particles catches a gentle backlight. Camera pushes in toward the sheets, emphasizing texture and quality in a sleek, minimalist style.
+[s03] type: product | ref: product_image_31.jpg | prompt: A collection of tools—hair dryer, scissors, tape measure, cloth—arranged on a clean white backdrop. A warm key light glides over the objects, casting subtle shadows. Camera tilts down slowly, highlighting the DIY preparation vibe.
+[s04] type: product | ref: product_image_71.jpg | prompt: A roll of double‑sided tape rests on a smooth table, its pink adhesive layer catching a gentle light sweep. Small particles of dust float nearby, adding depth. Camera pushes in slowly, focusing on the tape’s texture and sleek design.
+[s05] type: mood | ref: none | prompt: A cozy living room at dusk, soft golden light spilling through a large window. A pair of hands gently pull back a sheer curtain, revealing a faint outline of frosted glass. Camera drifts slowly from the floor to the window, emphasizing quiet winter calm.
+[s06] type: mood | ref: none | prompt: A rainy evening view from inside, raindrops racing down a window pane. Hands from behind rest on the sill, holding a warm blanket. Camera drifts upward, capturing the soothing rhythm of rain and the comforting indoor atmosphere.
+[s07] type: mood | ref: none | prompt: Late‑afternoon light streams through a hallway window, casting long shadows on the floor. A silhouette of a person from behind arranges a small potted plant on the sill. Camera pushes gently toward the window, emphasizing serene home‑improvement moments.
