@@ -1,0 +1,15 @@
+# SCENES for B0CDLVYCJV  (AI-generated clips, about 5 seconds each)
+# Next: run notebooks/make_ai_clips.ipynb on a free GPU (Kaggle or Colab). It writes ai_s01.mp4 ... into assets/.
+# Edit prompts freely. Keep every scene faceless and free of product-performance claims. Delete a line to skip a scene.
+# Format:  [id] type: mood|product | ref: none|photo file name | prompt: ...
+
+[s01] type: product | ref: product_image_01.jpg | prompt: The black fabric draft stopper with teal trim rests against a wooden door on a light wood floor. A slow dolly circles the stopper, a soft rim light sweeps across its textured surface, highlighting the weighted beads inside.
+[s02] type: product | ref: product_image_41.jpg | prompt: The stopper hangs from a white door handle, snowy landscape visible through the doorway. A gentle push‑in captures the hook‑and‑loop attachment, with a subtle light sweep accentuating the fabric’s weight and the handy hanging handle.
+[s03] type: product | ref: product_image_51.jpg | prompt: Black fabric stopper with drawstring lies flat on a light wood floor against a door. A slow orbit reveals the triangular shape, the drawstring loop, and a faint glint of the weighted interior, all bathed in soft side lighting.
+[s04] type: product | ref: product_image_31.jpg | prompt: A gray doormat with a black weighted bar sits on a white tiled floor. The camera drifts left to right, a gentle light sweep highlighting the bar’s weight and the subtle texture of the fabric, suggesting quiet stability.
+[s05] type: product | ref: product_image_11.jpg | prompt: A sleek product comparison graphic on a neutral background, the NABOWAN stopper image centered. The camera slowly pushes in, a soft rim light outlining the stopper’s edges, emphasizing its features without showing any motion or effects.
+[s06] type: mood | ref: none | prompt: A quiet hallway at sunrise, soft golden light spilling across a wooden floor. The camera drifts slowly from the far end toward a subtle gap beneath a closed door, dust motes gliding in the beam, emphasizing the invisible draft that slips through.
+[s07] type: mood | ref: none | prompt: Close‑up of a hand‑held feather gently hovering over a narrow door gap, backlit by a cool morning glow. The camera pushes in, the feather barely moving, hinting at the light airflow that a gap filler could calm.
+[s08] type: mood | ref: none | prompt: A living‑room doorway framed by a plush rug, warm amber light from a lamp spilling beneath the door. The camera tilts down to the floor, revealing a thin dark line where air might escape, underscoring the need for a gap filler.
+[s09] type: mood | ref: none | prompt: A bedroom door slightly ajar, curtains fluttering as a cool breeze slips through. The camera drifts toward the floor, focusing on the dark gap under the door, conveying the subtle draft that disrupts comfort.
+[s10] type: mood | ref: none | prompt: A kitchen doorway at dusk, streetlight casting thin shafts of light under the door. The camera pushes in to the floor, emphasizing the thin line of illumination that represents unwanted light leakage.
