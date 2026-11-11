@@ -1,1 +1,157 @@
+# ------------------------------------------------------------------
+# Copy this whole folder to projects/<ASIN>/ and fill it in.
+# The script writer may ONLY use what is written here. Anything you
+# leave out will simply not be said. More real facts = better video.
+# ------------------------------------------------------------------
+asin: B00AYJKBHE
+product_name: "JobSite Silent Convection Boot Dryer"
+brand: "JobSite"
+short_name: "JobSite Boot Dryer"
+category: "Outdoor Recreation"
+audience: "Workers, homeowners, hikers, skiers, and outdoor enthusiasts who want a quiet, low-wattage way to dry damp work boots, shoes, and compatible footwear overnight."
 
+# Your Amazon affiliate link (SiteStripe short link amzn.to/xxxx, or an amazon.* link with your tag=).
+# Third-party link shorteners / cloakers are not allowed in Associates.
+affiliate_url: "https://link.amazon/B0d36VwuV"
+
+# What the brand/listing SAYS (the video will attribute these: "the brand says ...").
+# Type them yourself in your own words. Do not paste customer reviews, prices or star ratings.
+manufacturer_claims:
+  - "Designed to dry and warm boots, shoes, and compatible gear using natural convection heat."
+  - "Uses a fanless drying system with no fan, motor, or moving parts."
+  - "Designed for silent operation."
+  - "Uses 36 watts of power."
+  - "Designed for gradual drying, including overnight footwear drying."
+  - "The manufacturer recommends approximately 8 hours for damp items and 12 hours for wet items."
+  - "The manufacturer specifies an operating temperature range of approximately 98–110°F."
+  - "The manufacturer lists a two-year warranty; terms and conditions apply."
+  - "Designed for drying compatible work boots, hiking footwear, ski boots, shoes, and some other gear."
+
+# Hard specs you can verify on the product / box / brand site.
+specs:
+  - "Product: JobSite Silent Convection Boot Dryer."
+  - "ASIN: B00AYJKBHE."
+  - "Brand: JobSite."
+  - "Model number: 54091."
+  - "Manufacturer part number: 54091."
+  - "Power consumption: 36 watts."
+  - "Power requirement: 120V AC, 60Hz household outlet."
+  - "Drying method: fanless natural convection heat."
+  - "The unit has no fan, motor, or moving parts."
+  - "Standard configuration includes a base unit, two drying tubes, and a power cord."
+  - "The product information lists included 8-inch extenders."
+  - "Manufacturer-listed operating temperature range: approximately 98–110°F."
+  - "Manufacturer instructions recommend approximately 15 minutes for initial warm-up."
+  - "Manufacturer-recommended drying time is approximately 8 hours for damp items and 12 hours for wet items."
+  - "Manufacturer-listed warranty: two years."
+  - "Manufacturer instructions require at least 8 inches of clearance between the top of the boot and the dryer base."
+  - "The unit should be placed on a firm, flat, dry surface with air intake vents unobstructed."
+  - "Actual drying time depends on footwear material, moisture level, room conditions, and positioning."
+
+# YOUR OWN observations from actually handling the product. This is what makes the video
+# yours (and keeps it clear of YouTube's 'inauthentic content' rules). Aim for 6+ lines.
+hands_on_notes:
+  - "These are practical observations based on the supplied product information, not firsthand testing."
+  - "The fanless convection design makes this a relevant option for buyers who want a silent boot dryer."
+  - "The 36W power rating is a useful specification for buyers comparing the electrical consumption of footwear dryers."
+  - "This dryer is designed for gradual drying rather than fast, forced-air drying."
+  - "The manufacturer's recommended drying times make overnight use a more realistic expectation than quick drying."
+  - "The two drying tubes allow the unit to accommodate one pair of boots or shoes at a time."
+  - "Buyers should check their footwear height and the required clearance before purchasing."
+  - "The included extenders may help accommodate compatible taller footwear, but buyers should check the product instructions for fit."
+  - "The unit needs a compatible 120V household outlet, so electrical compatibility matters."
+  - "This product removes moisture through convection; it should not be presented as a sanitizer, disinfectant, or guaranteed odor eliminator."
+  - "Drying performance depends on how wet the footwear is and the conditions in which the dryer is used."
+  - "Do not describe these notes as personal testing unless the product has actually been handled and tested."
+
+pros:
+  - "Fanless convection design with no fan or motor."
+  - "Designed for silent operation."
+  - "Uses 36 watts of power."
+  - "Suitable for gradual overnight drying."
+  - "Designed for compatible work boots, shoes, hiking footwear, and ski boots."
+  - "Two drying tubes allow one pair of footwear to be dried at a time."
+  - "Includes 8-inch extenders according to the supplied product information."
+  - "Manufacturer-listed two-year warranty."
+
+cons:
+  - "Gradual convection drying is not intended for buyers who need very fast drying."
+  - "Manufacturer-recommended drying times can reach approximately 8–12 hours."
+  - "Designed to dry one pair of footwear at a time."
+  - "Requires a compatible 120V AC, 60Hz household outlet."
+  - "Requires adequate clearance above the footwear."
+  - "Air intake vents must remain unobstructed."
+  - "Drying performance varies with moisture level, footwear material, and surrounding conditions."
+  - "The manufacturer does not recommend using the unit outdoors."
+  - "The two-year warranty is subject to its terms and conditions."
+
+not_for:
+  - "People who need boots or shoes dried within minutes."
+  - "People who need to dry several pairs of footwear simultaneously."
+  - "Anyone specifically looking for a fan-driven, forced-air boot dryer."
+  - "People without access to a compatible 120V AC, 60Hz outlet."
+  - "Anyone who needs a portable battery-powered footwear dryer."
+  - "People who cannot provide the required clearance and ventilation."
+  - "Anyone expecting guaranteed odor elimination, sanitization, or disinfection."
+
+# Optional extras
+use_cases:
+  - "dry work boots"
+  - "work boot drying after long shifts"
+  - "shoe drying after rain"
+  - "overnight footwear drying"
+  - "hiking boot drying"
+  - "compatible ski boot drying"
+  - "footwear warming"
+  - "drying compatible gloves and sports gear"
+  - "quiet indoor footwear drying"
+  - "low-wattage boot drying"
+
+notes: |
+  SEO keywords:
+  - "silent boot dryer"
+  - "work boot dryer"
+  - "shoe dryer"
+  - "work boots dryer"
+  - "electric shoe dryer"
+  - "dry work boots"
+  - "boot warmer"
+  - "ski boot dryer"
+  - "footwear dryer"
+  - "no fan dryer"
+  - "energy boot dryer"
+  - "leather boots dryer"
+  - "safe boot dryer"
+  - "quiet boot dryer"
+  - "convection boot dryer"
+
+  Keyword usage guidance:
+  - Use "silent boot dryer" as the primary product-positioning keyword.
+  - Naturally incorporate "work boot dryer," "shoe dryer," "dry work boots,"
+    "electric shoe dryer," and "footwear dryer" where relevant.
+  - Use "no fan dryer" and "quiet boot dryer" when explaining the
+    fanless convection design.
+  - Use "boot warmer" when discussing the warming function.
+  - Use "ski boot dryer" only when discussing compatible ski footwear.
+  - Use "leather boots dryer" carefully; do not imply universal
+    compatibility with every leather type.
+  - Position the product around silent, fanless, low-wattage,
+    gradual convection drying rather than fast drying.
+  - Explain that the manufacturer recommends approximately 8 hours
+    for damp items and 12 hours for wet items. These are approximate
+    recommendations, not guaranteed drying times.
+  - Mention the 36W power consumption without inventing electricity
+    bill savings or claiming a specific energy-cost reduction.
+  - Mention the 120V AC, 60Hz electrical requirement when discussing
+    compatibility.
+  - Do not describe this product as a forced-air or fan-powered dryer.
+  - Do not claim that it kills bacteria, eliminates fungi, sanitizes,
+    disinfects, or completely removes odors.
+  - Do not claim that it is guaranteed safe for every footwear material.
+  - Do not invent firsthand testing, customer feedback, prices,
+    ratings, or sales figures.
+  - Recheck the current Amazon listing before using price, rating,
+    review count, included accessories, or availability in content.
+
+# angle: silent_fanless_36w_overnight_boot_drying
+# assets_allow: []
