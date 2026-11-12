@@ -49,31 +49,41 @@ def eleven_list_voices() -> list[dict]:
              "labels": v.get("labels", {})} for v in r.json().get("voices", [])]
 
 
-def _synth_eleven(cfg, v, text, out: Path, prev: str, nxt: str):
-    e = cfg["voice"]["elevenlabs"]
-    payload = {"text": text, "model_id": e["model_id"],
-               "voice_settings": {"stability": e["stability"], "similarity_boost": e["similarity_boost"],
-                                  "style": e["style"], "use_speaker_boost": True}}
-    if prev:
-        payload["previous_text"] = prev[-400:]
-    if nxt:
-        payload["next_text"] = nxt[:400]
-    url = f"https://api.elevenlabs.io/v1/text-to-speech/{v['voice_id']}?output_format=mp3_44100_128"
-    for attempt in range(6):
-        r = requests.post(url, headers={**_eleven_headers(), "Content-Type": "application/json"}, json=payload, timeout=120)
-        if r.status_code == 200:
-            out.write_bytes(r.content)
-            return
-        if r.status_code in (400, 422) and ("previous_text" in payload or "next_text" in payload):
-            payload.pop("previous_text", None)
-            payload.pop("next_text", None)
-            continue
-        if r.status_code == 429 or r.status_code >= 500:
-            time.sleep(3 + attempt * 4)
-            continue
-        raise RuntimeError(f"ElevenLabs error {r.status_code}: {r.text[:400]}")
-    raise RuntimeError("ElevenLabs kept failing (rate limit or outage). Re-run; finished lines are cached.")
+def _synth_edge(cfg, v, text, out: Path, prev: str, nxt: str):
+    """Generate Edge TTS audio and retry if the resulting file is invalid."""
+    import edge_tts
 
+    async def go():
+        await edge_tts.Communicate(
+            text, v["voice"], rate="-4%"
+        ).save(str(out))
+
+    last = None
+
+    for attempt in range(4):
+        out.unlink(missing_ok=True)
+
+        try:
+            asyncio.run(go())
+
+            if _is_valid_audio(out):
+                return
+
+            last = RuntimeError(
+                "Edge TTS returned invalid or incomplete audio."
+            )
+
+        except Exception as e:
+            last = e
+
+        out.unlink(missing_ok=True)
+
+        if attempt < 3:
+            time.sleep(2 + attempt * 3)
+
+    raise RuntimeError(
+        f"Edge TTS failed after 4 attempts: {last}"
+    )
 
 def _synth_edge(cfg, v, text, out: Path, prev: str, nxt: str):
     import edge_tts
@@ -126,6 +136,27 @@ PROVIDERS = {"elevenlabs": _synth_eleven, "edge": _synth_edge, "openai": _synth_
 
 
 # ------------------------------- audio utils -------------------------------
+def _is_valid_audio(path: Path) -> bool:
+    """Check that FFmpeg can actually decode the audio file."""
+    try:
+        if not path.is_file() or path.stat().st_size < 44:
+            return False
+
+        run([
+            "ffmpeg",
+            "-nostdin",
+            "-v", "error",
+            "-i", str(path),
+            "-map", "0:a:0",
+            "-f", "null",
+            "-"
+        ])
+
+        return True
+
+    except Exception:
+        return False
+        
 def _write_wav(path: Path, data: np.ndarray) -> None:
     with wave.open(str(path), "wb") as w:
         w.setnchannels(1)
@@ -191,19 +222,87 @@ def preflight(cfg: dict, key: str, segments: list[dict]) -> dict:
     return info
 
 
-def synthesize_all(project: Project, cfg: dict, key: str, segments: list[dict]) -> list[np.ndarray]:
+def synthesize_all(
+    project: Project,
+    cfg: dict,
+    key: str,
+    segments: list[dict]
+) -> list[np.ndarray]:
+
     _, v = resolve_voice(cfg, key)
     synth = PROVIDERS[v["provider"]]
+
     tdir = project.cache_dir / "tts"
-    tdir.mkdir(exist_ok=True)
+    tdir.mkdir(parents=True, exist_ok=True)
+
     out = []
+
     for i, s in enumerate(segments):
-        ident = sha1_text(v["provider"], v.get("voice_id", v.get("voice")), cfg["voice"].get(v["provider"], {}), s["text"])
-        raw = tdir / (ident + (".wav" if v["provider"] == "mock" else ".mp3"))
+
+        ident = sha1_text(
+            v["provider"],
+            v.get("voice_id", v.get("voice")),
+            cfg["voice"].get(v["provider"], {}),
+            s["text"]
+        )
+
+        extension = (
+            ".wav" if v["provider"] == "mock" else ".mp3"
+        )
+
+        raw = tdir / (ident + extension)
+
+        # Validate existing cache before reusing it.
+        if raw.exists() and not _is_valid_audio(raw):
+            log(f"  removing invalid cached audio: {raw.name}")
+            raw.unlink(missing_ok=True)
+
+        # Generate fresh audio if no valid cache exists.
         if not raw.exists():
+
             prev = segments[i - 1]["text"] if i else ""
-            nxt = segments[i + 1]["text"] if i + 1 < len(segments) else ""
+
+            nxt = (
+                segments[i + 1]["text"]
+                if i + 1 < len(segments)
+                else ""
+            )
+
+            temp_raw = tdir / (
+                ident + ".partial" + extension
+            )
+
+            temp_raw.unlink(missing_ok=True)
+
             log(f"  voice {i + 1}/{len(segments)}")
-            synth(cfg, v, s["text"], raw, prev, nxt)
-        out.append(_to_clean_array(raw, tdir / (ident + ".clean.wav")))
+
+            try:
+                synth(
+                    cfg,
+                    v,
+                    s["text"],
+                    temp_raw,
+                    prev,
+                    nxt
+                )
+
+                if not _is_valid_audio(temp_raw):
+                    raise RuntimeError(
+                        f"Invalid TTS audio for segment {i + 1}"
+                    )
+
+                # Promote only validated audio into the cache.
+                temp_raw.replace(raw)
+
+            except Exception:
+                temp_raw.unlink(missing_ok=True)
+                raise
+
+        clean = _to_clean_array(
+            raw,
+            tdir / (ident + ".clean.wav")
+        )
+
+        out.append(clean)
+
     return out
