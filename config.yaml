@@ -124,6 +124,7 @@ voice:
     edge_male_2:     {provider: edge, voice: en-US-BrianMultilingualNeural,  label: "Edge neural - Brian (M)"}
     openai_female:   {provider: openai, voice: nova,  label: "OpenAI - Nova (F)"}
     openai_male:     {provider: openai, voice: onyx,  label: "OpenAI - Onyx (M)"}
+    openrouter_voxtral: {provider: openrouter, model_id: mistralai/voxtral-mini-tts-2603, voice: en_paul_neutral, label: "OpenRouter - Voxtral (example voice)"}
   elevenlabs:
     model_id: eleven_multilingual_v2   # best quality, 1 credit/char.  eleven_flash_v2_5 = 0.5 credit/char, less natural
     credits_per_char: 1.0              # set 0.5 if you switch to a flash/turbo model
@@ -133,6 +134,16 @@ voice:
   openai:
     model: gpt-4o-mini-tts
     instructions: "Warm, relaxed, conversational. Natural pacing with small pauses. Sound like a person talking to a friend, not reading an ad."
+  openrouter:
+    # OpenRouter is usage-billed; disabled until BOTH config and per-run approval are enabled.
+    endpoint: https://openrouter.ai/api/v1/audio/speech
+    model: mistralai/voxtral-mini-tts-2603
+    voice: en_paul_neutral
+    response_format: mp3
+    allow_paid: false
+    commercial_use_confirmed: false
+    http_referer: ""
+    app_title: "Summer Section Video Agent"
   pause_sentence: 0.40   # seconds of silence after each narration line
   pause_section: 0.75    # extra pause when the section changes
 
