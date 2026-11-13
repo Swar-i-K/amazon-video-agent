@@ -181,6 +181,84 @@ def _synth_openai(cfg, v, text, out: Path, prev: str, nxt: str):
     raise RuntimeError("OpenAI TTS kept failing after 5 attempts.")
 
 
+
+def _synth_openrouter(cfg, v, text, out: Path, prev: str, nxt: str):
+    """Generate TTS audio through OpenRouter. Paid use is deliberately opt-in."""
+    key = os.environ.get("OPENROUTER_API_KEY")
+    if not key:
+        raise SystemExit("OPENROUTER_API_KEY is not set. Add it as a GitHub repository secret.")
+
+    settings = cfg["voice"].get("openrouter", {})
+    if not settings.get("allow_paid", False):
+        raise SystemExit(
+            "OpenRouter TTS is disabled in config.yaml. Set voice.openrouter.allow_paid: true "
+            "only after checking the selected model's current price and commercial-use terms."
+        )
+    if os.environ.get("OPENROUTER_ALLOW_PAID_TTS", "").lower() != "true":
+        raise SystemExit(
+            "OpenRouter TTS requires explicit per-run approval. Set the GitHub Actions "
+            "allow_paid_tts input to true for this run."
+        )
+    if not settings.get("commercial_use_confirmed", False):
+        raise SystemExit(
+            "OpenRouter TTS blocked: set voice.openrouter.commercial_use_confirmed: true "
+            "only after verifying commercial-use rights for this exact model/provider."
+        )
+
+    model = v.get("model_id") or settings.get("model")
+    voice_id = v.get("voice") or settings.get("voice")
+    if not model or not voice_id:
+        raise RuntimeError("OpenRouter voice requires model_id and voice in config.yaml.")
+
+    headers = {
+        "Authorization": f"Bearer {key}",
+        "Content-Type": "application/json",
+    }
+    referer = settings.get("http_referer")
+    title = settings.get("app_title", "Summer Section Video Agent")
+    if referer:
+        headers["HTTP-Referer"] = referer
+    if title:
+        headers["X-Title"] = title
+
+    payload = {
+        "model": model,
+        "input": text,
+        "voice": voice_id,
+        "response_format": settings.get("response_format", "mp3"),
+    }
+
+    last_error = None
+    for attempt in range(5):
+        try:
+            response = requests.post(
+                settings.get("endpoint", "https://openrouter.ai/api/v1/audio/speech"),
+                headers=headers,
+                json=payload,
+                timeout=180,
+            )
+            if response.status_code == 200 and response.content:
+                out.write_bytes(response.content)
+                if _is_valid_audio(out):
+                    return
+                out.unlink(missing_ok=True)
+                raise RuntimeError("OpenRouter returned audio that FFmpeg could not decode.")
+            if response.status_code in (408, 409, 425, 429, 500, 502, 503, 504):
+                last_error = RuntimeError(
+                    f"OpenRouter temporary TTS error {response.status_code}: {response.text[:300]}"
+                )
+                time.sleep(3 + attempt * 4)
+                continue
+            raise RuntimeError(
+                f"OpenRouter TTS error {response.status_code}: {response.text[:500]}"
+            )
+        except requests.RequestException as exc:
+            last_error = exc
+            if attempt < 4:
+                time.sleep(2 + attempt * 3)
+
+    raise RuntimeError(f"OpenRouter TTS failed after 5 attempts: {last_error}")
+
 def _synth_mock(cfg, v, text, out: Path, prev: str, nxt: str):
     """Speech-shaped tone burst for tests (no network). Writes a WAV."""
     n_words = max(1, len(text.split()))
@@ -196,6 +274,7 @@ PROVIDERS = {
     "elevenlabs": _synth_eleven,
     "edge": _synth_edge,
     "openai": _synth_openai,
+    "openrouter": _synth_openrouter,
     "mock": _synth_mock,
 }
 
@@ -341,6 +420,25 @@ def preflight(cfg: dict, key: str, segments: list[dict]) -> dict:
                 "and note it is non-commercial."
             )
 
+    elif voice["provider"] == "openrouter":
+        settings = cfg["voice"].get("openrouter", {})
+        if not os.environ.get("OPENROUTER_API_KEY"):
+            raise SystemExit("OPENROUTER_API_KEY is not set.")
+        if not settings.get("allow_paid", False):
+            raise SystemExit("OpenRouter is disabled. Set voice.openrouter.allow_paid: true to enable it.")
+        if os.environ.get("OPENROUTER_ALLOW_PAID_TTS", "").lower() != "true":
+            raise SystemExit("OpenRouter requires per-run approval: set allow_paid_tts=true in GitHub Actions.")
+        if not settings.get("commercial_use_confirmed", False):
+            raise SystemExit(
+                "Commercial-use confirmation is missing. Verify the exact model/provider terms, "
+                "then set voice.openrouter.commercial_use_confirmed: true."
+            )
+        info["warnings"].append(
+            "OpenRouter is a usage-billed API gateway, not a free TTS plan. "
+            "Check the selected model's current pricing and commercial-use terms before running. "
+            "No automatic paid-provider fallback is configured."
+        )
+
     elif voice["provider"] == "edge":
         info["warnings"].append(
             "Edge TTS uses Microsoft's unofficial free endpoint; there is no commercial licence statement. "
@@ -368,6 +466,7 @@ def synthesize_all(
         ident = sha1_text(
             voice["provider"],
             voice.get("voice_id", voice.get("voice")),
+            voice.get("model_id"),
             cfg["voice"].get(voice["provider"], {}),
             segment["text"],
         )
