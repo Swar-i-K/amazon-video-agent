@@ -36,6 +36,11 @@ on:
           - edge_male_2
           - openai_female
           - openai_male
+          - openrouter_voxtral
+      allow_paid_tts:
+        description: "Allow usage-billed OpenRouter TTS for this run (also requires config opt-in)"
+        type: boolean
+        default: false
       angle:
         description: "Video angle (blank = automatic rotation)"
         type: choice
@@ -73,6 +78,8 @@ jobs:
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
       ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      OPENROUTER_ALLOW_PAID_TTS: ${{ inputs.allow_paid_tts }}
     steps:
       - uses: actions/checkout@v4
         with:
