@@ -576,19 +576,41 @@ def preflight(cfg: dict, key: str, segments: list[dict]) -> dict:
     return info
 
 
+def _voice_gender(key: str, voice: dict) -> str:
+    """'male' or 'female' for a configured voice (from a 'gender' field, else from the key name)."""
+    g = str(voice.get("gender", "")).lower()
+    if g in ("male", "female"):
+        return g
+    k = (key or "").lower()
+    if "female" in k:
+        return "female"
+    if "male" in k:
+        return "male"
+    return ""
+
+
+def _fallback_voice_key(fallback_cfg: dict, provider_name: str, primary_key: str, primary_voice: dict):
+    """voice_keys.<provider> may be one key, or {male: key, female: key} so that a fallback never changes gender."""
+    entry = fallback_cfg.get("voice_keys", {}).get(provider_name)
+    if isinstance(entry, dict):
+        return entry.get(_voice_gender(primary_key, primary_voice))
+    return entry
+
+
 def synthesize_all(
     project: Project,
     cfg: dict,
     key: str,
     segments: list[dict],
 ) -> list[np.ndarray]:
-    _, voice = resolve_voice(cfg, key)
+    primary_key, voice = resolve_voice(cfg, key)
     synth = PROVIDERS[voice["provider"]]
 
     tdir = project.cache_dir / "tts"
     tdir.mkdir(parents=True, exist_ok=True)
 
     output = []
+    fallback_used = []          # (segment number, provider, voice) for every line read by a different voice
 
     for i, segment in enumerate(segments):
         ident = sha1_text(
@@ -607,6 +629,7 @@ def synthesize_all(
             log(f"  removing invalid cached audio: {raw.name}")
             raw.unlink(missing_ok=True)
 
+        used_fallback = None
         if not raw.exists():
             previous = segments[i - 1]["text"] if i else ""
             following = segments[i + 1]["text"] if i + 1 < len(segments) else ""
@@ -633,7 +656,7 @@ def synthesize_all(
                         if provider_name not in PROVIDERS or provider_name == voice["provider"]:
                             continue
                         # Resolve a dedicated fallback voice, never reuse the failed provider's voice ID.
-                        fallback_voice_key = fallback_cfg.get("voice_keys", {}).get(provider_name)
+                        fallback_voice_key = _fallback_voice_key(fallback_cfg, provider_name, primary_key, voice)
                         if not fallback_voice_key:
                             continue
                         fallback_voice = cfg["voice"]["options"].get(fallback_voice_key)
@@ -652,6 +675,7 @@ def synthesize_all(
                                 raise RuntimeError(f"{provider_name} fallback returned invalid audio.")
                             fallback_temp.replace(temp_raw)
                             fallback_error = None
+                            used_fallback = (provider_name, fallback_voice_key, candidate)
                             break
                         except Exception as exc:
                             fallback_error = exc
@@ -672,6 +696,15 @@ def synthesize_all(
                     raise RuntimeError(f"Invalid TTS audio for segment {i + 1}")
 
                 # Only move a successfully decoded file into the persistent cache.
+                if used_fallback:
+                    # Audio from a DIFFERENT voice must never be stored under the primary voice's cache key, or every
+                    # later run would keep reusing it as if it were the chosen voice. Store it under its own key.
+                    prov, fb_key, fb_voice = used_fallback
+                    fb_ident = sha1_text(prov, fb_voice.get("voice_id", fb_voice.get("voice")),
+                                         fb_voice.get("model_id"), cfg["voice"].get(prov, {}), segment["text"])
+                    raw = tdir / (fb_ident + extension)
+                    ident = fb_ident
+                    fallback_used.append((i + 1, prov, fb_key))
                 temp_raw.replace(raw)
             except Exception:
                 temp_raw.unlink(missing_ok=True)
@@ -680,4 +713,11 @@ def synthesize_all(
         clean = _to_clean_array(raw, tdir / (ident + ".clean.wav"))
         output.append(clean)
 
+    if fallback_used:
+        nums = ", ".join(str(n) for n, _, _ in fallback_used)
+        log(f"\n  WARNING: {len(fallback_used)} of {len(segments)} narration line(s) were read by the backup voice "
+            f"'{fallback_used[0][2]}' ({fallback_used[0][1]}) because '{primary_key}' failed: line(s) {nums}. "
+            f"The video will not sound the same all the way through. Re-run later (those lines are not cached "
+            f"as '{primary_key}', so Edge is tried again), or set voice.fallback.enabled to false in config.yaml "
+            f"to stop instead of switching voices.")
     return output
