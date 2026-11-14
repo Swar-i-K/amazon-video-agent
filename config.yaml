@@ -152,7 +152,9 @@ voice:
     only_for: [edge]
     providers: [inworld]
     voice_keys:
-      inworld: inworld_female
+      inworld:               # the backup voice has the same gender as the voice you picked
+        female: inworld_female
+        male: inworld_male
   openrouter:
     # OpenRouter is usage-billed; disabled until BOTH config and per-run approval are enabled.
     endpoint: https://openrouter.ai/api/v1/audio/speech
