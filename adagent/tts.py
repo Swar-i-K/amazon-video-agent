@@ -2,8 +2,6 @@
 from __future__ import annotations
 
 import asyncio
-import base64
-import json
 import os
 import time
 import wave
@@ -121,37 +119,33 @@ def _synth_eleven(cfg, v, text, out: Path, prev: str, nxt: str):
 
 
 def _synth_edge(cfg, v, text, out: Path, prev: str, nxt: str):
-    """Best-effort Edge TTS with a fresh WebSocket communicator on every retry."""
+    """Generate Edge TTS audio and retry if the resulting file is invalid."""
     import edge_tts
 
-    voice = v.get("voice")
-    rate = v.get("rate", "-4%")
-    volume = v.get("volume", "+0%")
-    last_error = None
+    async def go():
+        await edge_tts.Communicate(
+            text,
+            v["voice"],
+            rate="-4%",
+        ).save(str(out))
 
-    for attempt in range(5):
+    last_error = None
+    for attempt in range(4):
         out.unlink(missing_ok=True)
         try:
-            communicator = edge_tts.Communicate(
-                text=text,
-                voice=voice,
-                rate=rate,
-                volume=volume,
-            )
-            asyncio.run(communicator.save(str(out)))
+            asyncio.run(go())
             if _is_valid_audio(out):
                 return
-            last_error = RuntimeError("Edge TTS returned no audio or an undecodable audio file.")
+            last_error = RuntimeError("Edge TTS returned invalid or incomplete audio.")
         except Exception as exc:
             last_error = exc
-        out.unlink(missing_ok=True)
-        if attempt < 4:
-            time.sleep(min(20, 2 ** (attempt + 1)))
 
-    raise RuntimeError(
-        f"Edge TTS failed after 5 attempts for voice {voice!r}: {last_error}. "
-        "The Edge WebSocket service may be temporarily unavailable or blocked from this runner."
-    )
+        out.unlink(missing_ok=True)
+        if attempt < 3:
+            time.sleep(2 + attempt * 3)
+
+    raise RuntimeError(f"Edge TTS failed after 4 attempts: {last_error}")
+
 
 def _synth_openai(cfg, v, text, out: Path, prev: str, nxt: str):
     key = os.environ.get("OPENAI_API_KEY")
@@ -187,170 +181,61 @@ def _synth_openai(cfg, v, text, out: Path, prev: str, nxt: str):
     raise RuntimeError("OpenAI TTS kept failing after 5 attempts.")
 
 
-
 def _synth_openrouter(cfg, v, text, out: Path, prev: str, nxt: str):
-    """Generate TTS audio through OpenRouter. Paid use is deliberately opt-in."""
+    """OpenRouter text-to-speech (OpenAI-compatible POST /api/v1/audio/speech). One attempt chain, no fallback to
+    another provider: if OpenRouter fails or the balance is empty, the run stops instead of spending elsewhere."""
     key = os.environ.get("OPENROUTER_API_KEY")
     if not key:
-        raise SystemExit("OPENROUTER_API_KEY is not set. Add it as a GitHub repository secret.")
-
+        raise SystemExit("OPENROUTER_API_KEY is not set. Add it as a GitHub secret or pick another voice.")
     settings = cfg["voice"].get("openrouter", {})
-    if not settings.get("allow_paid", False):
-        raise SystemExit(
-            "OpenRouter TTS is disabled in config.yaml. Set voice.openrouter.allow_paid: true "
-            "only after checking the selected model's current price and commercial-use terms."
-        )
-    if os.environ.get("OPENROUTER_ALLOW_PAID_TTS", "").lower() != "true":
-        raise SystemExit(
-            "OpenRouter TTS requires explicit per-run approval. Set the GitHub Actions "
-            "allow_paid_tts input to true for this run."
-        )
-    if not settings.get("commercial_use_confirmed", False):
-        raise SystemExit(
-            "OpenRouter TTS blocked: set voice.openrouter.commercial_use_confirmed: true "
-            "only after verifying commercial-use rights for this exact model/provider."
-        )
-
-    model = v.get("model_id") or settings.get("model")
-    voice_id = v.get("voice") or settings.get("voice")
-    if not model or not voice_id:
-        raise RuntimeError("OpenRouter voice requires model_id and voice in config.yaml.")
-
-    headers = {
-        "Authorization": f"Bearer {key}",
-        "Content-Type": "application/json",
-    }
-    referer = settings.get("http_referer")
-    title = settings.get("app_title", "Summer Section Video Agent")
-    if referer:
-        headers["HTTP-Referer"] = referer
-    if title:
-        headers["X-Title"] = title
-
-    payload = {
-        "model": model,
-        "input": text,
-        "voice": voice_id,
-        "response_format": settings.get("response_format", "mp3"),
-    }
-
+    model = v.get("model") or settings.get("model")
+    if not model or not v.get("voice"):
+        raise RuntimeError("An OpenRouter voice needs both 'model' and 'voice' in config.yaml.")
+    # response_format must be set: OpenRouter returns raw PCM when it is left out, which cannot be played back.
+    payload = {"model": model, "input": text, "voice": v["voice"], "response_format": "mp3"}
     last_error = None
     for attempt in range(5):
         try:
             response = requests.post(
-                settings.get("endpoint", "https://openrouter.ai/api/v1/audio/speech"),
-                headers=headers,
+                "https://openrouter.ai/api/v1/audio/speech",
+                headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
                 json=payload,
                 timeout=180,
             )
-            if response.status_code == 200 and response.content:
-                out.write_bytes(response.content)
-                if _is_valid_audio(out):
-                    return
-                out.unlink(missing_ok=True)
-                raise RuntimeError("OpenRouter returned audio that FFmpeg could not decode.")
-            if response.status_code in (408, 409, 425, 429, 500, 502, 503, 504):
-                last_error = RuntimeError(
-                    f"OpenRouter temporary TTS error {response.status_code}: {response.text[:300]}"
-                )
-                time.sleep(3 + attempt * 4)
-                continue
-            raise RuntimeError(
-                f"OpenRouter TTS error {response.status_code}: {response.text[:500]}"
-            )
         except requests.RequestException as exc:
             last_error = exc
-            if attempt < 4:
-                time.sleep(2 + attempt * 3)
-
+            time.sleep(2 + attempt * 3)
+            continue
+        ctype = response.headers.get("content-type", "").lower()
+        if response.status_code == 200 and response.content and "json" not in ctype and "text/" not in ctype:
+            out.write_bytes(response.content)
+            if _is_valid_audio(out):
+                return
+            out.unlink(missing_ok=True)
+            last_error = RuntimeError("OpenRouter returned audio that FFmpeg could not decode.")
+        elif response.status_code in (401, 403):
+            raise SystemExit(f"OpenRouter rejected the key or the model/voice ({response.status_code}): "
+                             f"{response.text[:300]}")
+        elif response.status_code == 402:
+            raise SystemExit("OpenRouter says the balance is too low (402). Nothing was generated. Add credit or "
+                             "choose another voice; there is no automatic fallback.")
+        elif response.status_code in (429, 500, 502, 503, 504):
+            last_error = RuntimeError(f"OpenRouter temporary error {response.status_code}: {response.text[:300]}")
+            try:
+                wait = float(response.headers.get("retry-after") or 0)
+            except ValueError:
+                wait = 0.0
+            time.sleep(min(60.0, wait or 3 + attempt * 4))
+            continue
+        elif response.status_code == 200:
+            raise RuntimeError(f"OpenRouter returned a non-audio answer ({ctype or 'no content type'}): "
+                               f"{response.text[:300]}")
+        else:
+            raise RuntimeError(f"OpenRouter TTS error {response.status_code}: {response.text[:400]}")
+        if attempt < 4:
+            time.sleep(2 + attempt * 3)
     raise RuntimeError(f"OpenRouter TTS failed after 5 attempts: {last_error}")
 
-
-def _synth_inworld(cfg, v, text, out: Path, prev: str, nxt: str):
-    """Generate speech with Inworld; enforce the configured lifetime usage guard."""
-    settings = cfg["voice"].get("inworld", {})
-    key = os.environ.get("INWORLD_API_KEY")
-    if not key:
-        raise SystemExit("INWORLD_API_KEY is not set. Add your Inworld API credential to GitHub Secrets.")
-
-    voice_id = v.get("voice_id") or v.get("voice")
-    model_id = v.get("model_id") or settings.get("model_id", "inworld-tts-2")
-    max_units = int(settings.get("max_utf16_units", 1900))
-    requested = len(text.encode("utf-16-le")) // 2
-    if requested > max_units:
-        raise RuntimeError(
-            f"Inworld segment is {requested} UTF-16 units; configured safe maximum is {max_units}. "
-            "Shorten/split this narration segment and rerun."
-        )
-
-    ledger_path = Path(settings.get("usage_ledger", ".adagent_state/tts_usage.json"))
-    ledger_path.parent.mkdir(parents=True, exist_ok=True)
-    try:
-        ledger = json.loads(ledger_path.read_text(encoding="utf-8")) if ledger_path.exists() else {}
-    except Exception as exc:
-        raise RuntimeError(f"Could not read Inworld usage ledger at {ledger_path}: {exc}") from exc
-
-    used = int(ledger.get("inworld_characters_used", 0))
-    budget = int(settings.get("free_character_budget", 40000))
-    paid_allowed = (
-        bool(settings.get("allow_paid_fallback", False))
-        and os.environ.get("INWORLD_ALLOW_PAID_TTS", "").lower() == "true"
-    )
-    if used + requested > budget and not paid_allowed:
-        raise RuntimeError(
-            f"Inworld safety budget reached: {used} characters used + {requested} requested "
-            f"> {budget}. This is a conservative local lifetime cap, not a provider quota estimate. "
-            "No paid fallback is enabled."
-        )
-
-    payload = {
-        "text": text,
-        "voiceId": voice_id,
-        "modelId": model_id,
-        "audioConfig": {"audioEncoding": settings.get("audio_encoding", "MP3")},
-    }
-    headers = {
-        "Authorization": f"Basic {key}",
-        "Content-Type": "application/json",
-    }
-    endpoint = settings.get("endpoint", "https://api.inworld.ai/tts/v1/voice")
-    last_error = None
-
-    for attempt in range(5):
-        try:
-            response = requests.post(endpoint, headers=headers, json=payload, timeout=180)
-            if response.status_code == 200:
-                data = response.json()
-                audio_content = data.get("audioContent")
-                if not audio_content:
-                    raise RuntimeError(f"Inworld response contained no audioContent: {str(data)[:400]}")
-                out.write_bytes(base64.b64decode(audio_content))
-                if not _is_valid_audio(out):
-                    out.unlink(missing_ok=True)
-                    raise RuntimeError("Inworld returned audio that FFmpeg could not decode.")
-
-                actual = int(data.get("usage", {}).get("processedCharactersCount", requested))
-                ledger["inworld_characters_used"] = used + actual
-                ledger["inworld_model_id"] = model_id
-                ledger["inworld_voice_id"] = voice_id
-                ledger_path.write_text(json.dumps(ledger, indent=2) + "\n", encoding="utf-8")
-                return
-
-            if response.status_code in (408, 409, 425, 429, 500, 502, 503, 504):
-                last_error = RuntimeError(
-                    f"Inworld temporary TTS error {response.status_code}: {response.text[:300]}"
-                )
-                if attempt < 4:
-                    time.sleep(3 + attempt * 4)
-                    continue
-            else:
-                raise RuntimeError(f"Inworld TTS error {response.status_code}: {response.text[:500]}")
-        except requests.RequestException as exc:
-            last_error = exc
-            if attempt < 4:
-                time.sleep(2 + attempt * 3)
-
-    raise RuntimeError(f"Inworld TTS failed after 5 attempts: {last_error}")
 
 def _synth_mock(cfg, v, text, out: Path, prev: str, nxt: str):
     """Speech-shaped tone burst for tests (no network). Writes a WAV."""
@@ -368,7 +253,6 @@ PROVIDERS = {
     "edge": _synth_edge,
     "openai": _synth_openai,
     "openrouter": _synth_openrouter,
-    "inworld": _synth_inworld,
     "mock": _synth_mock,
 }
 
@@ -514,58 +398,22 @@ def preflight(cfg: dict, key: str, segments: list[dict]) -> dict:
                 "and note it is non-commercial."
             )
 
-    elif voice["provider"] == "inworld":
-        settings = cfg["voice"].get("inworld", {})
-        if not settings.get("enabled", True):
-            raise SystemExit("Inworld TTS is disabled in config.yaml.")
-        if not os.environ.get("INWORLD_API_KEY"):
-            raise SystemExit("INWORLD_API_KEY is not set. Add it as a GitHub repository secret.")
-        too_long = [
-            len(segment["text"].encode("utf-16-le")) // 2
-            for segment in segments
-            if len(segment["text"].encode("utf-16-le")) // 2 > int(settings.get("max_utf16_units", 1900))
-        ]
-        if too_long:
-            raise SystemExit(
-                f"Inworld supports at most {settings.get('max_utf16_units', 1900)} configured UTF-16 units "
-                f"per request; found a segment of {max(too_long)}. Shorten the script segment and rerun."
-            )
-        ledger_path = Path(settings.get("usage_ledger", ".adagent_state/tts_usage.json"))
-        ledger = json.loads(ledger_path.read_text(encoding="utf-8")) if ledger_path.exists() else {}
-        used = int(ledger.get("inworld_characters_used", 0))
-        budget = int(settings.get("free_character_budget", 40000))
-        if used + chars > budget and not (
-            settings.get("allow_paid_fallback", False)
-            and os.environ.get("INWORLD_ALLOW_PAID_TTS", "").lower() == "true"
-        ):
-            raise SystemExit(
-                f"Inworld safety budget would be exceeded ({used} used + {chars} needed > {budget}). "
-                "No paid fallback is enabled. The configured budget is a conservative local lifetime cap."
-            )
-        info["warnings"].append(
-            "Inworld usage is tracked in .adagent_state/tts_usage.json. The configured character cap is a "
-            "conservative local safety limit, not a guaranteed provider free quota. Check your account's "
-            "remaining included allowance and commercial-use terms."
-        )
-
     elif voice["provider"] == "openrouter":
         settings = cfg["voice"].get("openrouter", {})
-        if not os.environ.get("OPENROUTER_API_KEY"):
-            raise SystemExit("OPENROUTER_API_KEY is not set.")
-        if not settings.get("allow_paid", False):
-            raise SystemExit("OpenRouter is disabled. Set voice.openrouter.allow_paid: true to enable it.")
-        if os.environ.get("OPENROUTER_ALLOW_PAID_TTS", "").lower() != "true":
-            raise SystemExit("OpenRouter requires per-run approval: set allow_paid_tts=true in GitHub Actions.")
-        if not settings.get("commercial_use_confirmed", False):
+        limit = int(settings.get("max_chars_per_video", 0) or 0)
+        if limit and chars > limit:
             raise SystemExit(
-                "Commercial-use confirmation is missing. Verify the exact model/provider terms, "
-                "then set voice.openrouter.commercial_use_confirmed: true."
-            )
+                f"This narration is {chars} characters, above the openrouter.max_chars_per_video limit "
+                f"({limit}). Nothing was spent. Raise the limit in config.yaml, or shorten the script.")
+        log(f"OpenRouter: this video needs {chars} characters of narration (billed per character; check the "
+            f"model's price on openrouter.ai).")
         info["warnings"].append(
-            "OpenRouter is a usage-billed API gateway, not a free TTS plan. "
-            "Check the selected model's current pricing and commercial-use terms before running. "
-            "No automatic paid-provider fallback is configured."
-        )
+            f"OpenRouter voice ({voice.get('model', settings.get('model'))}): billed to your OpenRouter balance. "
+            "No automatic fallback to another voice.")
+        if not voice.get("commercial_verified"):
+            info["warnings"].append(
+                "Commercial-use terms for this OpenRouter model are NOT marked as verified in config.yaml. "
+                "Check the model's terms before using this voice on a monetised video.")
 
     elif voice["provider"] == "edge":
         info["warnings"].append(
@@ -591,13 +439,16 @@ def synthesize_all(
     output = []
 
     for i, segment in enumerate(segments):
-        ident = sha1_text(
+        key_parts = [
             voice["provider"],
             voice.get("voice_id", voice.get("voice")),
-            voice.get("model_id"),
             cfg["voice"].get(voice["provider"], {}),
             segment["text"],
-        )
+        ]
+        if voice["provider"] == "openrouter":
+            # the same voice name can exist on several models, so the model must be part of the cache key
+            key_parts.insert(2, voice.get("model") or cfg["voice"].get("openrouter", {}).get("model"))
+        ident = sha1_text(*key_parts)
 
         extension = ".wav" if voice["provider"] == "mock" else ".mp3"
         raw = tdir / (ident + extension)
@@ -616,57 +467,7 @@ def synthesize_all(
             log(f"  voice {i + 1}/{len(segments)}")
 
             try:
-                try:
-                    synth(cfg, voice, segment["text"], temp_raw, previous, following)
-                except Exception as primary_error:
-                    fallback_cfg = cfg["voice"].get("fallback", {})
-                    fallback_providers = fallback_cfg.get("providers", [])
-                    can_fallback = (
-                        fallback_cfg.get("enabled", False)
-                        and voice["provider"] in fallback_cfg.get("only_for", ["edge"])
-                    )
-                    if not can_fallback or not fallback_providers:
-                        raise
-
-                    fallback_error = None
-                    for provider_name in fallback_providers:
-                        if provider_name not in PROVIDERS or provider_name == voice["provider"]:
-                            continue
-                        # Resolve a dedicated fallback voice, never reuse the failed provider's voice ID.
-                        fallback_voice_key = fallback_cfg.get("voice_keys", {}).get(provider_name)
-                        if not fallback_voice_key:
-                            continue
-                        fallback_voice = cfg["voice"]["options"].get(fallback_voice_key)
-                        if not fallback_voice or fallback_voice.get("provider") != provider_name:
-                            continue
-                        candidate = dict(fallback_voice)
-                        # Never auto-fallback to usage-billed providers.
-                        if provider_name == "openrouter":
-                            continue
-                        fallback_temp = temp_raw.with_name(temp_raw.stem + f".{provider_name}" + temp_raw.suffix)
-                        fallback_temp.unlink(missing_ok=True)
-                        try:
-                            log(f"  primary {voice['provider']} failed; trying approved fallback {provider_name}")
-                            PROVIDERS[provider_name](cfg, candidate, segment["text"], fallback_temp, previous, following)
-                            if not _is_valid_audio(fallback_temp):
-                                raise RuntimeError(f"{provider_name} fallback returned invalid audio.")
-                            fallback_temp.replace(temp_raw)
-                            fallback_error = None
-                            break
-                        except Exception as exc:
-                            fallback_error = exc
-                            fallback_temp.unlink(missing_ok=True)
-
-                    if fallback_error is not None:
-                        raise RuntimeError(
-                            f"Primary {voice['provider']} TTS failed ({primary_error}); "
-                            f"configured fallback(s) also failed ({fallback_error})."
-                        ) from primary_error
-                    if not temp_raw.exists():
-                        raise RuntimeError(
-                            f"Primary {voice['provider']} TTS failed ({primary_error}); "
-                            "no configured fallback produced audio."
-                        ) from primary_error
+                synth(cfg, voice, segment["text"], temp_raw, previous, following)
 
                 if not _is_valid_audio(temp_raw):
                     raise RuntimeError(f"Invalid TTS audio for segment {i + 1}")
