@@ -111,7 +111,7 @@ llm:
   # Check current Groq model names at console.groq.com/docs/models
 
 voice:
-  default: eleven_female
+  default: inworld_female
   # Switch voice with --voice KEY (or the dropdown in the GitHub workflow).
   options:
     eleven_female:   {provider: elevenlabs, voice_id: EXAVITQu4vr4xnSDxMaL, label: "ElevenLabs - Sarah (F)"}
@@ -124,22 +124,45 @@ voice:
     edge_male_2:     {provider: edge, voice: en-US-BrianMultilingualNeural,  label: "Edge neural - Brian (M)"}
     openai_female:   {provider: openai, voice: nova,  label: "OpenAI - Nova (F)"}
     openai_male:     {provider: openai, voice: onyx,  label: "OpenAI - Onyx (M)"}
-    # OpenRouter (paid, billed per character from your OpenRouter balance; there is NO automatic fallback to another voice).
-    # commercial_verified stays false until YOU have read the model's terms. Voice names differ per model.
-    # Current speech models: open https://openrouter.ai/api/v1/models?output_modalities=speech in a browser.
-    openrouter_mai:    {provider: openrouter, model: "microsoft/mai-voice-2.1", voice: "en-US-Harper:MAI-Voice-2.1", label: "OpenRouter - Microsoft MAI Voice 2.1, Harper", commercial_verified: false}
-    openrouter_openai: {provider: openrouter, model: "openai/gpt-4o-mini-tts-2025-12-15", voice: nova, label: "OpenRouter - OpenAI mini TTS, Nova", commercial_verified: false}
+    inworld_female: {provider: inworld, voice_id: Ashley, label: "Inworld - Ashley"}
+    inworld_male: {provider: inworld, voice_id: Dennis, label: "Inworld - Dennis"}
+    openrouter_voxtral: {provider: openrouter, model_id: mistralai/voxtral-mini-tts-2603, voice: en_paul_neutral, label: "OpenRouter - Voxtral (example voice)"}
   elevenlabs:
     model_id: eleven_multilingual_v2   # best quality, 1 credit/char.  eleven_flash_v2_5 = 0.5 credit/char, less natural
     credits_per_char: 1.0              # set 0.5 if you switch to a flash/turbo model
     stability: 0.45                    # lower = more expressive
     similarity_boost: 0.80
     style: 0.20
-  openrouter:
-    max_chars_per_video: 12000   # safety stop: refuse to start if the narration is longer than this (0 = no limit)
   openai:
     model: gpt-4o-mini-tts
     instructions: "Warm, relaxed, conversational. Natural pacing with small pauses. Sound like a person talking to a friend, not reading an ad."
+  inworld:
+    enabled: true
+    endpoint: https://api.inworld.ai/tts/v1/voice
+    model_id: inworld-tts-2
+    audio_encoding: MP3
+    max_utf16_units: 1900
+    # Conservative local lifetime safety cap. Verify the included allowance in your Inworld account.
+    free_character_budget: 40000
+    usage_ledger: .adagent_state/tts_usage.json
+    allow_paid_fallback: false
+  fallback:
+    # Only Edge failures may fall back to Inworld. No paid provider is auto-selected.
+    enabled: true
+    only_for: [edge]
+    providers: [inworld]
+    voice_keys:
+      inworld: inworld_female
+  openrouter:
+    # OpenRouter is usage-billed; disabled until BOTH config and per-run approval are enabled.
+    endpoint: https://openrouter.ai/api/v1/audio/speech
+    model: mistralai/voxtral-mini-tts-2603
+    voice: en_paul_neutral
+    response_format: mp3
+    allow_paid: false
+    commercial_use_confirmed: false
+    http_referer: ""
+    app_title: "Summer Section Video Agent"
   pause_sentence: 0.40   # seconds of silence after each narration line
   pause_section: 0.75    # extra pause when the section changes
 
