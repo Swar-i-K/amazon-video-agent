@@ -24,7 +24,7 @@ on:
       voice:
         description: "Narration voice"
         type: choice
-        default: edge_female
+        default: inworld_female
         options:
           - eleven_female
           - eleven_female_2
@@ -36,8 +36,17 @@ on:
           - edge_male_2
           - openai_female
           - openai_male
-          - openrouter_mai
-          - openrouter_openai
+          - inworld_female
+          - inworld_male
+          - openrouter_voxtral
+      allow_inworld_paid_tts:
+        description: "Allow paid Inworld usage after the configured safety allowance (also requires config opt-in)"
+        type: boolean
+        default: false
+      allow_paid_tts:
+        description: "Allow usage-billed OpenRouter TTS for this run (also requires config opt-in)"
+        type: boolean
+        default: false
       angle:
         description: "Video angle (blank = automatic rotation)"
         type: choice
@@ -51,8 +60,9 @@ on:
         type: boolean
         default: false
 
+# Serialize runs because the Inworld lifetime-usage ledger is shared across products.
 concurrency:
-  group: video-${{ inputs.asin }}
+  group: summer-section-video-agent
   cancel-in-progress: false
 
 permissions:
@@ -75,7 +85,10 @@ jobs:
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
       ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      INWORLD_API_KEY: ${{ secrets.INWORLD_API_KEY }}
+      INWORLD_ALLOW_PAID_TTS: ${{ inputs.allow_inworld_paid_tts }}
       OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      OPENROUTER_ALLOW_PAID_TTS: ${{ inputs.allow_paid_tts }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -105,7 +118,9 @@ jobs:
       - name: Restore saved photo checks and voice lines (all projects)
         uses: actions/cache/restore@v4
         with:
-          path: projects/*/.cache
+          path: |
+            projects/*/.cache
+            .adagent_state/tts_usage.json
           key: adagent-cache-${{ github.run_id }}
           restore-keys: adagent-cache-
 
@@ -145,7 +160,9 @@ jobs:
         if: always()
         uses: actions/cache/save@v4
         with:
-          path: projects/*/.cache
+          path: |
+            projects/*/.cache
+            .adagent_state/tts_usage.json
           key: adagent-cache-${{ github.run_id }}
 
       - name: Upload results
@@ -169,6 +186,8 @@ jobs:
         continue-on-error: true
         run: |
           mkdir -p /tmp/keep/scripts_archive
+          mkdir -p /tmp/keep/.adagent_state
+          if [ -f .adagent_state/tts_usage.json ]; then cp .adagent_state/tts_usage.json /tmp/keep/.adagent_state/tts_usage.json; fi
           rm -f /tmp/keep/script.md
           rm -f /tmp/keep/scenes.md
           if [ "$MODE" != "render" ] && [ "$MODE" != "scenes" ] && [ -f "projects/$ASIN/script.md" ]; then cp "projects/$ASIN/script.md" /tmp/keep/script.md; fi
@@ -182,7 +201,8 @@ jobs:
             if [ -f /tmp/keep/script.md ]; then cp /tmp/keep/script.md "projects/$ASIN/script.md"; fi
             if [ -f /tmp/keep/scenes.md ]; then cp /tmp/keep/scenes.md "projects/$ASIN/scenes.md"; fi
             mkdir -p scripts_archive && cp -r /tmp/keep/scripts_archive/. scripts_archive/ 2>/dev/null || true
-            git add "projects/$ASIN/script.md" "projects/$ASIN/scenes.md" scripts_archive 2>/dev/null || true
+            if [ -f /tmp/keep/.adagent_state/tts_usage.json ]; then mkdir -p .adagent_state && cp /tmp/keep/.adagent_state/tts_usage.json .adagent_state/tts_usage.json; fi
+            git add "projects/$ASIN/script.md" "projects/$ASIN/scenes.md" scripts_archive .adagent_state/tts_usage.json 2>/dev/null || true
             if git diff --cached --quiet; then echo "nothing to save"; exit 0; fi
             git commit -qm "script/history for $ASIN"
             if git push -q origin HEAD:main; then echo "saved"; exit 0; fi
