@@ -10,24 +10,24 @@
      "shots": 3,
      "starts": []
     },
-    "product_image_11.jpg": {
-     "shots": 3,
-     "starts": []
-    },
     "product_image_21.jpg": {
      "shots": 2,
+     "starts": []
+    },
+    "product_image_11.jpg": {
+     "shots": 3,
      "starts": []
     },
     "product_image_41.jpg": {
      "shots": 1,
      "starts": []
     },
-    "product_image_61.jpg": {
-     "shots": 1,
-     "starts": []
-    },
     "product_image_31.jpg": {
      "shots": 2,
+     "starts": []
+    },
+    "product_image_61.jpg": {
+     "shots": 1,
      "starts": []
     }
    }
