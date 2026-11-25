@@ -1,0 +1,50 @@
+{
+ "videos": [
+  {
+   "key": "f75a61b733",
+   "date": "2026-11-25",
+   "project": "Top-7-Insulation-Kits",
+   "angle": "list",
+   "files": {
+    "2026-10-23 17-27-34 - Trim4.mp4": {
+     "shots": 5,
+     "starts": [
+      4.0,
+      8.0,
+      12.0,
+      16.0,
+      20.0
+     ]
+    },
+    "product_image_71.jpg": {
+     "shots": 3,
+     "starts": []
+    },
+    "product_image_31.jpg": {
+     "shots": 2,
+     "starts": []
+    },
+    "2026-10-23 17-27-34 - Trim10.mp4": {
+     "shots": 4,
+     "starts": [
+      0.0,
+      4.0,
+      8.0
+     ]
+    },
+    "2026-10-23 17-27-34 - Trim8.mp4": {
+     "shots": 3,
+     "starts": [
+      9.0,
+      13.0,
+      16.2
+     ]
+    },
+    "product_image_21.jpg": {
+     "shots": 1,
+     "starts": []
+    }
+   }
+  }
+ ]
+}

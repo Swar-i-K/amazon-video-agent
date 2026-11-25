@@ -1,0 +1,40 @@
+{
+ "videos": [
+  {
+   "key": "f75a61b733",
+   "date": "2026-11-25",
+   "project": "Top-7-Insulation-Kits",
+   "angle": "list",
+   "files": {
+    "Yellow Dog 38 Inches_01.jpg": {
+     "shots": 2,
+     "starts": []
+    },
+    "2026-11-02 01-01-04 - Trim2.mp4": {
+     "shots": 3,
+     "starts": [
+      3.0,
+      16.0,
+      24.6
+     ]
+    },
+    "Gray Cat 38 Inches_21.jpg": {
+     "shots": 2,
+     "starts": []
+    },
+    "Bernese Mountain Dog 38 Inches_01.jpg": {
+     "shots": 1,
+     "starts": []
+    },
+    "Gray Cat 38 Inches_51.jpg": {
+     "shots": 1,
+     "starts": []
+    },
+    "Gray Cat 38 Inches_81.jpg": {
+     "shots": 1,
+     "starts": []
+    }
+   }
+  }
+ ]
+}

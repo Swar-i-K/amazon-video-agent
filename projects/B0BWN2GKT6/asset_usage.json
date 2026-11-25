@@ -1,0 +1,45 @@
+{
+ "videos": [
+  {
+   "key": "f75a61b733",
+   "date": "2026-11-25",
+   "project": "Top-7-Insulation-Kits",
+   "angle": "list",
+   "files": {
+    "2026-11-01 03-58-49 - Trim3.mp4": {
+     "shots": 3,
+     "starts": [
+      6.0,
+      10.0,
+      14.0
+     ]
+    },
+    "Grey Dog 48 inch_31.jpg": {
+     "shots": 1,
+     "starts": []
+    },
+    "2026-11-01 03-58-49 - Trim9.mp4": {
+     "shots": 4,
+     "starts": [
+      4.0,
+      14.0,
+      18.0,
+      24.0
+     ]
+    },
+    "Brown Dog 30 inch_01.jpg": {
+     "shots": 1,
+     "starts": []
+    },
+    "Grey Dog 48 inch_41.jpg": {
+     "shots": 2,
+     "starts": []
+    },
+    "Grey Strip 30 inch_01.jpg": {
+     "shots": 1,
+     "starts": []
+    }
+   }
+  }
+ ]
+}
