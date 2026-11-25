@@ -5,7 +5,7 @@ video:
   width: 1920
   height: 1080
   fps: 30
-  crf: 18            # lower = better quality, bigger file (17-20 is good)
+  crf: 23            # balanced quality and smaller downloads; lower = better quality, bigger file
   preset: medium     # slower = smaller file. medium is fine.
   shot_seconds: 5.0  # average length of one shot
   crossfade: 0.35    # set per template (templates: ... transition)
