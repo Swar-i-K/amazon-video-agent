@@ -3,108 +3,189 @@
 # The script writer may ONLY use what is written here. Anything you
 # leave out will simply not be said. More real facts = better video.
 # ------------------------------------------------------------------
-asin: B00002NCJI
-product_name: "3M Indoor Window Insulator Kit - Five Pack"
-brand: "3M"
-short_name: "3M"
-category: "Home Improvement"
-audience: "Homeowners and renters who want to reduce window drafts and improve winter comfort with a DIY indoor window insulation kit."
+asin: B01728NLRG
+product_name: "Coway Airmega AP-1512HH Mighty Air Purifier"
+brand: "Coway"
+short_name: "Coway Airmega Mighty"
+category: "Home"
+audience: "Homeowners and renters who want an indoor air purifier for dust, pollen, pet-related particles, and some household odors in bedrooms, living rooms, and other suitable spaces."
 
 # Your Amazon affiliate link (SiteStripe short link amzn.to/xxxx, or an amazon.* link with your tag=).
 # Third-party link shorteners / cloakers are not allowed in Associates.
-affiliate_url: "https://amzn.to/4hAPcGI"
+affiliate_url: "https://link.amazon/B03y9FDV3"
 
 # What the brand/listing SAYS (the video will attribute these: "the brand says ...").
 # Type them yourself in your own words. Do not paste customer reviews, prices or star ratings.
 manufacturer_claims:
-  - "Designed for indoor windows up to 3 feet by 5 feet."
-  - "Five-pack intended to cover five standard-size windows."
-  - "Designed to help reduce heat loss through indoor windows."
-  - "Designed to help reduce condensation and frost buildup on indoor glass."
-  - "The product includes a one-year limited warranty; terms and exclusions apply."
-  - "Designed as a DIY seasonal window insulation option."
+  - "Uses a four-stage filtration system consisting of a washable pre-filter, deodorization filter, True HEPA filter, and bipolar ionizer."
+  - "The True HEPA filter is designed to capture 99.97% of particles as small as 0.3 microns under the manufacturer's stated test conditions."
+  - "Designed to help reduce airborne dust, pollen, and other particles."
+  - "The deodorization filter is designed to help reduce household odors."
+  - "The manufacturer lists room coverage of 361 square feet at 4.8 air changes per hour."
+  - "The manufacturer lists room coverage of 874 square feet at 2 air changes per hour."
+  - "Includes Auto mode, which adjusts fan speed based on detected indoor pollution levels."
+  - "Includes Eco mode, which reduces operation when the air quality sensor detects clean air."
+  - "Includes a pollution-level indicator and filter-life indicator."
+  - "Offers five airflow settings: Auto, fan speeds 1, 2, and 3, and Eco."
+  - "Includes a timer with 1-, 4-, and 8-hour settings."
+  - "The manufacturer lists a noise range of approximately 24–53 dB(A)."
+  - "The manufacturer lists power consumption of 77 watts."
+  - "The manufacturer recommends replacing the deodorization filter about every six months and the True HEPA filter about once a year."
+  - "The pre-filter is washable and reusable."
+  - "The bipolar ionizer can be switched off."
+  - "The manufacturer lists a two-year limited warranty; terms and exclusions apply."
 
 # Hard specs you can verify on the product / box / brand site.
 specs:
-  - "Product: 3M Indoor Window Insulator Kit, Five Pack."
-  - "ASIN: B00002NCJI."
-  - "Brand: 3M."
-  - "Pack size: five window insulation film sheets."
-  - "Intended window size: up to 3 feet by 5 feet per window, according to the supplied product information."
-  - "Intended use: indoor windows, not exterior glass surfaces."
-  - "The supplied product information lists a one-year limited warranty."
-  - "Installation instructions and warranty conditions should be checked on the current package."
-  - "Actual energy savings depend on the home, windows, climate, and installation."
+  - "Product: Coway Airmega AP-1512HH Mighty Air Purifier."
+  - "ASIN: B01728NLRG."
+  - "Brand: Coway."
+  - "Model: AP-1512HH."
+  - "Power requirement: 120V AC, 60Hz."
+  - "Power consumption: 77 watts."
+  - "Clean Air Delivery Rate (CADR): 233 for smoke, 246 for dust, and 240 for pollen."
+  - "Manufacturer-listed room coverage: 361 square feet at 4.8 air changes per hour."
+  - "Manufacturer-listed room coverage: 874 square feet at 2 air changes per hour."
+  - "Filter system: pre-filter, deodorization filter, True HEPA filter, and bipolar ionizer."
+  - "Airflow settings: Auto, fan speeds 1–3, and Eco."
+  - "Noise range listed in the product specification sheet: approximately 24–53 dB(A)."
+  - "Timer settings: 1, 4, or 8 hours."
+  - "Dimensions: approximately 16.8 x 18.3 x 9.6 inches."
+  - "Weight: approximately 12.3 pounds."
+  - "The pre-filter is washable and reusable."
+  - "Manufacturer-listed filter replacement intervals: about six months for the deodorization filter and one year for the True HEPA filter."
+  - "The ionizer can be switched off."
+  - "The manufacturer's product information lists a two-year limited warranty."
+  - "Actual air-cleaning performance depends on room size, airflow setting, pollutant levels, filter condition, and placement."
+  - "The product is an air purifier; it is not an air purifier and humidifier combination."
 
 # YOUR OWN observations from actually handling the product. This is what makes the video
 # yours (and keeps it clear of YouTube's 'inauthentic content' rules). Aim for 6+ lines.
 hands_on_notes:
   - "These are practical observations based on the supplied product information, not firsthand testing."
-  - "The five-pack is potentially useful when several windows need seasonal insulation, provided each window fits the stated dimensions."
-  - "Measuring every window before opening the kit can help avoid discovering that a pane is too large."
-  - "Careful surface preparation and following the product's specific instructions are important for a neat installation."
-  - "This kit adds a layer over indoor glass; it does not repair damaged frames, failed seals, or large gaps around a window."
-  - "Window film may be one part of a broader plan to stop drafts in a house, alongside weatherstripping and repairs where needed."
-  - "The film may need replacement over time, so buyers should consider it a seasonal measure rather than a permanent window upgrade."
-  - "For home energy efficiency, results depend on the home's existing insulation and the source of heat loss."
+  - "The model is designed for indoor particle filtration and odor reduction; it should not be presented as a device that removes every type of indoor pollutant."
+  - "The listed 361-square-foot coverage is paired with 4.8 air changes per hour, while the larger 874-square-foot figure is paired with only 2 air changes per hour."
+  - "When discussing room coverage, state the air-change rate so buyers do not mistake the largest area figure for the highest cleaning rate."
+  - "The washable pre-filter is intended to capture larger particles and can be cleaned rather than replaced on the same schedule as the other filters."
+  - "The deodorization filter and True HEPA filter have different manufacturer-recommended replacement intervals."
+  - "Auto mode uses the pollution sensor to adjust fan speed; Eco mode is designed to reduce operation when the detected air is clean."
+  - "The ionizer is a separate feature and can be turned off."
+  - "The product includes an air-quality indicator, but that indicator should not be described as a medical-grade measurement of every indoor pollutant."
+  - "The purifier does not add moisture to the air, so it should not be described as a humidifier or a purifier-humidifier combo."
+  - "Buyers should compare the purifier's CADR and air-change rate with the size of the room where they plan to use it."
+  - "Filter replacement is an ongoing ownership cost, so buyers should check current replacement-filter prices and availability."
   - "Do not describe these notes as personal testing unless the product has actually been handled and tested."
 
 pros:
-  - "Five-sheet pack intended to cover multiple standard-size indoor windows."
-  - "DIY option for homeowners and renters seeking seasonal window insulation."
-  - "May help reduce heat loss and improve comfort near windows."
-  - "Designed to help reduce condensation and frost buildup on indoor glass."
-  - "One-year limited warranty, subject to its terms."
+  - "Four-stage filtration system with a washable pre-filter, deodorization filter, True HEPA filter, and bipolar ionizer."
+  - "True HEPA filter is specified to capture 99.97% of particles as small as 0.3 microns under the manufacturer's stated test conditions."
+  - "Manufacturer-listed CADR values for smoke, dust, and pollen."
+  - "Auto mode adjusts fan speed based on detected pollution levels."
+  - "Eco mode is designed to reduce operation when the detected air is clean."
+  - "Washable and reusable pre-filter."
+  - "Filter-life indicator and pollution-level indicator."
+  - "Ionizer can be switched off."
+  - "Timer offers 1-, 4-, and 8-hour settings."
+  - "Manufacturer-listed two-year limited warranty."
 
 cons:
-  - "Designed for indoor windows up to 3 feet by 5 feet; larger panes may need another solution."
-  - "Not intended for exterior glass surfaces."
-  - "Does not repair damaged frames, failed seals, or structural gaps."
-  - "Actual energy savings vary and are not guaranteed."
-  - "The film may need replacement over time."
-  - "The limited warranty has terms and exclusions."
+  - "The larger 874-square-foot coverage figure is listed at 2 air changes per hour; the 361-square-foot figure is listed at 4.8 air changes per hour."
+  - "The deodorization filter and True HEPA filter require periodic replacement."
+  - "Filter replacement adds an ongoing ownership cost."
+  - "The ionizer may not appeal to buyers who prefer mechanical filtration only, although it can be switched off."
+  - "The purifier does not humidify the air."
+  - "The product is designed for indoor use and requires a compatible 120V AC, 60Hz outlet."
+  - "Air-cleaning performance varies with room size, fan setting, filter condition, and pollutant levels."
+  - "The two-year limited warranty is subject to its terms and exclusions."
 
 not_for:
-  - "People who need insulation film for exterior glass surfaces."
-  - "People whose windows exceed the kit's specified dimensions and do not want to use another solution."
-  - "Anyone seeking a permanent repair for damaged frames or failed window seals."
-  - "Anyone expecting guaranteed reductions in heating or cooling costs."
-  - "People looking specifically for attic insulation or an attic air-sealing product."
+  - "People who need an air purifier and humidifier in one appliance."
+  - "People seeking a dedicated mold-remediation device or a guarantee that mold will be removed from a home."
+  - "Anyone expecting the purifier to fix the source of mold, moisture, or water damage."
+  - "People who need guaranteed removal of every gas, chemical, or indoor pollutant."
+  - "Anyone expecting a guaranteed reduction in allergy or asthma symptoms."
+  - "People who want a purifier with no ionizer feature at all."
+  - "Anyone expecting the largest listed room-coverage figure to represent the highest air-change rate."
+  - "People who do not want to clean a pre-filter or replace filters periodically."
+  - "Anyone expecting guaranteed reductions in heating, cooling, or electricity costs."
 
 # Optional extras
 use_cases:
-  - "indoor window insulation"
-  - "winter draft reduction"
-  - "home energy efficiency"
-  - "seasonal DIY home improvement"
-  - "window condensation and frost management"
-  - "part of a broader home weatherproofing plan"
+  - "air purifier for home"
+  - "air purifier for dust"
+  - "air purifier for pets"
+  - "air purifier for pet-related particles"
+  - "air purifier for pollen"
+  - "air purifier for bedroom"
+  - "air purifier for apartment"
+  - "air purifier for small room"
+  - "air purifier for larger room, using the appropriate air-change-rate figure"
+  - "air purifier for household odors"
+  - "indoor air filtration"
+  - "air purifier for seasonal allergens"
+  - "air purifier for smoke particles"
+  - "air purifier for allergies, without promising symptom relief"
 
 notes: |
   SEO keywords:
-  - "air sealing"
-  - "attic air sealing"
-  - "air sealing attic"
-  - "stop drafts in house"
-  - "how to seal air leaks"
-  - "home energy efficiency"
-  - "attic insulation"
-  - "reduce heating and cooling costs"
-  - "weatherproofing your home"
-  - "DIY home improvement"
+  - "air purifier"
+  - "air purifier and humidifier"
+  - "air purifier for dust"
+  - "air purifier for pets"
+  - "air purifier for mold"
+  - "air purifier for smoke and odor"
+  - "air purifier for bedroom"
+  - "air purifier for allergies"
+  - "air purifier for small room"
+  - "best air purifier"
+  - "air purifier for large room"
+  - "air purifier for home"
+  - "air purifier for apartment"
+  - "air purifier for pet hair"
+  - "air purifier for allergies and asthma"
+  - "air purifier for smoke and odors"
 
   Keyword usage guidance:
-  - Use "air sealing," "stop drafts in house," "how to seal air leaks,"
-    "home energy efficiency," "weatherproofing your home," and
-    "DIY home improvement" where they fit the topic naturally.
-  - "Attic air sealing," "air sealing attic," and "attic insulation"
-    are related home-improvement search terms, but this product is a
-    window insulation kit, not an attic insulation product. Mention them
-    only when explaining that attic air sealing is a separate project.
-  - Do not claim a guaranteed amount of energy savings.
-  - Do not invent firsthand testing, customer feedback, prices, or ratings.
+  - Use "air purifier" as the main product keyword.
+  - Naturally incorporate "air purifier for dust," "air purifier for pets,"
+    "air purifier for bedroom," and "air purifier for home" where relevant.
+  - Use "air purifier for pet hair" carefully. Explain that the purifier
+    filters airborne particles; it does not remove pet hair from floors,
+    furniture, or fabrics.
+  - Use "air purifier for smoke and odors" only within the product's
+    stated filtration capabilities. Do not promise complete smoke or
+    odor removal.
+  - Use "air purifier for allergies" and "air purifier for allergies
+    and asthma" as search-intent phrases, not as promises of symptom
+    relief, prevention, or treatment.
+  - Use "air purifier for mold" only to clarify that the purifier may
+    filter some airborne particles but does not remediate mold, remove
+    mold growth, or correct moisture problems.
+  - Use "air purifier and humidifier" only to explain that this model
+    does not humidify and is not a purifier-humidifier combination.
+  - Use "air purifier for small room" and "air purifier for large room"
+    with accurate room-size and air-change-rate context.
+  - When mentioning 361 square feet, include the manufacturer's
+    4.8-air-changes-per-hour figure.
+  - When mentioning 874 square feet, include the manufacturer's
+    2-air-changes-per-hour figure.
+  - Do not imply the purifier delivers 4.8 air changes per hour in
+    an 874-square-foot room.
+  - Use "best air purifier" only as a search-intent phrase, not as an
+    unsupported ranking or universal claim.
+  - Do not claim that the product removes all pollutants, all mold,
+    all smoke, or all odors.
+  - Do not claim that it prevents, treats, or cures allergies or asthma.
+  - Do not claim guaranteed health benefits or medical outcomes.
+  - Do not claim that the product humidifies the air.
+  - Do not invent firsthand testing, customer feedback, prices,
+    ratings, or sales figures.
   - Recheck the current Amazon listing before using price, rating,
-    review count, or availability in content.
+    review count, availability, or included accessories in content.
+  - Supplied listing reference: $143.99; supplied commission rate:
+    3%; supplied estimated commission: $4.60. These are changeable
+    affiliate/listing figures, not product specifications. Verify
+    current figures before using them in business calculations.
 
-# angle: honest_pros_cons
-# assets_allow: [03_closeup.jpg]
+# angle: four_stage_true_hepa_air_purifier_with_auto_eco_modes_and_clear_room_coverage_context
+# assets_allow: []
