@@ -276,13 +276,13 @@ def validate_facts(project: Project) -> tuple[list[str], list[str]]:
         errors.append("facts.yaml: store must be  amazon  or  aliexpress  (or left out: it is detected from affiliate_url).")
     elif url and store == "amazon" and not AMAZON_LINK_RE.match(url):
         errors.append(
-            "facts.yaml: affiliate_url must be an Amazon link (amazon.*, amzn.to, amzn.eu or a.co). "
+            "facts.yaml: affiliate_url must be an Amazon link (amazon.*, link.amazon, amzn.to, amzn.eu or a.co). "
             "Third-party link shorteners/cloakers are not allowed in Associates. "
             "For an AliExpress product add  store: aliexpress  and use your AliExpress affiliate link."
         )
     elif url and store == "aliexpress" and not ALIEXPRESS_LINK_RE.match(url):
         errors.append("facts.yaml: store is aliexpress, so affiliate_url must be an AliExpress link (aliexpress.*, s.click.aliexpress.com or a.aliexpress.com).")
-    if url and store == "amazon" and "amazon." in url and "tag=" not in url:
+    if url and store == "amazon" and "amazon." in url and "link.amazon/" not in url.lower() and "tag=" not in url:
         warnings.append("affiliate_url has no tag=YOURID-20 parameter, so it will not earn commission.")
     if store == "aliexpress":
         warnings.append("AliExpress listing photos and videos belong to the sellers: use your OWN photos and clips (for example from the parcel you "
