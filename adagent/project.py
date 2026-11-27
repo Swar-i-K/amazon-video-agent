@@ -57,7 +57,7 @@ def strip_allowed_stores(text: str, allow=()) -> str:
 
 
 AMAZON_LINK_RE = re.compile(
-    r"^https://((www\.)?amazon\.[a-z.]{2,6}/|amzn\.(to|eu|asia)/|a\.co/)", re.I
+    r"^https://((www\.)?amazon\.[a-z.]{2,6}/|link\.amazon/|amzn\.(to|eu|asia)/|a\.co/)", re.I
 )
 
 
