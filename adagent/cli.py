@@ -109,7 +109,7 @@ def cmd_scenes(args):
 def cmd_preview(args):
     """One sample picture per template, so you can compare the looks before rendering a whole video."""
     from .preview import render_template_preview
-    args.no_vision = True   # the preview only needs a photo; the face/price screening still runs on real renders
+    args.no_vision = True   # the preview only needs a photo; price/shop-UI screening still runs on real renders
     cfg, project, entries, _ = _prep(args)
     out = render_template_preview(project, cfg, entries, only=getattr(args, "template", None))
     log(f"\nTemplate preview saved: {out}")
@@ -263,7 +263,7 @@ def cmd_eleven_voices(args):
 
 
 def main(argv=None):
-    p = argparse.ArgumentParser(prog="adagent", description="Faceless Amazon product-ad video builder (you supply the footage).")
+    p = argparse.ArgumentParser(prog="adagent", description="Amazon product-ad video builder (you supply the footage).")
     sub = p.add_subparsers(dest="cmd", required=True)
 
     def common(sp, voice=False, script=False, render=False):
