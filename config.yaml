@@ -125,7 +125,7 @@ llm:
     gemini: gemini-3.8-flash
     mistral: mistral-small-2506
     openrouter: google/gemini-3.8-flash
-  vision_check: true      # false = skip the AI photo check (saves Groq tokens; you then check faces/prices yourself)
+  vision_check: true      # false = skip the AI photo check (saves Groq tokens; you then check prices/shop UI yourself)
   vision_max_side: 640    # photos are shrunk to this size for the AI check (cheaper; the product is still clearly visible)                            # keeps requests inside free-tier per-minute limits
   # For Anthropic instead: provider: anthropic, model: claude-sonnet-5-5, vision_model: claude-sonnet-5-5
   # Check current Groq model names at console.groq.com/docs/models
