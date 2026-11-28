@@ -1,10 +1,9 @@
-"""Scan the project's assets, describe them, and screen out anything unusable.
+"""Scan project assets, describe them, and screen out unusable footage.
 
-Screening rules (the video must be faceless and must not show shop page UI (Amazon, AliExpress)):
-  * any human face (vision model + OpenCV backup)  -> excluded
+Screening rules:
   * visible prices / star ratings / review text / buy buttons -> excluded
-  * not actually showing the product                -> excluded
-Override a false positive by listing the filename under  assets_allow:  in facts.yaml.
+  * not actually showing the product -> excluded
+Override a false positive by listing the filename under assets_allow in facts.yaml.
 """
 from __future__ import annotations
 
@@ -80,34 +79,6 @@ def as_bool(v, default: bool = False) -> bool:
     return default
 
 
-_FACE = None
-
-
-def haar_has_face(frames: list[np.ndarray]) -> bool:
-    """OpenCV's classic face detector, used as a backup to the vision model. If this OpenCV build lacks it, skip quietly."""
-    global _FACE
-    if _FACE is None:
-        try:
-            det = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
-            _FACE = det if not det.empty() else False
-        except Exception:
-            _FACE = False
-        if _FACE is False:
-            log("  (OpenCV face-detector backup is not available in this build; relying on the AI image check only. "
-                "Look through your footage yourself for faces.)")
-    if _FACE is False:
-        return False
-    for f in frames:
-        g = cv2.cvtColor(f, cv2.COLOR_BGR2GRAY)
-        s = 800 / max(g.shape)
-        if s < 1:
-            g = cv2.resize(g, None, fx=s, fy=s)
-        faces = _FACE.detectMultiScale(g, scaleFactor=1.1, minNeighbors=7, minSize=(48, 48))
-        if len(faces):
-            return True
-    return False
-
-
 VISION_SYSTEM = (
     "You are a careful assistant for a video editor. You inspect product photos/video frames and answer ONLY with JSON."
 )
@@ -115,7 +86,6 @@ VISION_SYSTEM = (
 VISION_PROMPT = """Inspect {what}. Return JSON with exactly these keys:
 {{"description": "<=25 words, literal description of what is visible: product, angle, setting, notable details>",
   "shows_product": true/false,
-  "has_human_face": true/false,   // ANY human face, even partial, small, in a photo on packaging, or a reflection
   "has_price_or_rating_ui": true/false,  // visible price, star rating, review text, Amazon/AliExpress page UI, buy button, badge like 'Best Seller', 'Choice' or 'Free shipping'
   "has_third_party_logo_or_watermark": true/false}}
 Do not guess about things you cannot see."""
@@ -145,8 +115,7 @@ def build_index(project: Project, cfg: dict, vision: bool = True, *, select: boo
     select=True: a free local pre-scan picks the footage for THIS video (varied, good quality, not used in earlier videos) and only
     those files are AI-checked; the pick is saved in `store` (selection.json) so 'script' and 'render' use the same files."""
     if vision and not cfg.get("llm", {}).get("vision_check", True):
-        log("  (AI photo check is turned off in config.yaml: llm.vision_check. Faces are only checked locally; "
-            "look through your photos yourself for faces, prices and shop page elements (Amazon, AliExpress).)")
+        log("  (AI photo check is turned off in config.yaml: llm.vision_check; check footage for prices and shop page elements yourself.)")
         vision = False
     cache_file = project.cache_dir / "assets_index.json"
     cache = {}
@@ -222,7 +191,6 @@ def build_index(project: Project, cfg: dict, vision: bool = True, *, select: boo
                 e.update(usable=False, reason="could not be read", description=p.stem)
                 entries.append(e)
                 continue
-            e["haar_face"] = haar_has_face(frames)
             if vision:
                 log(f"  describing {p.name} ...")
                 try:
@@ -238,15 +206,12 @@ def build_index(project: Project, cfg: dict, vision: bool = True, *, select: boo
                         "(then check your own photos for faces and shop page elements (Amazon, AliExpress)), or (4) upgrade the Groq tier.")
                 e["description"] = str(v.get("description", p.stem))
                 e["shows_product"] = as_bool(v.get("shows_product"), True)
-                e["llm_face"] = as_bool(v.get("has_human_face"), False)
                 e["price_ui"] = as_bool(v.get("has_price_or_rating_ui"), False)
                 e["logo_watermark"] = as_bool(v.get("has_third_party_logo_or_watermark"), False)
             else:
                 e.update(description=p.stem.replace("_", " ").replace("-", " "), shows_product=True,
-                         llm_face=False, price_ui=False, logo_watermark=False)
+                         price_ui=False, logo_watermark=False)
         reasons = []
-        if (e.get("llm_face") or e.get("haar_face")) and p.name.lower() not in allow:
-            reasons.append("shows a human face")
         if e.get("price_ui") and p.name.lower() not in allow:
             reasons.append("shows price/rating/shop page UI")
         if not e.get("shows_product", True) and p.name.lower() not in allow and not p.name.lower().startswith("ai_"):
