@@ -1,5 +1,5 @@
-# TITLE: Air Purifier Gift Guide: Who Will Love the Coway Airmega AP-1512HH
-# INTRO: We look at the Coway Airmega AP-1512HH as a potential gift. Learn what to consider before you buy for someone else.
+# TITLE: Best air purifier for large and small bedrooms 
+# INTRO: We look at the Coway Airmega as a potential gift. Learn what to consider before you buy for someone else.
 # TAGS: air purifier, Coway, gift guide, home air quality, indoor air, HEPA filter, pet owners, allergy season, room size, air quality sensor
 # ANGLE: gift_angle
 #
@@ -16,7 +16,7 @@
 [I1] If you're new here, subscribe to the channel. Let's dive in. | p: 2
 
 ## context
-[3] The Coway Airmega AP-1512HH is a compact, white purifier designed for rooms up to 361 square feet with 4.8 air changes per hour. | callout: 361 ft coverage | assets: A05 | p: 1
+[3] The Coway Airmega is a compact, white purifier designed for rooms up to 361 square feet with 4.8 air changes per hour. | callout: 361 ft coverage | assets: A05 | p: 1
 [4] It also lists coverage of 874 square feet, but only at 2 air changes per hour, so performance varies by size. | callout: 874 ft coverage | assets: A05 | p: 2
 
 ## overview
@@ -32,7 +32,7 @@
 [12] Power consumption is listed at 77 watts, modest for a unit of this capacity. | assets: A05 | p: 2
 [x1] The purifier’s CADR numbers are 233 cubic feet per minute for smoke, 246 for dust, and 240 for pollen, which helps you gauge how quickly it can clear those specific particles in a given space. Its footprint measures about 16.8 by 18.3 by 9.6 inches and it weighs roughly 12.3 pounds, so it sits comfortably on a nightstand or shelf without feeling top-heavy. | assets: A05 | p: 2
 [x2] A built-in filter-life indicator glows when the deodorization filter or the True HEPA filter nears the end of its service life, taking the guesswork out of maintenance. The unit also includes a pollution-level LED bar that gives a quick visual cue of current air quality, though it isn’t a medical-grade sensor. | p: 2
-[x3] When choosing an air purifier, compare the CADR rating to the square-footage of the room you intend to treat, and consider the air-change rate you need—higher rates mean faster turnover but may generate more noise. Regularly cleaning a washable pre-filter can extend the life of the downstream filters and keep performance steady. | p: 2
+[x3] When choosing an air purifier for a bedroom, compare the CADR rating to the square-footage of the room you intend to treat, and consider the air-change rate you need—higher rates mean faster turnover but may generate more noise. Regularly cleaning a washable pre-filter can extend the life of the downstream filters and keep performance steady. | p: 2
 
 ## in_use
 [13] Place the purifier on a stable surface, plug into a 120 V outlet, and let the sensor calibrate for a few minutes. | assets: A05 | p: 1
@@ -56,11 +56,11 @@
 [24] If you want a unit with no ionizer at all, this purifier may feel unnecessary, even though the ionizer can be turned off. | assets: A05 | p: 2
 
 ## verdict
-[25] Overall, the Coway Airmega AP-1512HH offers solid filtration, adjustable modes, and a washable pre-filter, making it a considerate gift for health-conscious households. | assets: A05 | p: 1
+[25] Overall, the Coway Airmega offers solid filtration, adjustable modes, and a washable pre-filter, making it a considerate gift for health-conscious households. | assets: A05 | p: 1
 [26] Just remember to match the room size to the appropriate air-change rating and budget for filter replacements. | assets: A05 | p: 2
 
 ## outro
-[O1] If you liked this video, please give it a like, subscribe to the channel, and share it with someone who might need it. In the comments, tell me what you think of Coway Airmega Mighty. | p: 1
+[O1] If you liked this video, please give it a like, subscribe to the channel, and share it with someone who might need it. In the comments, tell me what you think of Coway Mighty. | p: 1
 [O2] I've put the product link in the video description below. | p: 1
 [O3] Thank you very much for watching the whole video. Hope to see you in the next video. Take care. | p: 1
 
