@@ -348,7 +348,7 @@ POLICY_RULES = [
     (r"\b(customers?|reviewers?|buyers?|shoppers?)\s+(say|said|love|loved|report|reported|complain|praise|rave)", "paraphrases customer reviews"),
     (r"\bamazon'?s\s+choice\b|\bbest[- ]?sell(er|ing)\b|\b#\s?1\b", "uses an Amazon badge/ranking"),
     (r"\b(on sale|discounts?|coupons?|limited[- ]time|\d+\s?% off|percent off|price drop|lowest price|cheapest|free shipping|prime day|black friday|cyber monday)\b|\b(great|good|best|amazing|hot)\s+deals?\b", "uses price/promotion language"),
-    (r"\b(walmart|target|best buy|ebay|aliexpress|temu|etsy)\b", "names another retailer"),
+    (r"\b(walmart|target|best buy|ebay|temu|etsy)\b", "names another retailer"),
     (r"\b(cures?|heals?|clinically proven|medically proven|fda[- ]approved)\b", "makes a health claim"),
 ]
 STYLE_RULES = [
