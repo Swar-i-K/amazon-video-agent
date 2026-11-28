@@ -134,8 +134,6 @@ def _gate(name: str, f: dict, cfg: dict, allow: set) -> str | None:
         return "could not be read"
     if name.lower() in allow:
         return None
-    if f["face"]:
-        return "a face is visible (local check)"
     if f["kind"] == "image":
         if min(f["w"], f["h"]) < int(a.get("min_image_px", 480)):
             return f"too small ({f['w']}x{f['h']})"
