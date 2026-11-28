@@ -1,7 +1,7 @@
 """Free, local pre-scan of every photo and clip (no AI, no Groq tokens).
 
-For each file we measure: size, sharpness (edge strength), exposure, a near-duplicate fingerprint, a colour fingerprint, whether a face is
-visible (OpenCV), and for clips the best 5-second moments (sharp + moving, no face). Results are cached by file content in
+For each file we measure: size, sharpness (edge strength), exposure, a near-duplicate fingerprint, a colour fingerprint, and for clips
+the best 5-second moments (sharp + moving). Results are cached by file content in
 projects/<ASIN>/.cache/prescan.json, so each file is scanned only once.
 """
 from __future__ import annotations
@@ -51,7 +51,7 @@ def _small(bgr: np.ndarray, side: int) -> np.ndarray:
 
 
 def _scan_image(path: Path) -> dict:
-    from .assets import haar_has_face, load_image_bgr
+    from .assets import load_image_bgr
     img = load_image_bgr(path)
     h, w = img.shape[:2]
     small = _small(img, 640)
@@ -62,12 +62,11 @@ def _scan_image(path: Path) -> dict:
     res_n = min(1.0, min(h, w) / 1080.0)
     expo_n = 1.0 if 40 <= mean <= 238 else 0.3
     return {"kind": "image", "w": w, "h": h, "dur": 0.0, "sharp": round(sharp, 2), "mean": round(mean, 1), "std": round(std, 1),
-            "dhash": format(_dhash(gray), "016x"), "hist": _hist(small), "face": bool(haar_has_face([small])),
+            "dhash": format(_dhash(gray), "016x"), "hist": _hist(small),
             "quality": round(0.6 * sharp_n + 0.25 * res_n + 0.15 * expo_n, 4), "windows": []}
 
 
 def _scan_clip(path: Path) -> dict:
-    from .assets import haar_has_face
     vi = video_info(path)
     dur, fps = float(vi["duration"]), float(vi["fps"] or 25.0)
     cap = cv2.VideoCapture(str(path))
@@ -91,9 +90,7 @@ def _scan_clip(path: Path) -> dict:
     cap.release()
     if not times:
         return {"kind": "clip", "w": vi["width"], "h": vi["height"], "dur": dur, "sharp": 0.0, "mean": 0.0, "std": 0.0, "dhash": "0" * 16,
-                "hist": [0.0] * 28, "face": False, "quality": 0.0, "windows": [], "unreadable": True}
-    face_idx = sorted(set(np.linspace(0, len(frames_small) - 1, min(4, len(frames_small))).astype(int).tolist()))
-    face = bool(haar_has_face([frames_small[i] for i in face_idx]))
+                "hist": [0.0] * 28, "quality": 0.0, "windows": [], "unreadable": True}
     sharp_n = [min(1.0, e / (EDGE_GOOD * 0.7)) for e in edges]
     mot_n = [min(1.0, m / 12.0) if m < 30 else 0.3 for m in motion]      # very high motion = shaky, not "dynamic"
     L = min(5.0, max(1.0, dur))
@@ -116,7 +113,7 @@ def _scan_clip(path: Path) -> dict:
     res_n = min(1.0, min(vi["width"], vi["height"]) / 720.0)
     return {"kind": "clip", "w": vi["width"], "h": vi["height"], "dur": round(dur, 2), "sharp": round(float(np.mean(edges)), 2),
             "mean": round(float(gmid.mean()), 1), "std": round(float(gmid.std()), 1), "dhash": format(_dhash(gmid), "016x"),
-            "hist": _hist(frames_small[len(frames_small) // 2]), "face": face, "quality": round(0.8 * q + 0.2 * res_n, 4), "windows": wins}
+            "hist": _hist(frames_small[len(frames_small) // 2]), "quality": round(0.8 * q + 0.2 * res_n, 4), "windows": wins}
 
 
 def scan_all(project, files: list[Path], cfg: dict | None = None) -> dict[str, dict]:
@@ -142,7 +139,7 @@ def scan_all(project, files: list[Path], cfg: dict | None = None) -> dict[str, d
         except Exception as e:
             log(f"  could not scan {p.name}: {e}")
             feat = {"kind": "image" if p.suffix.lower() in IMG_EXT else "clip", "unreadable": True, "quality": 0.0, "w": 0, "h": 0,
-                    "dur": 0.0, "windows": [], "face": False, "hist": [0.0] * 28, "dhash": "0" * 16, "sharp": 0.0, "mean": 0.0, "std": 0.0}
+                    "dur": 0.0, "windows": [], "hist": [0.0] * 28, "dhash": "0" * 16, "sharp": 0.0, "mean": 0.0, "std": 0.0}
         feat["v"] = SCAN_VERSION
         cache[h] = feat
         out[p.name] = feat
