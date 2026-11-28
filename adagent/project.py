@@ -342,7 +342,7 @@ POLICY_RULES = [
      r"\d[\d,.]*\+?\s+(orders|sold)|orders? (sold|placed)|(store|seller) rating|top[- ]rated seller|(choice|best[- ]?seller) (badge|label))\b",
      "shipping, seller or order-count claim (changes constantly)"),
     (r"\bhands[- ]on notes?\b|\bthe notes (say|mention|state)\b|\baccording to (my|the) (notes|facts)\b", "refers to your notes/facts out loud (speak in the first person or say 'the brand says')"),
-    (r"\$\s?\d|\b\d[\d,.]*\s?(usd|dollars?|bucks|euros?|pounds?)\b|\bpounds?\b", "mentions a price"),
+    (r"\$\s?\d|\b\d[\d,.]*\s?(usd|dollars?|bucks|euros?)\b", "mentions a price"),
     (r"\b\d(\.\d)?\s*(out of 5|/5|stars?)\b|\bfive[- ]star\b|\bstar rating", "mentions a star rating"),
     (r"\b\d[\d,]*\s+(customer\s+)?(reviews|ratings)\b", "mentions a review/rating count"),
     (r"\b(customers?|reviewers?|buyers?|shoppers?)\s+(say|said|love|loved|report|reported|complain|praise|rave)", "paraphrases customer reviews"),
